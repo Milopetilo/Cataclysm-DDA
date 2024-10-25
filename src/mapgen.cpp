@@ -4530,7 +4530,7 @@ mapgen_palette mapgen_palette::load_internal( const JsonObject &jo, const std::s
 
     jo.read( "parameters", new_pal.parameters.map );
 
-    if( jo.has_array( "palettes" ) ) {
+    if( jo.has_array( "palettes" ) || jo.has_string( "palettes" ) ) {
         jo.read( "palettes", new_pal.palettes_used );
         if( allow_recur ) {
             // allow_recur means that it's safe to assume all the palettes have
