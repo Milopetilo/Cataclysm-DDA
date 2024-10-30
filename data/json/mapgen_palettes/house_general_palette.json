@@ -165,6 +165,7 @@
       "ʭ": "f_ladder",
       "é": "f_freezer"
     },
+    "palettes": [ "door_palettes" ],
     "terrain": {
       "Ŧ": { "param": "house_fence_type", "fallback": "t_fence" },
       "ɤ": {
