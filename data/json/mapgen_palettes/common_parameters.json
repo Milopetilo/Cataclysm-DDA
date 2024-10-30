@@ -110,5 +110,93 @@
       }
     },
     "terrain": { "=": { "param": "carpet_color_type", "fallback": "t_carpet_red" } }
+  },
+  {
+    "type": "palette",
+    "id": "door_palettes",
+    "//": "Palette to have doors be in various states of locked/closed",
+    "palettes": [ "outer_door_palette", "inner_door_palette" ]
+  },
+  {
+    "type": "palette",
+    "id": "outer_door_palette",
+    "//": "Palette to have doors that lead to the outside be in various states of locked/closed",
+    "parameters": {
+      "outer_door_variant_palette": {
+        "type": "palette_id",
+        "scope": "overmap_special",
+        "default": { "distribution": [ [ "outer_door_l_palette", 40 ], [ "outer_door_lo_palette", 50 ], [ "outer_door_o_palette", 10 ] ] }
+      }
+    },
+    "palettes": [ { "param": "outer_door_variant_palette" } ]
+  },
+  {
+    "type": "palette",
+    "id": "outer_door_l_palette",
+    "//": "Used by outer_door_palette",
+    "terrain": {
+      "*": [
+        [ "t_door_locked_peep", 5 ],
+        [ "t_door_locked_alarm", 34 ],
+        [ "t_door_locked", 45 ],
+        [ "t_door_elocked_peep", 5 ],
+        [ "t_door_elocked_alarm", 5 ],
+        [ "t_door_elocked", 6 ]
+      ]
+    }
+  },
+  {
+    "type": "palette",
+    "id": "outer_door_lo_palette",
+    "//": "Used by outer_door_palette",
+    "terrain": {
+      "*": [
+        [ "t_door_locked_peep", 5 ],
+        [ "t_door_locked_alarm", 34 ],
+        [ "t_door_locked", 45 ],
+        [ "t_door_elocked_peep", 5 ],
+        [ "t_door_elocked_alarm", 5 ],
+        [ "t_door_elocked", 6 ],
+        [ "t_door_c", 50 ],
+        [ "t_door_o", 5 ]
+      ]
+    }
+  },
+  {
+    "type": "palette",
+    "id": "outer_door_o_palette",
+    "//": "Used by outer_door_palette",
+    "terrain": { "*": [ [ "t_door_c", 50 ], [ "t_door_o", 50 ] ] }
+  },
+  {
+    "type": "palette",
+    "id": "inner_door_palette",
+    "//": "Palette to have the doors that are inside be in various states of locked/closed",
+    "parameters": {
+      "inner_door_variant_palette": {
+        "type": "palette_id",
+        "scope": "overmap_special",
+        "default": { "distribution": [ [ "inner_door_l_palette", 10 ], [ "inner_door_lo_palette", 50 ], [ "inner_door_o_palette", 40 ] ] }
+      }
+    },
+    "palettes": [ { "param": "inner_door_variant_palette" } ]
+  },
+  {
+    "type": "palette",
+    "id": "inner_door_l_palette",
+    "//": "Used by inner_door_palette",
+    "terrain": { "+": [ "t_door_locked_interior" ] }
+  },
+  {
+    "type": "palette",
+    "id": "inner_door_lo_palette",
+    "//": "Used by inner_door_palette",
+    "terrain": { "+": [ [ "t_door_locked_interior", 45 ], [ "t_door_c", 50 ], [ "t_door_o", 5 ] ] }
+  },
+  {
+    "type": "palette",
+    "id": "inner_door_o_palette",
+    "//": "Used by inner_door_palette",
+    "terrain": { "+": [ [ "t_door_c", 15 ], [ "t_door_o", 50 ] ] }
   }
 ]
