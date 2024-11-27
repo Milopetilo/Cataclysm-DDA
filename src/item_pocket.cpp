@@ -411,14 +411,14 @@ bool item_pocket::better_pocket( const item_pocket &rhs, const item &it, bool ne
         return false;
     }
 
-    if( rhs.data->extra_encumbrance < data->extra_encumbrance ) {
+    if( rhs.data->extra_encumbrance != data->extra_encumbrance ) {
         // pockets with less extra encumbrance should be prioritized
-        return true;
+        return rhs.data->extra_encumbrance < data->extra_encumbrance;
     }
 
-    if( data->ripoff > rhs.data->ripoff ) {
+    if( data->ripoff != rhs.data->ripoff ) {
         // pockets without ripoff chance should be prioritized
-        return true;
+        return rhs.data->ripoff < data->ripoff;
     }
 
     if( data->rigid != rhs.data->rigid ) {
@@ -443,7 +443,7 @@ bool item_pocket::stacks_with( const item_pocket &rhs, int depth, int maxdepth )
             rhs.contents.begin(), rhs.contents.end(),
     [depth, maxdepth]( const item & a, const item & b ) {
         return depth < maxdepth && a.charges == b.charges &&
-               a.stacks_with( b, false, false, depth + 1, maxdepth );
+               a.stacks_with( b, false, false, false, depth + 1, maxdepth );
     } );
 }
 
@@ -803,6 +803,8 @@ void item_pocket::handle_liquid_or_spill( Character &guy, const item *avoid )
             item i_copy( *iter );
             guy.i_add_or_drop( i_copy, 1, avoid, &*iter );
             iter = contents.erase( iter );
+            guy.add_msg_if_player( m_warning, _( "The %s falls out of the %s." ), i_copy.display_name(),
+                                   get_name() );
         }
     }
 }
@@ -899,7 +901,7 @@ bool item_pocket::detonate( const tripoint &pos, std::vector<item> &drops )
 }
 
 bool item_pocket::process( const itype &type, map &here, Character *carrier, const tripoint &pos,
-                           float insulation, const temperature_flag flag )
+                           float insulation, temperature_flag flag, bool watertight_container )
 {
     bool processed = false;
     float spoil_multiplier = 1.0f;
@@ -908,7 +910,7 @@ bool item_pocket::process( const itype &type, map &here, Character *carrier, con
             spoil_multiplier = 0.0f;
         }
         if( it->process( here, carrier, pos, type.insulation_factor * insulation, flag,
-                         spoil_multiplier ) ) {
+                         spoil_multiplier, watertight_container ) ) {
             it->spill_contents( pos );
             it = contents.erase( it );
             processed = true;
@@ -1247,6 +1249,7 @@ void item_pocket::contents_info( std::vector<iteminfo> &info, int pocket_number,
                                            contains_weight() ) );
         info.emplace_back( weight_to_info( cont_type_str, _( " of " ),
                                            weight_capacity() ) );
+        info.back().bNewLine = true;
     } else {
         // With ammo_restriction, total capacity does not matter, but show current volume/weight
         info.emplace_back( vol_to_info( cont_type_str, _( "Volume: " ),
@@ -1983,12 +1986,13 @@ void item_pocket::remove_items_if( const std::function<bool( item & )> &filter )
 }
 
 void item_pocket::process( map &here, Character *carrier, const tripoint &pos, float insulation,
-                           temperature_flag flag, float spoil_multiplier_parent )
+                           temperature_flag flag, float spoil_multiplier_parent, bool watertight_container )
 {
     for( auto iter = contents.begin(); iter != contents.end(); ) {
         if( iter->process( here, carrier, pos, insulation, flag,
                            // spoil multipliers on pockets are not additive or multiplicative, they choose the best
-                           std::min( spoil_multiplier_parent, spoil_multiplier() ) ) ) {
+                           std::min( spoil_multiplier_parent, spoil_multiplier() ),
+                           watertight_container || can_contain_liquid( false ) ) ) {
             iter->spill_contents( pos );
             iter = contents.erase( iter );
         } else {
@@ -2222,12 +2226,12 @@ std::pair<item_location, item_pocket *> item_pocket::best_pocket_in_contents(
     const bool allow_sealed, const bool ignore_settings )
 {
     std::pair<item_location, item_pocket *> ret( this_loc, nullptr );
-    // If the current pocket has restrictions or blacklists the item,
+    // If the current pocket has restrictions or blacklists the item or is a holster,
     // try the nested pocket regardless of whether it's soft or rigid.
     const bool ignore_rigidity =
         !settings.accepts_item( it ) ||
         !get_pocket_data()->get_flag_restrictions().empty() ||
-        settings.priority() > 0;
+        settings.priority() > 0 || is_holster();
 
     for( item &contained_item : contents ) {
         if( &contained_item == &it || &contained_item == avoid ) {
@@ -2481,7 +2485,7 @@ units::volume pocket_data::max_contains_volume() const
         int stack_size = ammo_type->stack_size ? ammo_type->stack_size : 1;
         int max_count = ammo_restriction.at( ammo_type->ammo->type );
         units::volume this_volume =
-            1_ml * divide_round_up( ammo_type->volume / 1_ml * max_count, stack_size );
+            1_ml * divide_round_up( ammo_type->volume * max_count / 1_ml, stack_size );
         max_total_volume = std::max( max_total_volume, this_volume );
     }
     return max_total_volume;
@@ -2624,7 +2628,9 @@ bool item_pocket::favorite_settings::accepts_item( const item &it ) const
         return false;
     }
     const itype_id &id = it.typeId();
-    const item_category_id &cat = it.get_category_of_contents().id;
+    const item_category_id &cat = category_blacklist.empty() && category_whitelist.empty()
+                                  ? item_category_id{} :
+                                  it.get_category_of_contents().id;
 
     // if the item is explicitly listed in either of the lists, then it's clear what to do with it
     if( item_blacklist.count( id ) ) {

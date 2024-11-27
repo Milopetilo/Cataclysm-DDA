@@ -153,8 +153,8 @@
       { "math": [ "xe_riddle_14", "--" ] },
       {
         "run_eoc_selector": [ "EOC_NONE", "EOC_NONE" ],
-        "title": "Opressed or Opressor?",
-        "names": [ "Opressed", "Opressor" ]
+        "title": "Oppressed or Oppressor?",
+        "names": [ "Oppressed", "Oppressor" ]
       }
     ]
   },
@@ -429,7 +429,7 @@
     "id": "EOC_XE_RUN_GIVE_CLASS_2_AFTERMATCH",
     "effect": [
       { "u_message": "Your attempts to save anything are hopeless…", "type": "mixed" },
-      { "math": [ "magic_potential", "=", "0" ] }
+      { "math": [ "magic_potential = 0" ] }
     ]
   }
 ]

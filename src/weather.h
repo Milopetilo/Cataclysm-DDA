@@ -7,7 +7,7 @@
 #include "calendar.h"
 #include "catacharset.h"
 #include "color.h"
-#include "coordinates.h"
+#include "coords_fwd.h"
 #include "pimpl.h"
 #include "point.h"
 #include "type_id.h"
@@ -23,7 +23,7 @@ class translation;
  * @name BODYTEMP
  * Body temperature.
  * Most values can be changed with no impact on calculations.
- * Maximum heat cannot pass 57 C, otherwise the player will vomit to death.
+ * Maximum heat cannot pass 57 C (the player will die of heatstroke)
  */
 ///@{
 //!< More aggressive cold effects.
@@ -173,7 +173,7 @@ nc_color get_wind_color( double );
  * The first overload is in map-square coords, the second for larger scale
  * queries.
  */
-bool warm_enough_to_plant( const tripoint &pos );
+bool warm_enough_to_plant( const tripoint_bub_ms &pos );
 bool warm_enough_to_plant( const tripoint_abs_omt &pos );
 
 bool is_wind_blocker( const tripoint_bub_ms &location );
