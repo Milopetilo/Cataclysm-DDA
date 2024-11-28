@@ -1,0 +1,13 @@
+[
+  {
+    "type": "overmap_terrain",
+    "id": "field",
+    "copy-from": "generic_open_land",
+    "name": "desert",
+    "sym": ".",
+    "color": "yellow",
+    "see_cost": "none",
+    "extras": "field",
+    "flags": [ "NO_ROTATE" ]
+  }
+]

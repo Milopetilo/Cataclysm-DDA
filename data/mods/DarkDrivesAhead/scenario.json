@@ -1,0 +1,46 @@
+[
+  {
+    "type": "scenario",
+    "id": "scenario_driver",
+    "name": "Driver",
+    "flags": [ "LONE_START", "CHALLENGE", "NO_BONUS_ITEMS" ],
+    "points": 0,
+    "description": "Last thing you remember is the sky splitting open.  You've awoken in a strange and unknown place with a car that feels oddly familiar.",
+    "start_name": "Driver",
+    "allowed_locs": [ "sloc_drive_garage" ],
+    "eoc": [ "scenario_driver_start" ]
+  },
+  {
+    "type": "start_location",
+    "id": "sloc_drive_garage",
+    "name": "Strange garage",
+    "terrain": [ "strange_garage_0" ]
+  },
+  {
+    "type": "SCENARIO_BLACKLIST",
+    "subtype": "whitelist",
+    "//": "Makes it so you can't choose any other scenario in this mode.",
+    "scenarios": [ "scenario_driver", "scenario_test_driver" ]
+  },
+  {
+    "type": "scenario",
+    "id": "scenario_test_driver",
+    "name": "Test driver",
+    "flags": [ "LONE_START", "CHALLENGE", "NO_BONUS_ITEMS" ],
+    "points": 0,
+    "description": "Last thing you remember is the sky splitting open.  You've awoken in a strange and unknown place with a car that feels oddly familiar.",
+    "start_name": "Test driver",
+    "allowed_locs": [ "sloc_road_bus" ],
+    "eoc": [ "scenario_driver_start" ]
+  },
+  {
+    "type": "start_location",
+    "id": "sloc_road_bus",
+    "name": "Road",
+    "terrain": [ { "om_terrain": "road", "om_terrain_match_type": "PREFIX" } ],
+    "city_sizes": [ 0, 16 ],
+    "city_distance": [ 0, -1 ],
+    "allowed_z_levels": [ 0, 0 ],
+    "flags": [ "ALLOW_OUTSIDE" ]
+  }
+]
