@@ -1,0 +1,14 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "scenario_driver_start",
+    "//": "TODO: This EOC is for game start and should spawn player into a run, except if they have played before (check using achievement?)",
+    "eoc_type": "SCENARIO_SPECIFIC",
+    "effect": [
+      { "u_message": "TODO: write this message :P", "popup": true },
+      { "u_location_variable": { "global_val": "rtn_garage_loc" } },
+      { "u_location_variable": { "global_val": "rtn_run_start_loc" } },
+      { "math": [ "readystart = 0" ] }
+    ]
+  }
+]

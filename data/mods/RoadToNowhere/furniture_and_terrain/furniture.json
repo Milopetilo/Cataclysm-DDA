@@ -1,0 +1,36 @@
+[
+  {
+    "type": "furniture",
+    "//": "Mostly copied over from Desert region mod",
+    "id": "f_tumbleweed",
+    "name": "tumbleweed",
+    "description": "A weed, tumbling along.",
+    "symbol": "#",
+    "color": "brown",
+    "move_cost_mod": 8,
+    "required_str": -1,
+    "flags": [ "TRANSPARENT", "FLAMMABLE_ASH", "SHRUB", "SHORT" ],
+    "bash": {
+      "str_min": 2,
+      "str_max": 6,
+      "sound": "crunch!",
+      "sound_fail": "whish.",
+      "items": [ { "item": "stick", "count": [ 1, 2 ] } ]
+    }
+  },
+  {
+    "type": "furniture",
+    "id": "f_strange_garage_mechanism",
+    "name": "Mechanical winch",
+    "description": "The feeling you get from this winch suggests that it may do something other than just open doors.",
+    "//": "Brings up the run start dialogue on interact.",
+    "symbol": "S",
+    "color": "dark_gray",
+    "looks_like": "t_gates_mech_control",
+    "move_cost_mod": -1,
+    "coverage": 0,
+    "required_str": -1,
+    "flags": [ "NO_PICKUP_ON_EXAMINE", "TRANSPARENT" ],
+    "examine_action": { "type": "effect_on_condition", "effect_on_conditions": [ "EOC_rtn_run_start_dialogue" ] }
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "EOC_RTN_RUN_START_DIALOGUE",
+    "//": "Opens the run start dialogue.",
+    "effect": [ { "open_dialogue": { "topic": "RTN_RUN_ASK" } } ]
+  },
+  {
+    "type": "talk_topic",
+    "id": "RTN_RUN_ASK",
+    "dynamic_line": "Let's go drive.",
+    "responses": [
+      { "text": "Let's go.", "effect": [ { "math": [ "readystart = 1 " ] } ], "topic": "TALK_DONE" },
+      { "text": "Hold on a second.", "topic": "TALK_DONE" }
+    ]
+  }
+]

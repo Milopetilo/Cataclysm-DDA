@@ -1,0 +1,17 @@
+[
+  {
+    "type": "effect_on_condition",
+    "id": "EOC_RTN_RUN_START",
+    "//": "EOC that makes a run start once the player takes control of their vehicle",
+    "eoc_type": "EVENT",
+    "required_event": "vehicle_moves",
+    "condition": { "and": [ { "math": [ "readystart == 1" ] }, { "math": [ "_avatar_is_driving" ] } ] },
+    "effect": [ { "run_eocs": [ "EOC_RTN_RUN_TELEPORT" ] } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "EOC_RTN_RUN_TELEPORT",
+    "//": "teleports the player and their vehicle onto the road",
+    "effect": [ { "u_teleport": { "global_val": "rtn_run_start_loc" }, "fail_message": "Oopsie.", "force": true } ]
+  }
+]

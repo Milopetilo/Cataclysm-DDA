@@ -1,0 +1,12 @@
+[
+  {
+    "type": "MOD_INFO",
+    "id": "roadtonowhere",
+    "name": "Road to Nowhere",
+    "authors": [ "Milopetilo", "Procyonae" ],
+    "maintainers": [ "Milopetilo", "Procyonae" ],
+    "description": "Turn CDDA into a vehicle-based roguelite.",
+    "category": "total_conversion",
+    "dependencies": [ "dda" ]
+  }
+]
