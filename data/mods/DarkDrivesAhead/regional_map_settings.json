@@ -4,9 +4,9 @@
     "id": "default",
     "overmap_feature_flag_settings": {
       "clear_blacklist": false,
-      "blacklist": [ "WASP", "BEE", "ANT", "FUNGAL", "TRIFFID", "FARM" ],
+      "blacklist": [ "WASP", "BEE", "ANT", "FUNGAL", "TRIFFID", "FARM", "MI-GO", "BLOB", "LAB", "WATER" ],
       "clear_whitelist": false,
-      "whitelist": [  ]
+      "whitelist": [ "CLASSIC" ]
     },
     "default_oter": [
       "open_air",
@@ -45,11 +45,11 @@
     },
     "region_terrain_and_furniture": {
       "terrain": {
-        "t_region_groundcover": { "t_grass_dead": 32000, "t_sand": 2000 },
-        "t_region_groundcover_urban": { "t_grass_dead": 20, "t_sand": 3 },
-        "t_region_groundcover_forest": { "t_grass_dead": 32000, "t_sand": 2000 },
-        "t_region_groundcover_swamp": { "t_grass_dead": 32000, "t_sand": 2000 },
-        "t_region_groundcover_barren": { "t_grass_dead": 32000 },
+        "t_region_groundcover": { "t_grass_dead": 200, "t_sand": 2000 },
+        "t_region_groundcover_urban": { "t_grass_dead": 10, "t_sand": 3 },
+        "t_region_groundcover_forest": { "t_grass_dead": 200, "t_sand": 2000 },
+        "t_region_groundcover_swamp": { "t_grass_dead": 200, "t_sand": 2000 },
+        "t_region_groundcover_barren": { "t_grass_dead": 2000, "t_sand": 1000 },
         "t_region_grass": { "t_grass_dead": 1 },
         "t_region_soil": { "t_sand": 1 },
         "t_region_shrub": { "t_shrub_dead": 30 },
