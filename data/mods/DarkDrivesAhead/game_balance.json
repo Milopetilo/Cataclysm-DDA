@@ -106,6 +106,13 @@
   },
   {
     "type": "EXTERNAL_OPTION",
+    "name": "OVERMAP_POPULATE_OUTSIDE_CONNECTIONS_FROM_NEIGHBORS",
+    "info": "Allows to populate outside connections from neighbors.",
+    "stype": "bool",
+    "value": false
+  },
+  {
+    "type": "EXTERNAL_OPTION",
     "name": "OUTSIDE_DEFINED_OMAP_OMT",
     "info": "If .omap s are being used this is the overmap terrain used outside of the defined overmaps.",
     "stype": "string_input",
