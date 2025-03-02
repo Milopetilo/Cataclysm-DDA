@@ -100,7 +100,15 @@
           { "spawn_rate": 0.6, "id": "tool_magazine" },
           { "spawn_rate": 0.6, "id": "armor" }
         ]
-      }
+      },
+      { "math": [ "house_untidy_weight = 3" ] },
+      { "math": [ "house_messy_weight = 1" ] },
+      { "math": [ "house_light_damage_weight = 3" ] },
+      { "math": [ "house_heavy_damage_weight = 1" ] },
+      { "math": [ "house_locked_weight = 3" ] },
+      { "math": [ "house_alarm_weight = 1" ] },
+      { "math": [ "house_normal_weight = 9000" ] },
+      { "math": [ "house_abandoned_weight = 200" ] }
     ]
   },
   {
@@ -130,7 +138,14 @@
           { "spawn_rate": 0.4, "id": "armor" }
         ]
       },
-      { "math": [ "NH_item_difficulty = 1" ] }
+      { "math": [ "house_untidy_weight = 1" ] },
+      { "math": [ "house_messy_weight = 3" ] },
+      { "math": [ "house_light_damage_weight = 1" ] },
+      { "math": [ "house_heavy_damage_weight = 3" ] },
+      { "math": [ "house_locked_weight = 1" ] },
+      { "math": [ "house_alarm_weight = 3" ] },
+      { "math": [ "house_normal_weight = 8000" ] },
+      { "math": [ "house_abandoned_weight = 1200" ] }
     ]
   },
   {
@@ -157,7 +172,15 @@
           { "spawn_rate": 0.2, "id": "tool_magazine" },
           { "spawn_rate": 0.2, "id": "armor" }
         ]
-      }
+      },
+      { "math": [ "house_untidy_weight = 0" ] },
+      { "math": [ "house_messy_weight = 1" ] },
+      { "math": [ "house_light_damage_weight = 0" ] },
+      { "math": [ "house_heavy_damage_weight = 1" ] },
+      { "math": [ "house_locked_weight = 0" ] },
+      { "math": [ "house_alarm_weight = 1" ] },
+      { "math": [ "house_normal_weight = 4600" ] },
+      { "math": [ "house_abandoned_weight = 4600" ] }
     ]
   }
 ]
