@@ -1,0 +1,46 @@
+[
+  {
+    "method": "json",
+    "om_terrain": "abandoned_town_house_02",
+    "type": "mapgen",
+    "weight": 100,
+    "object": {
+      "fill_ter": "t_floor",
+      "rows": [
+        "............!`!.........",
+        "...........p!`!.........",
+        "..ŦŦŦŦŦŦŦŦŦŦ!`!ŦŦŦŦŦŦŦ..",
+        "..Ŧ.........!`!......Ŧ..",
+        "..Ŧ...[.....!`!...X..Ŧ..",
+        "..Ŧ......[..```......Ŧ..",
+        "..##oo##oo##:*:##ooo##..",
+        "..#147FO5JJ|y L|D  @@#^.",
+        "..#2       |   |b  @@o%.",
+        "..#3  66  Y|   |d   Io%.",
+        "..#|+||||+||   +  E T#%.",
+        "..#            ||||||#..",
+        "..o hfh    sss +  ETR#..",
+        "..o hfh   ||||||     o..",
+        "..o hfh   +----| h  @o..",
+        "..#      y|9S8t|II d@#..",
+        "..#||   ||#######ooo##..",
+        "..#y    RR#GKG/.........",
+        "..#x  H   ¶~~~/.........",
+        "..#x  H E :~~~=.........",
+        ".^#THHs rr#~~~/.........",
+        "..###ooo###////.........",
+        "........................",
+        "........................"
+      ],
+      "palettes": [ "abandoned_town_palette", "abandoned_town_lino_bathroom", "abandoned_town_landscaping_palette" ],
+      "terrain": {
+        "/": "t_screened_porch_wall",
+        "=": "t_screen_door_c",
+        "-": { "param": "linoleum_color_bathroom", "fallback": "t_linoleum_gray" },
+        "G": "t_thconc_floor",
+        "K": "t_thconc_floor",
+        "~": "t_thconc_floor"
+      }
+    }
+  }
+]

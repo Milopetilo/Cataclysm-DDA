@@ -1,0 +1,38 @@
+[
+  {
+    "type": "mapgen",
+    "method": "json",
+    "om_terrain": [ "abandoned_town_house_06" ],
+    "object": {
+      "fill_ter": "t_floor",
+      "rows": [
+        "........%%.--.%%.p......",
+        ".###oooo##o**o#########.",
+        ".#T  h  y|L  L| 6   6 #.",
+        ".o  rrr  |    | 6   6 #.",
+        ".o  E E  |    | 6   6 #.",
+        ".#       |    | 6   6 #.",
+        ".#RRRR   |    |       #^",
+        ".#||||||+|    ||||+|||#.",
+        ".#                   1#.",
+        ".#HHHHHHH        AC3 5o.",
+        ".oH          ff   72 Oo.",
+        ".oH lll     hffh AC4 F#.",
+        ".#H        h ff      C#.",
+        ".#y xxx       h      yo.",
+        ".#||||||             Yo.",
+        ".#yHHT +      sE      #.",
+        ".#     ||||||||||||  R#.",
+        ".#d    |t    S|DyR|+||#.",
+        ".o@@   +     8|     TE#.",
+        ".o@@  R|BB   S|       #.",
+        ".#d   I|BBB   +   @@  #.",
+        ".#v   R|BBB  b|  d@@d #.",
+        ".#########oo######oo###.",
+        "............^..........."
+      ],
+      "palettes": [ "abandoned_town_palette", "abandoned_town_landscaping_palette" ],
+      "set": [ { "point": "terrain", "id": "t_tree_apple", "x": [ 0, 14 ], "y": [ 0, 0 ], "chance": 40, "repeat": [ 1, 2 ] } ]
+    }
+  }
+]

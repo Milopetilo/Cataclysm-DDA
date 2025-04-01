@@ -1,0 +1,48 @@
+[
+  {
+    "method": "json",
+    "om_terrain": "abandoned_town_house_01",
+    "//": "normal variant",
+    "type": "mapgen",
+    "weight": 100,
+    "object": {
+      "fill_ter": "t_floor",
+      "rows": [
+        ".%.``````p..............",
+        ".%.````````````..[......",
+        ".%.``````%!!!%`.......[.",
+        ".%#~~~~~~##o##*##oo##...",
+        "..#~~~~~~#IIT| |DbyE#...",
+        ".%#~~~~~~#h  | +    o.[.",
+        ".%#~~~~~~#s  + | @@ o...",
+        ".^#~~~~~~#@@d| |I@@d#...",
+        "..#~~~~~~#|||| |||||#..[",
+        "..#~A~~~~#xxxy |66 F#$;$",
+        "..#NN~qq~# l   |Y  1o..$",
+        "..######*#HHH      O#..$",
+        "$;#t--+  |    R|   5o[.$",
+        "$.#9S8|L + hfhR|7432#..$",
+        "$.##o###*##ooo###oo##..$",
+        "$.....`````!!!%%%!!^...$",
+        "$.....`````............$",
+        "$.....................[$",
+        "$......................$",
+        "$......................$",
+        "$......................$",
+        "$..................[...$",
+        "$......................$",
+        "$$$$$$$$$$$$$$$$$$$$$$$$"
+      ],
+      "palettes": [ "abandoned_town_palette", "abandoned_town_landscaping_palette", "abandoned_town_lino_bathroom" ],
+      "terrain": {
+        "$": "t_privacy_fence",
+        ";": "t_privacy_fencegate_c",
+        "-": { "param": "linoleum_color_bathroom", "fallback": "t_linoleum_gray" },
+        "N": "t_thconc_floor",
+        "q": "t_thconc_floor",
+        "A": "t_thconc_floor",
+        "~": "t_thconc_floor"
+      }
+    }
+  }
+]

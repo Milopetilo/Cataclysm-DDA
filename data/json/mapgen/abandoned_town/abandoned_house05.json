@@ -1,0 +1,37 @@
+[
+  {
+    "type": "mapgen",
+    "method": "json",
+    "om_terrain": "abandoned_town_house_05",
+    "object": {
+      "fill_ter": "t_region_groundcover_urban",
+      "rows": [
+        "..............p.----....",
+        ".##########oo####**####.",
+        ".#  Es T |S  Q|    LYy#.",
+        ".#x     R|t  B|R      #.",
+        ".#x  E  R|8  B|R   A A#.",
+        ".o      R|8  Y|R  JJ37#^",
+        ".o       ||+|||      4#.",
+        ".#   A   |   y|  hh  2#.",
+        ".#  NNN  +    +  ff  1#.",
+        ".#||||||||   R|A hh  5o.",
+        ".#HHHHHH |   R|6     Oo.",
+        ".#H ll       R|6     F#.",
+        ".#H l sE     R||||+|||#.",
+        ".os   E              s#.",
+        ".oT                  so.",
+        ".#y      y   yT      s#.",
+        ".#||||+||||+|||+|+||||#.",
+        ".#      b|q q|vU|   ET#.",
+        ".#d      ||||||||    R#.",
+        ".#@@     AI|@@        #.",
+        ".#@@      I|@@       D#.",
+        ".#y       D|s  b    d #.",
+        ".####oo#########oo#####.",
+        "...........^............"
+      ],
+      "palettes": [ "abandoned_town_palette" ]
+    }
+  }
+]
