@@ -1,0 +1,152 @@
+[
+  {
+    "type": "overmap_special",
+    "id": "abandoned_town_mutable",
+    "subtype": "mutable",
+    "locations": [ "field" ],
+    "city_distance": [ 5, -1 ],
+    "city_sizes": [ -1, -1 ],
+    "occurrences": [ 1, 100 ],
+    "flags": [ "MAN_MADE", "GLOBALLY_UNIQUE", "SAFE_AT_WORLDGEN", "URBAN" ],
+    "check_for_locations_area": [ { "type": [ "land" ], "from": [ -3, 0, 0 ], "to": [ 3, 6, 0 ] } ],
+    "joins": [
+      "road_to_road",
+      { "id": "road_to_building", "opposite": "building_to_road" },
+      { "id": "building_to_road", "opposite": "road_to_building" }
+    ],
+    "overmaps": {
+      "house_1": {
+        "overmap": "abandoned_town_house_01_north",
+        "north": "building_to_road",
+        "east": { "id": "building_to_road", "type": "available" },
+        "south": { "id": "building_to_road", "type": "available" },
+        "west": { "id": "building_to_road", "type": "available" }
+      },
+      "house_1_roof": { "overmap": "house_01_roof_north" },
+      "house_2": {
+        "overmap": "abandoned_town_house_02_north",
+        "north": "building_to_road",
+        "east": { "id": "building_to_road", "type": "available" },
+        "south": { "id": "building_to_road", "type": "available" },
+        "west": { "id": "building_to_road", "type": "available" }
+      },
+      "house_2_roof": { "overmap": "house_02_roof_north" },
+      "house_3": {
+        "overmap": "abandoned_town_house_03_north",
+        "north": "building_to_road",
+        "east": { "id": "building_to_road", "type": "available" },
+        "south": { "id": "building_to_road", "type": "available" },
+        "west": { "id": "building_to_road", "type": "available" }
+      },
+      "house_3_roof": { "overmap": "house_03_roof_north" },
+      "house_4": {
+        "overmap": "abandoned_town_house_04_north",
+        "north": "building_to_road",
+        "east": { "id": "building_to_road", "type": "available" },
+        "south": { "id": "building_to_road", "type": "available" },
+        "west": { "id": "building_to_road", "type": "available" }
+      },
+      "house_4_roof": { "overmap": "house_04_roof_north" },
+      "house_5": {
+        "overmap": "abandoned_town_house_05_north",
+        "north": "building_to_road",
+        "east": { "id": "building_to_road", "type": "available" },
+        "south": { "id": "building_to_road", "type": "available" },
+        "west": { "id": "building_to_road", "type": "available" }
+      },
+      "house_6": {
+        "overmap": "abandoned_town_house_06_north",
+        "north": "building_to_road",
+        "east": { "id": "building_to_road", "type": "available" },
+        "south": { "id": "building_to_road", "type": "available" },
+        "west": { "id": "building_to_road", "type": "available" }
+      },
+      "road_cross": {
+        "overmap": "road_nesw",
+        "north": "road_to_road",
+        "east": "road_to_road",
+        "south": "road_to_road",
+        "west": "road_to_road"
+      },
+      "road_start": { "overmap": "road_ns", "connections": { "north": { "connection": "local_road" } }, "south": "road_to_road" },
+      "road_straight_vert": {
+        "overmap": "road_ns",
+        "north": "road_to_road",
+        "east": "road_to_building",
+        "south": "road_to_road",
+        "west": "road_to_building"
+      },
+      "road_straight_horz": {
+        "overmap": "road_ew",
+        "north": "road_to_building",
+        "east": "road_to_road",
+        "south": "road_to_building",
+        "west": "road_to_road"
+      },
+      "road_curve": {
+        "overmap": "road_ne",
+        "north": "road_to_road",
+        "east": "road_to_road",
+        "south": "road_to_building",
+        "west": "road_to_building"
+      },
+      "road_end_south": { "overmap": "road_end_south", "north": "road_to_road" },
+      "road_end_east": { "overmap": "road_end_east", "west": "road_to_road" },
+      "road_end_west": { "overmap": "road_end_west", "east": "road_to_road" },
+      "road_end_north": { "overmap": "road_end_north", "south": "road_to_road" }
+    },
+    "root": "road_start",
+    "phases": [
+      [
+        {
+          "name": "roads",
+          "chunk": [
+            { "overmap": "road_straight_vert", "pos": [ 0, 0, 0 ] },
+            { "overmap": "road_straight_vert", "pos": [ 0, 1, 0 ] },
+            { "overmap": "road_straight_vert", "pos": [ 0, 2, 0 ] },
+            { "overmap": "road_cross", "pos": [ 0, 3, 0 ] },
+            { "overmap": "road_straight_vert", "pos": [ 0, 4, 0 ] },
+            { "overmap": "road_straight_vert", "pos": [ 0, 5, 0 ] },
+            { "overmap": "road_straight_horz", "pos": [ -1, 3, 0 ] },
+            { "overmap": "road_straight_horz", "pos": [ -2, 3, 0 ] },
+            { "overmap": "road_straight_horz", "pos": [ 1, 3, 0 ] },
+            { "overmap": "road_straight_horz", "pos": [ 2, 3, 0 ] }
+          ],
+          "max": 1
+        }
+      ],
+      [
+        { "overmap": "road_end_north", "weight": 1 },
+        { "overmap": "road_end_east", "weight": 1 },
+        { "overmap": "road_end_south", "weight": 1 },
+        { "overmap": "road_end_west", "weight": 1 }
+      ],
+      [
+        {
+          "chunk": [ { "overmap": "house_1", "pos": [ 0, 0, 0 ] }, { "overmap": "house_1_roof", "pos": [ 0, 0, 1 ] } ],
+          "weight": 1
+        },
+        {
+          "chunk": [ { "overmap": "house_2", "pos": [ 0, 0, 0 ] }, { "overmap": "house_2_roof", "pos": [ 0, 0, 1 ] } ],
+          "weight": 1
+        },
+        {
+          "chunk": [ { "overmap": "house_3", "pos": [ 0, 0, 0 ] }, { "overmap": "house_3_roof", "pos": [ 0, 0, 1 ] } ],
+          "weight": 1
+        },
+        {
+          "chunk": [ { "overmap": "house_4", "pos": [ 0, 0, 0 ] }, { "overmap": "house_4_roof", "pos": [ 0, 0, 1 ] } ],
+          "weight": 1
+        },
+        {
+          "chunk": [ { "overmap": "house_5", "pos": [ 0, 0, 0 ] }, { "overmap": "house_4_roof", "pos": [ 0, 0, 1 ] } ],
+          "weight": 1
+        },
+        {
+          "chunk": [ { "overmap": "house_6", "pos": [ 0, 0, 0 ] }, { "overmap": "house_4_roof", "pos": [ 0, 0, 1 ] } ],
+          "weight": 1
+        }
+      ]
+    ]
+  }
+]
