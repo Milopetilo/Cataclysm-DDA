@@ -818,5 +818,20 @@
     "sym": "A",
     "color": "cyan",
     "copy-from": "generic_city_house_roof"
+  },
+  {
+    "type": "overmap_terrain",
+    "id": [
+      "abandoned_town_house_01",
+      "abandoned_town_house_02",
+      "abandoned_town_house_03",
+      "abandoned_town_house_04",
+      "abandoned_town_house_05",
+      "abandoned_town_house_06"
+    ],
+    "color": "light_green",
+    "see_cost": "high",
+    "name": "house",
+    "copy-from": "generic_city_building"
   }
 ]
