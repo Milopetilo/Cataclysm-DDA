@@ -20,26 +20,26 @@ args_dict = vars(args.parse_args())
 failures = set()
 
 
-def gen_new(path):
+def gen_new(dir_path):
     change = False
-    with open(path, "r", encoding="utf-8") as json_file:
+    with open(dir_path, "r", encoding="utf-8") as json_file:
         try:
             json_data = json.load(json_file)
         except json.JSONDecodeError:
             failures.add(
                 "Json Decode Error at:\n" +
-                path +
+                dir_path +
                 "\nEnsure that the file is a JSON"
                 "file consisting of an array of objects!"
             )
             return None
         for jo in json_data:
-            if isinstance(jo, dict):
+            if isinstance(jo, dict) and "type" in jo:
                 if (
                     jo["type"] == "MONSTER" and
                     "upgrades" in jo and
-                    not isinstance(jo["upgrades"], bool) and
-                    ):
+                    not isinstance(jo["upgrades"], bool)
+                ):
                     if "half_life" in jo["upgrades"]:
                         old_value = jo["upgrades"]["half_life"]
                         new_value = old_value * 4
@@ -50,18 +50,37 @@ def gen_new(path):
                         new_value = old_value * 4
                         jo["upgrades"]["age_grow"] = new_value
                         change = True
-    return json_data if change else None
+                elif (
+                    jo["type"] == "monstergroup" and
+                    "monsters" in jo
+                ):
+                    for monster in jo["monsters"]:
+                        if "starts" in monster:
+                            old_starts = str(monster["starts"])
+                            old_starts = re.match(r"(\d+)\s*(\D*)", old_starts)
+                            old_starts_number = old_starts.group(1)
+                            old_starts_text = old_starts.group(2).strip()
+                            monster["starts"] = str(int(old_starts_number) * 4) + " " + old_starts_text
+                            change = True
+                        if "ends" in monster:
+                            old_starts = str(monster["ends"])
+                            old_starts = re.match(r"(\d+)\s*(\D*)", old_starts)
+                            old_starts_number = old_starts.group(1)
+                            old_starts_text = old_starts.group(2).strip()
+                            monster["ends"] = str(int(old_starts_number) * 4) + " " + old_starts_text
+                            change = True
+                            return json_data if change else None
 
 
-def format_json(path):
+def format_json(dir_path):
     file_path = os.path.dirname(__file__)
     format_path_linux = os.path.join(file_path, "../format/json_formatter.cgi")
     path_win = "../format/json_formatter.exe"
     format_path_win = os.path.join(file_path, path_win)
     if os.path.exists(format_path_linux):
-        os.system(f"{format_path_linux} {path}")
+        os.system(f"{format_path_linux} {dir_path}")
     elif os.path.exists(format_path_win):
-        os.system(f"{format_path_win} {path}")
+        os.system(f"{format_path_win} {dir_path}")
     else:
         print("No json formatter found")
 
