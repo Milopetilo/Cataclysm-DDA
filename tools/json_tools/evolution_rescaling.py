@@ -69,7 +69,7 @@ def gen_new(dir_path):
                             old_starts_text = old_starts.group(2).strip()
                             monster["ends"] = str(int(old_starts_number) * 4) + " " + old_starts_text
                             change = True
-                            return json_data if change else None
+    return json_data if change else None
 
 
 def format_json(dir_path):
