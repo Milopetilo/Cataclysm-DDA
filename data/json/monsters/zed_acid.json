@@ -11,7 +11,7 @@
     "melee_skill": 3,
     "harvest": "zombie_humanoid_acid",
     "death_function": { "message": "The %s's body leaks acid.", "effect": { "id": "death_acid", "hit_self": true } },
-    "upgrades": { "half_life": 30, "into": "mon_zombie_spitter" },
+    "upgrades": { "half_life": 120, "into": "mon_zombie_spitter" },
     "fungalize_into": "mon_zombie_fungus_acidic",
     "extend": { "flags": [ "ACIDPROOF", "ACID_BLOOD" ], "special_attacks": [ [ "ACID_BARF", 10 ] ] }
   },
@@ -82,7 +82,7 @@
     "harvest": "zombie_humanoid_acid",
     "special_attacks": [ [ "ACID", 20 ] ],
     "death_function": { "message": "The %s's body leaks acid.", "effect": { "id": "death_acid", "hit_self": true } },
-    "upgrades": { "half_life": 42, "into": "mon_zombie_corrosive" },
+    "upgrades": { "half_life": 168, "into": "mon_zombie_corrosive" },
     "fungalize_into": "mon_zombie_fungus_acidic",
     "extend": { "flags": [ "ACIDPROOF", "ACID_BLOOD", "RANGED_ATTACKER" ], "weakpoint_sets": [ "wps_humanoid_head_big" ] }
   },
@@ -106,7 +106,7 @@
     "harvest": "zombie_humanoid_acid",
     "special_attacks": [ [ "ACID_BARF", 22 ] ],
     "death_function": { "message": "The %s's body leaks acid.", "effect": { "id": "death_acid", "hit_self": true } },
-    "upgrades": { "half_life": 30, "into": "mon_zombie_acidic" },
+    "upgrades": { "half_life": 120, "into": "mon_zombie_acidic" },
     "extend": { "flags": [ "ACIDPROOF", "ACID_BLOOD" ] }
   },
   {
@@ -143,7 +143,7 @@
     ],
     "death_drops": "mon_dog_death_drops",
     "death_function": { "message": "The %s's body leaks acid.", "effect": { "id": "death_acid", "hit_self": true } },
-    "upgrades": { "half_life": 30, "into": "mon_zombie_dog_brute_acidic" },
+    "upgrades": { "half_life": 120, "into": "mon_zombie_dog_brute_acidic" },
     "flags": [
       "SEES",
       "HEARS",
