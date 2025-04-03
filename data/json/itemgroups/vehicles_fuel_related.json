@@ -3,24 +3,24 @@
     "type": "item_group",
     "id": "fuel_jp8",
     "items": [
-      { "item": "jp8", "prob": 70, "charges": [ 950, 8000 ], "container-item": "jerrycan" },
-      { "item": "jp8", "prob": 30, "charges": [ 3850, 20000 ], "container-item": "jerrycan_big" }
+      { "group": "jp8_jerrycan", "prob": 70, "charges": [ 950, 8000 ], "container-item": "jerrycan" },
+      { "group": "jp8_jerrycan", "prob": 30, "charges": [ 3850, 20000 ], "container-item": "jerrycan_big" }
     ]
   },
   {
     "type": "item_group",
     "id": "fuel_diesel",
     "items": [
-      { "item": "diesel", "prob": 70, "charges": [ 950, 8000 ], "container-item": "jerrycan" },
-      { "item": "diesel", "prob": 30, "charges": [ 3850, 20000 ], "container-item": "jerrycan_big" }
+      { "group": "diesel_jerrycan", "prob": 70, "charges": [ 950, 8000 ], "container-item": "jerrycan" },
+      { "group": "diesel_jerrycan", "prob": 30, "charges": [ 3850, 20000 ], "container-item": "jerrycan_big" }
     ]
   },
   {
     "type": "item_group",
     "id": "fuel_gasoline",
     "items": [
-      { "item": "gasoline", "prob": 80, "charges": [ 450, 8000 ], "container-item": "jerrycan" },
-      { "item": "gasoline", "prob": 20, "charges": [ 2650, 20000 ], "container-item": "jerrycan_big" }
+      { "group": "gasoline_jerrycan", "prob": 80, "charges": [ 450, 8000 ], "container-item": "jerrycan" },
+      { "group": "gasoline_jerrycan", "prob": 20, "charges": [ 2650, 20000 ], "container-item": "jerrycan_big" }
     ]
   },
   {

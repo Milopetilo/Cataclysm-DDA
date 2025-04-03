@@ -10,7 +10,7 @@
           { "group": "cigarettes_opened", "prob": 70, "entry-wrapper": "box_cigarette" },
           {
             "collection": [
-              { "item": "tobacco", "count": [ 1, 20 ], "container-item": "null", "entry-wrapper": "bag_plastic" },
+              { "group": "tobacco_bag_plastic_small", "count": [ 1, 20 ], "container-item": "null", "entry-wrapper": "bag_plastic" },
               {
                 "distribution": [ { "item": "rolling_paper", "prob": 70, "charges": [ 1, 30 ] }, { "item": "pipe_tobacco", "prob": 30 } ]
               }
@@ -72,7 +72,7 @@
               { "item": "cotton_patchwork", "count": [ 3, 10 ] },
               { "distribution": [ { "item": "hotplate", "prob": 80 }, { "item": "chemistry_set", "prob": 20 } ] },
               { "item": "vac_pump" },
-              { "item": "chem_ethanol", "charges": [ 150, -1 ], "prob": 80 }
+              { "group": "chem_ethanol_bottle_glass", "charges": [ 150, -1 ], "prob": 80 }
             ],
             "prob": 30
           }
@@ -275,7 +275,13 @@
       { "item": "sleeping_bag_roll" },
       { "item": "ear_plugs" },
       { "group": "MRE", "count": 3 },
-      { "item": "water_clean", "count": 2, "charges": 2, "container-item": "bottle_plastic", "sealed": false }
+      {
+        "group": "water_clean_bottle_plastic",
+        "count": 2,
+        "charges": 2,
+        "container-item": "bottle_plastic",
+        "sealed": false
+      }
     ]
   },
   {

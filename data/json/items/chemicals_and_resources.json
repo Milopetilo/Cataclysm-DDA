@@ -12,7 +12,6 @@
     "ammo_type": "anesthetic",
     "count": 420,
     "phase": "liquid",
-    "container": "jar_3l_glass_sealed",
     "sealed": false,
     "symbol": "!",
     "color": "cyan",
@@ -26,7 +25,6 @@
     "flags": [ "EDIBLE_FROZEN", "WATER_DISSOLVE", "NO_INGEST", "MISSION_ITEM" ],
     "weight": "1 g",
     "color": "pink",
-    "container": "bottle_plastic_pill_supplement",
     "comestible_type": "FOOD",
     "symbol": "%",
     "calories": 10,
@@ -50,7 +48,6 @@
     "volume": "16 ml",
     "weight": "320 mg",
     "//": "Density: 2g/cm3.  NOTE: Weights for chemical powders are 1/100 mol.  Weights are given for ONE UNIT.  Volume is for all units.",
-    "container": "bottle_plastic_small",
     "count": 100
   },
   {
@@ -269,7 +266,6 @@
     "weight": "138 g",
     "color": "white",
     "flags": [ "CORROSIVE", "NUTRIENT_OVERRIDE" ],
-    "container": "jug_plastic",
     "sealed": false,
     "symbol": "~",
     "description": "Sodium hypochlorite, a common household cleaning agent.",
@@ -291,7 +287,6 @@
     "weight": "124 g",
     "color": "white",
     "flags": [ "CORROSIVE" ],
-    "container": "pressure_tank",
     "sealed": false,
     "symbol": "~",
     "description": "Anhydrous ammonia, a useful chemical compound.  It must be stored under pressure or refrigerated.  Don't even think about drinking it.",
@@ -311,7 +306,6 @@
     "color": "white",
     "use_action": [ "BLECH" ],
     "flags": [ "CORROSIVE" ],
-    "container": "jug_plastic",
     "sealed": false,
     "symbol": "~",
     "description": "Ammonium hydroxide, a common household cleaning agent.",
@@ -332,7 +326,6 @@
     "color": "yellow",
     "flags": [ "FERTILIZER", "NUTRIENT_OVERRIDE" ],
     "use_action": [ "PLANTBLECH" ],
-    "container": "jug_plastic",
     "sealed": false,
     "comestible_type": "DRINK",
     "symbol": "~",
@@ -396,7 +389,6 @@
     "color": "yellow",
     "flags": [ "FERTILIZER" ],
     "use_action": [ "PLANTBLECH" ],
-    "container": "bag_canvas",
     "comestible_type": "FOOD",
     "symbol": "~",
     "quench": -10,
@@ -422,7 +414,6 @@
     "flags": [ "EDIBLE_FROZEN" ],
     "use_action": [ "FUNGICIDE" ],
     "stim": -7,
-    "container": "bag_plastic_small",
     "comestible_type": "MED",
     "symbol": "!",
     "healthy": -7,
@@ -442,7 +433,6 @@
     "weight": "50 g",
     "color": "pink",
     "looks_like": "fungicide",
-    "container": "bag_plastic_small",
     "symbol": "!",
     "description": "Agricultural-grade chemical insecticide powder designed to eradicate insect pests.",
     "price": "5 cent",
@@ -457,7 +447,6 @@
     "material": [ { "type": "water", "portion": 877 }, { "type": "salt", "portion": 123 } ],
     "weight": "260 g",
     "color": "light_cyan",
-    "container": "bottle_plastic",
     "sealed": false,
     "comestible_type": "DRINK",
     "symbol": "~",
@@ -481,7 +470,6 @@
     "material": [ "water" ],
     "weight": "260 g",
     "color": "light_cyan",
-    "container": "bottle_plastic",
     "sealed": false,
     "comestible_type": "INVALID",
     "symbol": "~",
@@ -504,7 +492,6 @@
     "weight": "280 g",
     "color": "green",
     "use_action": [ "SEWAGE" ],
-    "container": "bottle_plastic",
     "sealed": false,
     "symbol": "~",
     "description": "A sample of sewage from a treatment plant.  Gross.",
@@ -531,7 +518,6 @@
     "volume": "250 ml",
     "weight": "1760 mg",
     "ammo_type": "components",
-    "container": "bag_plastic_small",
     "count": 100
   },
   {
@@ -544,7 +530,6 @@
     "symbol": "=",
     "color": "white",
     "description": "A handful of silvery-white metallic powder composed of nickel.  Common industrial uses include production of stainless steel as well as other alloys.",
-    "container": "bag_plastic_small",
     "material": [ "powder_nonflam" ],
     "volume": "1 ml",
     "weight": "36 mg",
@@ -567,7 +552,6 @@
     "//": "Atomic weight 65.39, 0.01mol -> 653.9mg",
     "//2": "Density 7.14g/cm³: 654mg/unit ~ 65.4g @ stack 100 -> 9.159ml",
     "ammo_type": "components",
-    "container": "bottle_plastic_small",
     "count": 100
   },
   {
@@ -585,7 +569,6 @@
     "weight": "814 mg",
     "//": "Density: 5.606 g/cm3: 814 mg/unit ~ 81.4g @ stack 100 -> 14.521ml",
     "ammo_type": "components",
-    "container": "bottle_plastic_small",
     "count": 100
   },
   {
@@ -603,7 +586,6 @@
     "weight": "869 mg",
     "//": "density: 5.026 g/cm3",
     "ammo_type": "components",
-    "container": "bottle_plastic_small",
     "count": 100
   },
   {
@@ -631,7 +613,6 @@
     "symbol": "=",
     "color": "green",
     "description": "A handful of dark green crystalline powder, with a weak pungent smell similar to that of hydrochloric acid.  Commonly used as a Lewis acid for catalyzing various chemical reactions.",
-    "container": "bag_plastic_small",
     "material": [ "powder_nonflam" ],
     "volume": "250 ml",
     "weight": "2900 mg",
@@ -648,7 +629,6 @@
     "symbol": "=",
     "color": "white",
     "description": "A handful of soft, colorless powder with a sharp pungent odor, also known as butter of antimony.  It's a catalyst for polymerization, hydrocracking, and chlorination reactions, and has some other niche uses.",
-    "container": "bag_plastic_small",
     "material": [ "powder_nonflam" ],
     "volume": "250 ml",
     "weight": "3140 mg",
@@ -670,7 +650,6 @@
     "weight": "746 mg",
     "//": "density: 1.984 g/cm3",
     "ammo_type": "components",
-    "container": "bottle_plastic_small",
     "count": 100
   },
   {
@@ -688,7 +667,6 @@
     "weight": "561 mg",
     "//": "density: 2.12 g/cm3 (25 °C)",
     "ammo_type": "components",
-    "container": "bottle_plastic_small",
     "count": 100
   },
   {
@@ -708,7 +686,6 @@
     "weight": "455 g",
     "charges": 1,
     "phase": "liquid",
-    "container": "bottle_glass",
     "freezing_point": -36,
     "drop_action": { "type": "emit_actor", "emits": [ "emit_acid_drop" ], "scale_qty": true }
   },
@@ -728,7 +705,6 @@
     "weight": "202 g",
     "charges": 1,
     "phase": "liquid",
-    "container": "bottle_glass",
     "freezing_point": -50,
     "drop_action": { "type": "emit_actor", "emits": [ "emit_acid_drop" ], "scale_qty": true }
   },
@@ -746,8 +722,7 @@
     "weight": "190 g",
     "material": [ "acetone" ],
     "ammo_type": "components",
-    "phase": "liquid",
-    "container": "bottle_glass"
+    "phase": "liquid"
   },
   {
     "type": "COMESTIBLE",
@@ -766,7 +741,6 @@
     "weight": "375 g",
     "charges": 1,
     "phase": "liquid",
-    "container": "bottle_glass",
     "freezing_point": -42,
     "drop_action": { "type": "emit_actor", "emits": [ "emit_acid_drop" ], "scale_qty": true }
   },
@@ -785,7 +759,6 @@
     "weight": "1520 mg",
     "//": "density: 5.22 g/cm3",
     "ammo_type": "components",
-    "container": "bottle_plastic_small",
     "count": 100
   },
   {
@@ -824,7 +797,6 @@
     "weight": "641 mg",
     "//": "density: 2.22 g/cm3",
     "ammo_type": "components",
-    "container": "bottle_plastic_small",
     "count": 100
   },
   {
@@ -842,7 +814,6 @@
     "weight": "783 mg",
     "//": "density: 2.71 g/cm3",
     "ammo_type": "components",
-    "container": "bottle_plastic_small",
     "count": 100
   },
   {
@@ -861,7 +832,6 @@
     "volume": "200 ml",
     "weight": "1330 mg",
     "ammo_type": "esbit",
-    "container": "box_small",
     "count": 1620,
     "stack_size": 200
   },
@@ -878,8 +848,7 @@
     "volume": "250 ml",
     "weight": "325 g",
     "ammo_type": "components",
-    "phase": "liquid",
-    "container": "bottle_glass"
+    "phase": "liquid"
   },
   {
     "type": "GENERIC",
@@ -927,7 +896,6 @@
     "volume": "290 ml",
     "weight": "1 g",
     "ammo_type": "components",
-    "container": "bag_canvas",
     "count": 500
   },
   {
@@ -945,7 +913,6 @@
     "volume": "625 ml",
     "weight": "1 g",
     "ammo_type": "components",
-    "container": "bag_canvas",
     "count": 500
   },
   {
@@ -962,7 +929,6 @@
     "volume": "250 ml",
     "weight": "5275 mg",
     "ammo_type": "components",
-    "container": "bag_canvas",
     "count": 50
   },
   {
@@ -995,7 +961,6 @@
     "volume": "250 ml",
     "weight": "13350 mg",
     "ammo_type": "components",
-    "container": "bag_canvas",
     "count": 50
   },
   {
@@ -1012,8 +977,7 @@
     "weight": "262 g",
     "material": [ "acid" ],
     "ammo_type": "components",
-    "phase": "liquid",
-    "container": "bottle_glass"
+    "phase": "liquid"
   },
   {
     "type": "AMMO",
@@ -1028,8 +992,7 @@
     "volume": "250 ml",
     "weight": "300 g",
     "ammo_type": "components",
-    "phase": "liquid",
-    "container": "bottle_glass"
+    "phase": "liquid"
   },
   {
     "type": "AMMO",
@@ -1046,7 +1009,6 @@
     "weight": "10 g",
     "//": "Weight might not be accurate.",
     "ammo_type": "components",
-    "container": "bag_canvas",
     "count": 50
   },
   {
@@ -1063,7 +1025,6 @@
     "volume": "294 ml",
     "weight": "1 g",
     "ammo_type": "components",
-    "container": "bag_canvas",
     "count": 500
   },
   {
@@ -1080,7 +1041,6 @@
     "volume": "89 ml",
     "weight": "151 mg",
     "ammo_type": "components",
-    "container": "bag_plastic_small",
     "count": 1000
   },
   {
@@ -1132,7 +1092,6 @@
     "volume": "140 ml",
     "weight": "1 g",
     "ammo_type": "components",
-    "container": "bag_plastic_small",
     "count": 200
   },
   {
@@ -1150,7 +1109,6 @@
     "volume": "140 ml",
     "weight": "1 g",
     "ammo_type": "components",
-    "container": "bag_plastic_small",
     "count": 200
   },
   {
@@ -1167,7 +1125,6 @@
     "volume": "250 ml",
     "weight": "70 g",
     "ammo_type": "components",
-    "container": "bag_plastic_small",
     "count": 10,
     "melee_damage": { "bash": 1 }
   },
@@ -1341,7 +1298,6 @@
     "material": [ "water", "feces" ],
     "weight": "262 g",
     "color": "green",
-    "container": "bottle_plastic",
     "sealed": false,
     "symbol": "~",
     "description": "Turbid liquid from the sewers with an awful stench.",
@@ -1366,7 +1322,6 @@
     "weight": "1 g",
     "flags": [ "DETERGENT" ],
     "ammo_type": "components",
-    "container": "box_small",
     "count": 20
   },
   {
@@ -1392,7 +1347,6 @@
     "name": { "str_sp": "lye" },
     "weight": "125 g",
     "color": "white",
-    "container": "bottle_plastic",
     "sealed": false,
     "symbol": "~",
     "quench": -96,
@@ -1413,7 +1367,6 @@
     "name": { "str_sp": "potassium lye" },
     "weight": "125 g",
     "color": "white",
-    "container": "bottle_plastic",
     "sealed": false,
     "symbol": "~",
     "quench": -96,
@@ -1491,7 +1444,6 @@
     "healthy": -20,
     "fun": -20,
     "color": "white",
-    "container": "bottle_glass",
     "description": "A useful industrial solvent, and the first inhalative anesthetic in widespread use.  Its uncomfortable side effects and tendency to explode caused it to fall out of favor decades ago in the developed world.  If you can't get the good stuff, however, it might make a passable substitute.",
     "comestible_type": "INVALID",
     "volume": "1 ml",
@@ -1512,7 +1464,6 @@
     "healthy": -20,
     "fun": -20,
     "color": "light_cyan",
-    "container": "bottle_glass",
     "description": "Dimethyl sulfoxide, or DMSO, is a common and important aprotic solvent, capable of dissolving a huge range of things.  It has the unusual property of being absorbed very quickly through the skin, causing a garlic flavor in the mouth, even if it touched your arm.",
     "comestible_type": "INVALID",
     "volume": "1 ml",
@@ -1530,7 +1481,6 @@
     "name": { "str_sp": "chloroform" },
     "symbol": "~",
     "color": "light_cyan",
-    "container": "bottle_glass",
     "quench": -96,
     "healthy": -20,
     "fun": -20,
@@ -1554,7 +1504,6 @@
     "healthy": -20,
     "fun": -20,
     "color": "light_cyan",
-    "container": "bottle_glass",
     "description": "A useful and potent solvent with a wide range of reactive applications.  It can be used to make a huge number of plastics and polymers, it can be an antiseptic, it can strip paint and break down epoxy, and it can burn your skin away like tissue paper under a heat gun.  Wear gloves.",
     "comestible_type": "INVALID",
     "volume": "1 ml",
@@ -1572,7 +1521,6 @@
     "name": { "str_sp": "benzene" },
     "symbol": "~",
     "color": "light_cyan",
-    "container": "bottle_glass",
     "description": "A colorless, highly flammable liquid with a sweet odor, one of the elementary petrochemicals.  Being used primarily as a precursor to the manufacture of chemicals with more complex structure, it's a major industrial chemical, but finds limited use in consumer items because of its toxicity.",
     "comestible_type": "INVALID",
     "material": [ "oil" ],
@@ -1592,7 +1540,6 @@
     "name": { "str_sp": "toluene" },
     "symbol": "~",
     "color": "light_cyan",
-    "container": "bottle_glass",
     "description": "A colorless, toxic, and highly flammable liquid which smells like paint thinner.  It's predominantly used as an industrial feedstock and a solvent, and is also used as an intoxicative inhalant in a manner unintended by manufacturers.",
     "comestible_type": "INVALID",
     "material": [ "oil" ],
@@ -1614,7 +1561,6 @@
     "quench": -15,
     "healthy": -1,
     "color": "light_cyan",
-    "container": "bottle_glass",
     "description": "Also called glycerin, this clear, odorless liquid is both a handy skin moisturizer and an ingredient necessary to make dynamite.",
     "comestible_type": "INVALID",
     "volume": "15 ml",
@@ -1631,7 +1577,6 @@
     "name": { "str_sp": "peptone water powder" },
     "symbol": ";",
     "color": "yellow",
-    "container": "bottle_plastic_small",
     "description": "A pre-mixed salty solution of protein and sugar meant for bacteria to eat.",
     "material": [ "powder" ],
     "volume": "2 ml",
@@ -1647,7 +1592,6 @@
     "name": { "str_sp": "agar" },
     "symbol": ";",
     "color": "yellow",
-    "container": "bottle_plastic_small",
     "description": "Clear flakes of processed seaweed that can be dissolved in boiling water to create a very sturdy, temperature-resistant gel.  Not only is it good for making gels to separate molecules by size, but it's a great cheat ingredient to make sure your jellies set properly.",
     "material": [ "powder" ],
     "volume": "1 ml",
@@ -1663,7 +1607,6 @@
     "name": { "str_sp": "acrylamide" },
     "symbol": ";",
     "color": "white",
-    "container": "bottle_glass",
     "description": "A handful of highly carcinogenic white powder that can be readily polymerized into a whole bunch of useful water-soluble gels.",
     "material": [ "powder" ],
     "volume": "2 ml",
@@ -1804,7 +1747,6 @@
     "name": { "str_sp": "citric acid" },
     "symbol": ";",
     "color": "white",
-    "container": "bottle_glass",
     "description": "A manufactured form of citric acid that is commonly used as an additive in food, cleaning agents, and nutritional supplements.",
     "material": [ "powder" ],
     "volume": "2 ml",
@@ -1878,7 +1820,6 @@
     "count": 10,
     "stack_size": 1,
     "ammo_type": "components",
-    "container": "test_tube",
     "symbol": ";",
     "color": "light_green"
   },
@@ -1900,7 +1841,6 @@
     "weight": "10 g",
     "volume": "10 ml",
     "phase": "liquid",
-    "container": "test_tube",
     "symbol": ";",
     "color": "light_gray",
     "price": "20 USD",
@@ -1918,7 +1858,6 @@
     "weight": "10 g",
     "volume": "5 ml",
     "//": "Density around 2.2g/cm3, but since it's a powder, it's a bit lower, around 1.8-2.0 g/cm3",
-    "container": "bottle_plastic_small",
     "symbol": "=",
     "color": "red",
     "price": "50 cent",
@@ -1934,7 +1873,6 @@
     "description": "An allotrope of the element phosphorous.  It's what you use to light matches, but can also be used in the synthesis of methamphetamine.  You could use it to make bombs, and if you were truly desperate you might even be able to use it as a propellant for bullets.",
     "weight": "100 mg",
     "volume": "5 ml",
-    "container": "bottle_plastic_small",
     "symbol": "=",
     "color": "red",
     "price": "50 cent",
@@ -1951,7 +1889,6 @@
     "weight": "7500 mg",
     "volume": "5 ml",
     "//": "Density around 1.8g/cm3, but since it's a powder, it's a bit lower, around 1.5 g/cm3",
-    "container": "bottle_plastic_small",
     "symbol": "=",
     "color": "white",
     "price": "50 cent",
@@ -1966,7 +1903,6 @@
     "description": "A colorless liquid that smells strongly of vinegar.  If you have enough chemical knowledge, you could use it to easily convert morphine into heroin.",
     "comestible_type": "INVALID",
     "material": [ "oil" ],
-    "container": "bottle_glass",
     "weight": "54100 mg",
     "use_action": [ "POISON", "BLECH" ],
     "sleepiness_mod": -20,
@@ -1993,7 +1929,6 @@
     "description": "A handful of resublimed crystals of the element iodine, they can be used as an antiseptic, but are also used in the making of methamphetamine.",
     "weight": "3500 mg",
     "volume": "100 ml",
-    "container": "box_small",
     "//": "Density around 5.1g/cm3, but since it's in crystal form, it's lower, around 3.5 g/cm3",
     "symbol": "=",
     "color": "dark_gray",
@@ -2009,7 +1944,6 @@
     "weight": "46 g",
     "//": "Density of around 0.92 g/ml",
     "color": "light_cyan",
-    "container": "bottle_bathroom",
     "sealed": false,
     "symbol": "~",
     "description": "Standard skin-safe liquid soap, the type you might see on a kitchen sink, shower shelf, or bathroom soap dispenser, but it should work reasonably well for cleaning anything that's filthy.",
@@ -2050,7 +1984,6 @@
     "ammo_type": "components",
     "stack_size": 10,
     "phase": "liquid",
-    "container": "squeeze_tube",
     "sealed": true,
     "symbol": "s",
     "color": "light_gray",
@@ -2080,7 +2013,6 @@
     "description": "Blood mixed with acidic compounds, extremely corrosive, a means of refining this could net some useful chemicals.",
     "volume": "250 ml",
     "weight": "305 g",
-    "container": "bottle_glass",
     "flags": [ "DROP_ACTION_ONLY_IF_LIQUID" ],
     "drop_action": { "type": "emit_actor", "emits": [ "emit_acid_drop" ], "scale_qty": true }
   },

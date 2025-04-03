@@ -12,7 +12,6 @@
     "price_postapoc": "33 cent",
     "symbol": "!",
     "color": "yellow",
-    "container": "bottle_plastic_pill_supplement",
     "flags": [ "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ],
     "use_action": {
       "type": "consume_drug",
@@ -33,7 +32,6 @@
     "price_postapoc": "7 cent",
     "symbol": "!",
     "color": "light_red",
-    "container": "bottle_plastic_pill_prescription",
     "variant_type": "drug",
     "variants": [
       {
@@ -84,7 +82,6 @@
     "price_postapoc": "2 USD",
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_prescription",
     "use_action": [ "ANTIBIOTIC" ],
     "flags": [ "NPC_SAFE", "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ]
   },
@@ -101,7 +98,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_prescription",
     "use_action": [ "ANTIFUNGAL" ],
     "flags": [ "NPC_SAFE", "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ]
   },
@@ -118,7 +114,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_prescription",
     "healthy": -5,
     "use_action": [ "ANTIPARASITIC" ],
     "flags": [ "NPC_SAFE", "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ]
@@ -136,7 +131,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_painkiller",
     "healthy": -1,
     "flags": [ "WATER_DISSOLVE", "NO_TEMP" ],
     "use_action": {
@@ -159,7 +153,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_painkiller",
     "healthy": -1,
     "flags": [ "WATER_DISSOLVE", "NO_TEMP" ],
     "use_action": {
@@ -182,7 +175,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_painkiller",
     "healthy": -1,
     "flags": [ "WATER_DISSOLVE", "NO_TEMP" ],
     "use_action": {
@@ -205,7 +197,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_painkiller",
     "healthy": -1,
     "flags": [ "WATER_DISSOLVE", "NO_TEMP" ],
     "use_action": {
@@ -227,7 +218,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_painkiller",
     "healthy": -1,
     "flags": [ "WATER_DISSOLVE", "NO_TEMP" ],
     "use_action": { "type": "consume_drug", "activation_message": "You take some %s." },
@@ -246,7 +236,6 @@
     "material": [ "powder" ],
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_small",
     "flags": [ "NO_INGEST", "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ],
     "use_action": { "type": "heal", "disinfectant_power": 4, "bite": 0.95, "move_cost": 2000 }
   },
@@ -283,7 +272,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "cyan",
-    "container": "bottle_plastic_pill_supplement",
     "flags": [ "WATER_DISSOLVE", "NO_TEMP" ],
     "stim": 12,
     "addiction_potential": 3,
@@ -303,7 +291,6 @@
     "price_postapoc": "25 cent",
     "symbol": "*",
     "color": "green",
-    "container": "wrapper",
     "quench": 1,
     "stim": 2,
     "healthy": -1,
@@ -327,7 +314,6 @@
     "symbol": "~",
     "color": "white",
     "phase": "liquid",
-    "container": "bottle_plastic_small",
     "flags": [ "NO_INGEST", "WATER_DISSOLVE" ],
     "use_action": { "type": "heal", "disinfectant_power": 4, "bite": 0.95, "move_cost": 2000 }
   },
@@ -345,7 +331,6 @@
     "symbol": "~",
     "color": "white",
     "phase": "liquid",
-    "container": "bottle_plastic_small",
     "flags": [ "NO_INGEST", "WATER_DISSOLVE" ],
     "use_action": {
       "type": "consume_drug",
@@ -365,7 +350,6 @@
     "price_postapoc": "29 cent",
     "symbol": "!",
     "color": "dark_gray",
-    "container": "box_cigarette",
     "stim": 1,
     "healthy": -2,
     "fun": 5,
@@ -460,7 +444,6 @@
     "price_postapoc": "15 cent",
     "symbol": "!",
     "color": "cyan",
-    "container": "bottle_plastic_pill_painkiller",
     "stim": -2,
     "fun": 10,
     "flags": [ "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ],
@@ -485,7 +468,6 @@
     "material": [ "powder" ],
     "symbol": "!",
     "color": "white",
-    "container": "bag_zipper",
     "stim": 20,
     "healthy": -2,
     "fun": 25,
@@ -504,7 +486,6 @@
     "addiction_type": "amphetamine",
     "sleepiness_mod": 60,
     "stim": 20,
-    "container": "bottle_glass",
     "comestible_type": "DRINK",
     "symbol": "~",
     "quench": 15,
@@ -888,7 +869,6 @@
     "material": [ "powder" ],
     "symbol": "!",
     "color": "white",
-    "container": "bag_zipper",
     "stim": 40,
     "healthy": -2,
     "fun": 50,
@@ -919,7 +899,6 @@
     "symbol": "~",
     "color": "yellow",
     "phase": "liquid",
-    "container": "bottle_plastic_small",
     "use_action": [ "FLUMED" ],
     "flags": [ "NPC_SAFE", "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE" ]
   },
@@ -939,7 +918,6 @@
     "color": "light_cyan",
     "freezing_point": -56,
     "phase": "liquid",
-    "container": "bottle_plastic_small",
     "flags": [ "NO_INGEST", "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE" ],
     "use_action": { "type": "heal", "disinfectant_power": 4, "bite": 0.95, "move_cost": 3000 }
   },
@@ -966,7 +944,6 @@
     "price_postapoc": "2 USD",
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_prescription",
     "variant_type": "drug",
     "variants": [
       {
@@ -1069,7 +1046,6 @@
     "stack_size": 10,
     "charges": 10,
     "price": "10 USD",
-    "container": "jar_3l_glass_sealed",
     "sealed": false,
     "symbol": "!",
     "color": "green",
@@ -1199,7 +1175,6 @@
     "material": [ "powder" ],
     "symbol": "!",
     "color": "light_gray",
-    "container": "bag_zipper",
     "stim": -10,
     "healthy": -5,
     "fun": 50,
@@ -1230,7 +1205,6 @@
     "price_postapoc": "1 USD",
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_supplement",
     "flags": [ "NO_TEMP" ],
     "use_action": {
       "type": "consume_drug",
@@ -1293,7 +1267,6 @@
     "material": [ "powder" ],
     "symbol": "!",
     "color": "light_cyan",
-    "container": "bag_zipper",
     "quench": -2,
     "stim": 20,
     "healthy": -7,
@@ -1317,7 +1290,6 @@
     "material": [ "powder" ],
     "symbol": "!",
     "color": "light_cyan",
-    "container": "bag_zipper",
     "quench": -1,
     "stim": 30,
     "healthy": -5,
@@ -1433,7 +1405,6 @@
     "symbol": "~",
     "color": "blue",
     "phase": "liquid",
-    "container": "bottle_plastic_small",
     "stim": -7,
     "flags": [ "IRREPLACEABLE_CONSUMABLE" ],
     "addiction_potential": 20,
@@ -1454,7 +1425,6 @@
     "price_postapoc": "25 cent",
     "symbol": "!",
     "color": "light_red",
-    "container": "bottle_plastic_pill_supplement",
     "stim": -6,
     "flags": [ "IRREPLACEABLE_CONSUMABLE", "NO_TEMP" ],
     "addiction_potential": 4,
@@ -1479,7 +1449,6 @@
     "//": "Fairly controlled substance as they go.",
     "symbol": "!",
     "color": "light_green",
-    "container": "bottle_plastic_pill_prescription",
     "healthy": -1,
     "stim": -4,
     "fun": 18,
@@ -1505,7 +1474,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "light_red",
-    "container": "bottle_plastic_pill_prescription",
     "variant_type": "drug",
     "variants": [
       {
@@ -1579,7 +1547,6 @@
     "symbol": "~",
     "color": "magenta",
     "phase": "liquid",
-    "container": "bottle_plastic_small",
     "stim": -3,
     "healthy": -1,
     "addiction_potential": 15,
@@ -1622,7 +1589,6 @@
     "//": "Don't have a cite for this one.",
     "symbol": "!",
     "color": "light_green",
-    "container": "bottle_plastic_pill_prescription",
     "variant_type": "drug",
     "variants": [ { "id": "prozac", "name": { "str_sp": "Prozac" }, "append": true, "description": "Its generic name is fluoxetine." } ],
     "stim": -5,
@@ -1645,7 +1611,6 @@
     "flags": [ "NPC_SAFE", "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ],
     "symbol": "!",
     "color": "blue",
-    "container": "bottle_plastic_pill_supplement",
     "use_action": {
       "type": "consume_drug",
       "activation_message": "You take some Prussian blue.",
@@ -1665,7 +1630,6 @@
     "material": [ "powder" ],
     "symbol": "!",
     "color": "light_gray",
-    "container": "bag_plastic_small",
     "flags": [ "NO_INGEST", "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ],
     "use_action": { "type": "heal", "bleed": 20, "move_cost": 2000 }
   },
@@ -1684,7 +1648,6 @@
     "symbol": "~",
     "color": "light_cyan",
     "phase": "liquid",
-    "container": "bottle_plastic_small",
     "use_action": [ "EYEDROPS" ],
     "flags": [ "NO_INGEST", "NPC_SAFE" ]
   },
@@ -1701,7 +1664,6 @@
     "price_postapoc": "50 cent",
     "symbol": "!",
     "color": "light_red",
-    "container": "bottle_plastic_pill_prescription",
     "variant_type": "drug",
     "variants": [
       {
@@ -1746,7 +1708,6 @@
     "price_postapoc": "25 cent",
     "symbol": "!",
     "color": "brown",
-    "container": "bag_plastic_small",
     "stim": 1,
     "healthy": -2,
     "fun": 5,
@@ -1777,7 +1738,6 @@
     "price_postapoc": "1 USD",
     "symbol": "!",
     "color": "yellow",
-    "container": "bottle_plastic_pill_prescription",
     "fun": 6,
     "flags": [ "IRREPLACEABLE_CONSUMABLE", "NO_TEMP" ],
     "addiction_potential": 6,
@@ -1801,7 +1761,6 @@
     "price_postapoc": "30 cent",
     "symbol": "!",
     "color": "magenta",
-    "container": "bottle_plastic_pill_supplement",
     "flags": [ "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ],
     "use_action": {
       "type": "consume_drug",
@@ -1826,7 +1785,6 @@
     "flags": [ "IRREPLACEABLE_CONSUMABLE", "NO_TEMP" ],
     "symbol": "!",
     "color": "magenta",
-    "container": "bottle_plastic_pill_supplement",
     "use_action": { "type": "consume_drug", "activation_message": "You take the %s.", "vitamins": [ [ "calcium", 75 ] ] }
   },
   {
@@ -1894,7 +1852,6 @@
     "material": [ "drug_filler" ],
     "price_postapoc": "40 cent",
     "fun": 4,
-    "container": "null",
     "flags": [ "IRREPLACEABLE_CONSUMABLE", "NO_TEMP" ],
     "volume": "10 ml"
   },
@@ -1912,7 +1869,6 @@
     "fun": 1,
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_supplement",
     "flags": [ "NO_TEMP" ],
     "use_action": { "type": "consume_drug", "activation_message": "You swallow the %s.  You wait in anticipation of its effects." },
     "snippet_category": [
@@ -2007,7 +1963,6 @@
     "price_postapoc": "25 cent",
     "symbol": "!",
     "color": "cyan",
-    "container": "bottle_plastic_pill_prescription",
     "variant_type": "drug",
     "variants": [
       {
@@ -2037,7 +1992,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_prescription",
     "healthy": -2,
     "use_action": [ "WEAK_ANTIBIOTIC" ],
     "flags": [ "NPC_SAFE", "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ]
@@ -2053,7 +2007,6 @@
     "volume": "250 ml",
     "price": "10 USD",
     "price_postapoc": "2 USD 50 cent",
-    "container": "bottle_plastic_small",
     "charges": 10,
     "symbol": "%",
     "phase": "liquid",
@@ -2080,7 +2033,6 @@
     "fun": 1,
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_small",
     "flags": [ "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NPC_SAFE", "NO_TEMP" ],
     "use_action": {
       "type": "consume_drug",
@@ -2102,7 +2054,6 @@
     "material": [ "drug_filler" ],
     "symbol": "!",
     "color": "red",
-    "container": "bottle_plastic_pill_prescription",
     "healthy": 25,
     "use_action": {
       "type": "consume_drug",
@@ -2117,7 +2068,6 @@
     "comestible_type": "MED",
     "name": { "str_sp": "cattail jelly" },
     "description": "Clear jelly harvested from cattails.  Can be used to protect a wound from contamination, and works as a painkiller.",
-    "container": "bottle_plastic_small",
     "weight": "50 g",
     "volume": "250 ml",
     "charges": 7,
@@ -2149,7 +2099,6 @@
     "price_postapoc": "3 USD",
     "symbol": "!",
     "color": "white",
-    "container": "bottle_plastic_pill_prescription",
     "healthy": -10,
     "flags": [ "NPC_SAFE", "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "NO_TEMP" ],
     "use_action": { "type": "STRONG_ANTIBIOTIC" }
@@ -2169,7 +2118,6 @@
     "symbol": "u",
     "color": "light_gray",
     "phase": "liquid",
-    "container": "bottle_plastic_small",
     "addiction_potential": 5,
     "addiction_type": "cocaine",
     "flags": [ "NO_INGEST", "WATER_DISSOLVE" ],

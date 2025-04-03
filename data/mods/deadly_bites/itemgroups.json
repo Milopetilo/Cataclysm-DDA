@@ -12,7 +12,7 @@
     "extend": {
       "items": [
         {
-          "item": "antivirals",
+          "group": "antivirals_bottle_plastic_pill_prescription",
           "prob": 20,
           "count": [ 1, 10 ],
           "container-item": "null",

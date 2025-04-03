@@ -198,17 +198,17 @@
     "type": "item_group",
     "subtype": "distribution",
     "items": [
-      { "item": "wine_riesling", "prob": 20, "container-group": "wine_glasses" },
-      { "item": "wine_chardonnay", "prob": 30, "container-group": "wine_glasses" },
-      { "item": "wine_cabernet", "prob": 30, "container-group": "wine_glasses" },
-      { "item": "wine_marsala", "prob": 15, "container-group": "wine_glasses" },
-      { "item": "wine_noir", "prob": 20, "container-group": "wine_glasses" },
-      { "item": "wine_vermouth", "prob": 25, "container-group": "wine_glasses" },
-      { "item": "wine_marsala", "prob": 15, "container-group": "wine_glasses" },
-      { "item": "sherry", "prob": 10, "container-group": "wine_glasses" },
+      { "group": "wine_riesling_bottle_glass", "prob": 20, "container-group": "wine_glasses" },
+      { "group": "wine_chardonnay_bottle_glass", "prob": 30, "container-group": "wine_glasses" },
+      { "group": "wine_cabernet_bottle_glass", "prob": 30, "container-group": "wine_glasses" },
+      { "group": "wine_marsala_bottle_glass", "prob": 15, "container-group": "wine_glasses" },
+      { "group": "wine_noir_bottle_glass", "prob": 20, "container-group": "wine_glasses" },
+      { "group": "wine_vermouth_bottle_glass", "prob": 25, "container-group": "wine_glasses" },
+      { "group": "wine_marsala_bottle_glass", "prob": 15, "container-group": "wine_glasses" },
+      { "group": "sherry_bottle_glass", "prob": 10, "container-group": "wine_glasses" },
       { "item": "madeira", "prob": 10, "container-group": "wine_glasses" },
       { "item": "bristol_sherry", "prob": 10, "container-group": "wine_glasses" },
-      { "item": "fruit_wine", "prob": 5, "container-group": "wine_glasses" }
+      { "group": "fruit_wine_bottle_glass", "prob": 5, "container-group": "wine_glasses" }
     ]
   },
   {
@@ -219,18 +219,18 @@
       [ "null", 100 ],
       { "item": "glass_shard", "prob": 50, "count": [ 8, 100 ] },
       { "item": "bottle_glass", "prob": 50, "count": [ 1, 6 ] },
-      { "item": "wine_cabernet", "prob": 14, "count": [ 1, 12 ] },
-      { "item": "wine_riesling", "prob": 12, "count": [ 1, 12 ] },
-      { "item": "wine_chardonnay", "prob": 10, "count": [ 1, 12 ] },
-      { "item": "wine_marsala", "prob": 8, "count": [ 1, 12 ] },
-      { "item": "wine_vermouth", "prob": 13, "count": [ 1, 12 ] },
+      { "group": "wine_cabernet_bottle_glass", "prob": 14, "count": [ 1, 12 ] },
+      { "group": "wine_riesling_bottle_glass", "prob": 12, "count": [ 1, 12 ] },
+      { "group": "wine_chardonnay_bottle_glass", "prob": 10, "count": [ 1, 12 ] },
+      { "group": "wine_marsala_bottle_glass", "prob": 8, "count": [ 1, 12 ] },
+      { "group": "wine_vermouth_bottle_glass", "prob": 13, "count": [ 1, 12 ] },
       { "item": "single_pot_whiskey", "prob": 10, "count": [ 1, 12 ] },
       { "item": "canadian_whiskey", "prob": 10, "count": [ 1, 12 ] },
-      { "item": "sherry", "prob": 10, "count": [ 1, 12 ] },
+      { "group": "sherry_bottle_glass", "prob": 10, "count": [ 1, 12 ] },
       { "item": "bristol_sherry", "prob": 10, "count": [ 1, 12 ] },
       { "item": "madeira", "prob": 10, "count": [ 1, 12 ] },
-      { "item": "wine_noir", "prob": 8, "count": [ 1, 12 ] },
-      { "item": "fruit_wine", "prob": 6, "count": [ 1, 12 ] }
+      { "group": "wine_noir_bottle_glass", "prob": 8, "count": [ 1, 12 ] },
+      { "group": "fruit_wine_bottle_glass", "prob": 6, "count": [ 1, 12 ] }
     ]
   },
   {
@@ -251,12 +251,12 @@
     "subtype": "distribution",
     "items": [
       [ "wooden_barrel", 100 ],
-      { "item": "wine_cabernet", "prob": 40, "container-item": "wooden_barrel" },
-      { "item": "wine_riesling", "prob": 30, "container-item": "wooden_barrel" },
-      { "item": "wine_chardonnay", "prob": 20, "container-item": "wooden_barrel" },
-      { "item": "wine_marsala", "prob": 15, "container-item": "wooden_barrel" },
-      { "item": "wine_noir", "prob": 10, "container-item": "wooden_barrel" },
-      { "item": "fruit_wine", "prob": 5, "container-item": "wooden_barrel" }
+      { "group": "wine_cabernet_bottle_glass", "prob": 40, "container-item": "wooden_barrel" },
+      { "group": "wine_riesling_bottle_glass", "prob": 30, "container-item": "wooden_barrel" },
+      { "group": "wine_chardonnay_bottle_glass", "prob": 20, "container-item": "wooden_barrel" },
+      { "group": "wine_marsala_bottle_glass", "prob": 15, "container-item": "wooden_barrel" },
+      { "group": "wine_noir_bottle_glass", "prob": 10, "container-item": "wooden_barrel" },
+      { "group": "fruit_wine_bottle_glass", "prob": 5, "container-item": "wooden_barrel" }
     ]
   },
   {
@@ -620,7 +620,7 @@
       [ "rope_6", 50 ],
       { "item": "cotton_patchwork", "prob": 40, "custom-flags": [ "FILTHY" ] },
       [ "spike", 30 ],
-      { "item": "blood", "prob": 10, "container-item": "jar_3l_glass_sealed", "sealed": false },
+      { "group": "blood_bag_iv", "prob": 10, "container-item": "jar_3l_glass_sealed", "sealed": false },
       [ "bone_human", 10 ],
       [ "bowl_skull", 5 ],
       [ "skull_human", 20 ],
@@ -664,7 +664,7 @@
       [ "briefs", 30 ],
       [ "swim_briefs", 10 ],
       [ "speedo", 10 ],
-      { "item": "cooking_oil", "prob": 20, "container-item": "bottle_plastic", "sealed": false },
+      { "group": "cooking_oil_jug_plastic", "prob": 20, "container-item": "bottle_plastic", "sealed": false },
       { "group": "stash_drugs", "prob": 20 },
       { "group": "bikini", "prob": 30 },
       {
@@ -1072,7 +1072,7 @@
       [ "bottle_glass", 50 ],
       [ "glass", 50 ],
       [ "sandwich_cucumber", 40 ],
-      { "item": "coffee", "prob": 30, "container-item": "ceramic_cup" },
+      { "group": "coffee_bottle_plastic", "prob": 30, "container-item": "ceramic_cup" },
       { "group": "tinware", "prob": 20 },
       [ "cake2", 20 ],
       { "group": "wines_worthy", "prob": 10 },
@@ -1147,11 +1147,11 @@
       [ "broom", 40 ],
       [ "mop", 25 ],
       [ "mop_folded", 15 ],
-      { "item": "ammonia_hydroxide", "prob": 24, "charges": [ 1, -1 ] },
-      { "item": "chem_washing_soda", "prob": 5, "charges": [ 1, -1 ] },
+      { "group": "ammonia_hydroxide_jug_plastic", "prob": 24, "charges": [ 1, -1 ] },
+      { "group": "chem_washing_soda_box_small", "prob": 5, "charges": [ 1, -1 ] },
       [ "chem_hydrogen_peroxide", 20 ],
       [ "boots_rubber", 20 ],
-      { "item": "bleach", "prob": 20, "charges": [ 1, -1 ] },
+      { "group": "bleach_jug_plastic", "prob": 20, "charges": [ 1, -1 ] },
       { "item": "material_rocksalt", "prob": 10, "container-item": "bag_canvas" },
       [ "vinegar", 10 ],
       { "item": "lye_powder", "prob": 5, "container-item": "bag_canvas_small" },
@@ -1162,7 +1162,7 @@
       [ "toilet_paper", 30 ],
       [ "plunger_toilet", 10 ],
       [ "plunger_futuristic", 25 ],
-      { "item": "chem_turpentine", "prob": 20, "charges": [ 20, -1 ] }
+      { "group": "chem_turpentine_bottle_plastic", "prob": 20, "charges": [ 20, -1 ] }
     ]
   },
   {
@@ -1203,7 +1203,7 @@
     "type": "item_group",
     "subtype": "distribution",
     "items": [
-      { "item": "beer", "prob": 40, "container-item": "glass" },
+      { "group": "beer_can_drink", "prob": 40, "container-item": "glass" },
       { "group": "beer_selection", "prob": 40 },
       { "group": "glass_of_wine", "prob": 40 },
       [ "glass", 20 ],
@@ -1220,7 +1220,7 @@
     "type": "item_group",
     "subtype": "distribution",
     "items": [
-      { "item": "beer", "prob": 40, "container-item": "glass" },
+      { "group": "beer_can_drink", "prob": 40, "container-item": "glass" },
       { "group": "beer_selection", "prob": 40 },
       { "group": "glass_of_wine", "prob": 40 },
       [ "glass", 40 ],
@@ -1661,6 +1661,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_supplement",
-    "entries": [ { "item": "vitamins", "container-item": "null", "count": [ 1, 10 ] } ]
+    "entries": [ { "group": "vitamins_bottle_plastic_pill_supplement", "container-item": "null", "count": [ 1, 10 ] } ]
   }
 ]

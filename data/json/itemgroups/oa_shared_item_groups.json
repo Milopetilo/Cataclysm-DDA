@@ -10,6 +10,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "box_cigarette",
-    "entries": [ { "item": "cig", "container-item": "null", "count": [ 1, 5 ] } ]
+    "entries": [ { "group": "cig_box_cigarette", "container-item": "null", "count": [ 1, 5 ] } ]
   }
 ]

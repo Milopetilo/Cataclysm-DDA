@@ -157,7 +157,7 @@
         "collection": [
           { "item": "box_small", "prob": 60, "count": [ 1, 10 ] },
           { "item": "bath_toy", "prob": 60, "count": [ 1, 2 ] },
-          { "item": "liquid_soap", "prob": 60, "count": [ 1, 4 ] },
+          { "group": "liquid_soap_bottle_bathroom", "prob": 60, "count": [ 1, 4 ] },
           { "item": "towel", "prob": 60, "count": [ 1, 2 ] },
           { "item": "soap", "prob": 60, "count": [ 1, 3 ], "charges": 100 }
         ]

@@ -926,7 +926,6 @@
     "name": { "str_sp": "powdered egg" },
     "weight": "7 g",
     "color": "yellow",
-    "container": "bottle_plastic_small",
     "comestible_type": "FOOD",
     "symbol": "%",
     "quench": -2,

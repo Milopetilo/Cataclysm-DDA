@@ -510,8 +510,8 @@
     "items": [
       { "group": "medical_tape_roll_part" },
       { "group": "bottle_otc_painkiller_10" },
-      { "item": "disinfectant" },
-      { "item": "saline" },
+      { "group": "disinfectant_bottle_plastic_small" },
+      { "group": "saline_bottle_plastic_small" },
       { "item": "adhesive_bandages", "count": 6 },
       { "item": "bandages", "count": 3 },
       { "item": "medical_gauze", "count": 6 },
@@ -539,8 +539,8 @@
     "items": [
       { "group": "medical_tape_roll_part", "prob": 70 },
       { "group": "bottle_otc_painkiller_0_10" },
-      { "item": "disinfectant", "charges": [ 0, 5 ] },
-      { "item": "saline", "prob": 60 },
+      { "group": "disinfectant_bottle_plastic_small", "charges": [ 0, 5 ] },
+      { "group": "saline_bottle_plastic_small", "prob": 60 },
       { "item": "adhesive_bandages", "count": [ 0, 6 ] },
       { "item": "bandages", "count": [ 0, 3 ] },
       { "item": "medical_gauze", "count": [ 0, 6 ] },
@@ -996,9 +996,9 @@
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_painkiller",
     "entries": [
-      { "item": "aspirin", "container-item": "null", "count": 10 },
-      { "item": "acetaminophen", "container-item": "null", "count": 10 },
-      { "item": "ibuprofen", "container-item": "null", "count": 10 }
+      { "group": "aspirin_bottle_plastic_pill_painkiller", "container-item": "null", "count": 10 },
+      { "group": "acetaminophen_bottle_plastic_pill_painkiller", "container-item": "null", "count": 10 },
+      { "group": "ibuprofen_bottle_plastic_pill_painkiller", "container-item": "null", "count": 10 }
     ]
   },
   {
@@ -1008,9 +1008,9 @@
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_painkiller",
     "entries": [
-      { "item": "aspirin", "container-item": "null", "count": [ 0, 10 ] },
-      { "item": "acetaminophen", "container-item": "null", "count": [ 0, 10 ] },
-      { "item": "ibuprofen", "container-item": "null", "count": [ 0, 10 ] }
+      { "group": "aspirin_bottle_plastic_pill_painkiller", "container-item": "null", "count": [ 0, 10 ] },
+      { "group": "acetaminophen_bottle_plastic_pill_painkiller", "container-item": "null", "count": [ 0, 10 ] },
+      { "group": "ibuprofen_bottle_plastic_pill_painkiller", "container-item": "null", "count": [ 0, 10 ] }
     ]
   },
   {
@@ -1019,7 +1019,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "item": "quikclot", "container-item": "null", "count": 5 } ]
+    "entries": [ { "group": "quikclot_bag_plastic_small", "container-item": "null", "count": 5 } ]
   },
   {
     "type": "item_group",
@@ -1035,7 +1035,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "item": "quikclot", "container-item": "null", "count": [ 0, 5 ] } ]
+    "entries": [ { "group": "quikclot_bag_plastic_small", "container-item": "null", "count": [ 0, 5 ] } ]
   },
   {
     "type": "item_group",

@@ -3,7 +3,7 @@
     "type": "item_group",
     "subtype": "distribution",
     "id": "airdrop_water_drum",
-    "items": [ { "item": "water_clean", "prob": 100, "container-item": "55gal_drum_rubber", "charges": [ 700, 800 ] } ]
+    "items": [ { "group": "water_clean_bottle_plastic", "prob": 100, "container-item": "55gal_drum_rubber", "charges": [ 700, 800 ] } ]
   },
   {
     "id": "airdrop_military_kit",
@@ -21,7 +21,7 @@
     "subtype": "collection",
     "container-item": "box_medium",
     "entries": [
-      { "item": "water_clean", "container-item": "canteen", "charges": 6, "count": 10 },
+      { "group": "water_clean_bottle_plastic", "container-item": "canteen", "charges": 6, "count": 10 },
       { "item": "cardboard", "count": 30 }
     ]
   },

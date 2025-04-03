@@ -10,9 +10,9 @@
       { "item": "knife_folding" },
       { "item": "flint_steel" },
       { "item": "whistle_multitool" },
-      { "item": "water_clean", "container-item": "bottle_twoliter", "count": 3 },
+      { "group": "water_clean_bottle_plastic", "container-item": "bottle_twoliter", "count": 3 },
       { "count": 3, "group": "afs_escapepod_ration_bag_plastic_4" },
-      { "item": "cream_prot_cold", "count": 3 },
+      { "group": "cream_prot_cold_bottle_plastic_small", "count": 3 },
       { "item": "flashlight", "charges": 150 },
       { "item": "water_purifier" },
       { "item": "medium_battery_cell", "ammo-item": "battery", "charges": 600, "container-item": "multi_cooker" },
@@ -30,6 +30,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic",
-    "entries": [ { "item": "afs_escapepod_ration", "container-item": "null", "count": 4 } ]
+    "entries": [ { "group": "afs_escapepod_ration_bag_plastic_small", "container-item": "null", "count": 4 } ]
   }
 ]

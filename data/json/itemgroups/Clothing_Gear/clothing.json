@@ -880,8 +880,8 @@
       { "item": "jacket_leather", "prob": 20 },
       { "item": "jacket_varsity", "prob": 10 },
       { "prob": 30, "group": "bottle_otc_painkiller_20" },
-      { "item": "water_clean", "prob": 30 },
-      { "item": "sports_drink", "prob": 30 },
+      { "group": "water_clean_bottle_plastic", "prob": 30 },
+      { "group": "sports_drink_bottle_plastic", "prob": 30 },
       { "group": "used_1st_aid", "prob": 20 },
       { "item": "fitness_band", "prob": 5 }
     ]
@@ -4575,9 +4575,9 @@
     "//": "Includes aspirin and other similar low-grade painkillers.",
     "container-item": "bottle_plastic_pill_painkiller",
     "entries": [
-      { "item": "aspirin", "container-item": "null", "count": 20 },
-      { "item": "ibuprofen", "container-item": "null", "count": 20 },
-      { "item": "acetaminophen", "container-item": "null", "count": 20 }
+      { "group": "aspirin_bottle_plastic_pill_painkiller", "container-item": "null", "count": 20 },
+      { "group": "ibuprofen_bottle_plastic_pill_painkiller", "container-item": "null", "count": 20 },
+      { "group": "acetaminophen_bottle_plastic_pill_painkiller", "container-item": "null", "count": 20 }
     ]
   },
   {
@@ -4586,7 +4586,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "item": "antifungal", "container-item": "null", "count": [ 0, 10 ] } ]
+    "entries": [ { "group": "antifungal_bottle_plastic_pill_prescription", "container-item": "null", "count": [ 0, 10 ] } ]
   },
   {
     "type": "item_group",
@@ -4594,7 +4594,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "item": "antiparasitic", "container-item": "null", "count": [ 0, 10 ] } ]
+    "entries": [ { "group": "antiparasitic_bottle_plastic_pill_prescription", "container-item": "null", "count": [ 0, 10 ] } ]
   },
   {
     "type": "item_group",
@@ -4602,6 +4602,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "item": "diazepam", "container-item": "null", "count": [ 0, 10 ] } ]
+    "entries": [ { "group": "diazepam_bottle_plastic_pill_prescription", "container-item": "null", "count": [ 0, 10 ] } ]
   }
 ]

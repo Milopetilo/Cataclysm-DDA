@@ -56,7 +56,7 @@
     "type": "item_group",
     "id": "public_sink",
     "//": "Items you might find in the sink of a public place, like a bathroom.",
-    "items": [ { "item": "liquid_soap", "count": [ 1, 4 ], "prob": 70, "charges": [ 1, -1 ] } ]
+    "items": [ { "group": "liquid_soap_bottle_bathroom", "count": [ 1, 4 ], "prob": 70, "charges": [ 1, -1 ] } ]
   },
   {
     "id": "glass_shop",
@@ -760,7 +760,7 @@
       [ "water_clean", 30 ],
       [ "water_mineral", 15 ],
       { "group": "softdrinks_canned", "prob": 121 },
-      { "item": "milk_UHT", "prob": 10, "charges": [ 1, 6 ], "sealed": false },
+      { "group": "milk_UHT_carton_sealed", "prob": 10, "charges": [ 1, 6 ], "sealed": false },
       [ "juice", 31 ],
       [ "pie", 40 ],
       [ "pie_meat", 28 ],
@@ -1002,12 +1002,12 @@
     "entries": [
       { "group": "beer", "prob": 373 },
       { "group": "liquor_and_spirits", "prob": 80 },
-      { "item": "drink_rumcola", "prob": 40 },
-      { "item": "drink_screwdriver", "prob": 35 },
-      { "item": "drink_wild_apple", "prob": 10 },
-      { "item": "long_island", "prob": 17 },
-      { "item": "wine_chardonnay", "prob": 20 },
-      { "item": "wine_cabernet", "prob": 20 }
+      { "group": "drink_rumcola_bottle_glass", "prob": 40 },
+      { "group": "drink_screwdriver_bottle_glass", "prob": 35 },
+      { "group": "drink_wild_apple_bottle_glass", "prob": 10 },
+      { "group": "long_island_bottle_glass", "prob": 17 },
+      { "group": "wine_chardonnay_bottle_glass", "prob": 20 },
+      { "group": "wine_cabernet_bottle_glass", "prob": 20 }
     ]
   },
   {
@@ -1015,14 +1015,14 @@
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "item": "water_clean", "prob": 50 },
+      { "group": "water_clean_bottle_plastic", "prob": 50 },
       { "item": "water_mineral", "prob": 20 },
-      { "item": "oj", "prob": 40 },
+      { "group": "oj_bottle_plastic", "prob": 40 },
       { "item": "pineapple_juice", "prob": 35 },
-      { "item": "juice", "prob": 35 },
-      { "item": "cranberry_juice", "prob": 35 },
+      { "group": "juice_bottle_plastic", "prob": 35 },
+      { "group": "cranberry_juice_bottle_plastic", "prob": 35 },
       { "group": "softdrinks_canned", "prob": 95 },
-      { "item": "V8", "prob": 15 },
+      { "group": "V8_can_drink", "prob": 15 },
       { "item": "gum", "prob": 15, "count": 10 }
     ]
   },
@@ -1031,24 +1031,24 @@
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "item": "water_clean", "prob": 50 },
+      { "group": "water_clean_bottle_plastic", "prob": 50 },
       { "item": "water_mineral", "prob": 20 },
-      { "item": "oj", "prob": 40 },
+      { "group": "oj_bottle_plastic", "prob": 40 },
       { "item": "pineapple_juice", "prob": 35 },
-      { "item": "juice", "prob": 35 },
-      { "item": "cranberry_juice", "prob": 35 },
+      { "group": "juice_bottle_plastic", "prob": 35 },
+      { "group": "cranberry_juice_bottle_plastic", "prob": 35 },
       { "group": "softdrinks_canned", "prob": 95 },
-      { "item": "V8", "prob": 15 },
-      { "item": "fries", "prob": 7 },
-      { "item": "cheese_fries", "prob": 5 },
-      { "item": "onion_rings", "prob": 7 },
-      { "item": "mayonnaise", "prob": 3 },
+      { "group": "V8_can_drink", "prob": 15 },
+      { "group": "fries_box_small", "prob": 7 },
+      { "group": "cheese_fries_box_small", "prob": 5 },
+      { "group": "onion_rings_box_small", "prob": 7 },
+      { "group": "mayonnaise_condiment_bottle_sealed", "prob": 3 },
       { "group": "ketchup_sealed_rng", "prob": 3 },
       { "group": "mustard_sealed_rng", "prob": 3 },
       { "prob": 5, "group": "pickle_jar_glass_sealed_2" },
-      { "item": "cheeseburger", "prob": 10 },
-      { "item": "hamburger", "prob": 8 },
-      { "item": "sloppyjoe", "prob": 6 },
+      { "group": "cheeseburger_wrapper", "prob": 10 },
+      { "group": "hamburger_wrapper", "prob": 8 },
+      { "group": "sloppyjoe_wrapper", "prob": 6 },
       { "prob": 6, "group": "hotdogs_frozen_bag_plastic_10" }
     ]
   },
@@ -1186,10 +1186,10 @@
       },
       {
         "distribution": [
-          { "item": "protein_powder", "prob": 7 },
+          { "group": "protein_powder_bottle_plastic_small", "prob": 7 },
           { "item": "dry_veggy", "prob": 10 },
           { "item": "dry_fruit", "prob": 10 },
-          { "item": "granola", "prob": 5 }
+          { "group": "granola_bag_plastic_small", "prob": 5 }
         ]
       },
       {
@@ -1278,20 +1278,20 @@
     "id": "sugar_house_furnace",
     "type": "item_group",
     "subtype": "collection",
-    "entries": [ { "item": "maple_sap", "container-item": "metal_tank", "charges": [ 2, 15 ] } ]
+    "entries": [ { "group": "maple_sap_metal_tank", "container-item": "metal_tank", "charges": [ 2, 15 ] } ]
   },
   {
     "id": "sugar_house_drum",
     "type": "item_group",
     "subtype": "collection",
-    "entries": [ { "item": "syrup", "container-item": "55gal_drum", "charges": [ 2, 150 ] } ]
+    "entries": [ { "group": "syrup_bottle_glass", "container-item": "55gal_drum", "charges": [ 2, 150 ] } ]
   },
   {
     "id": "petstore_misc",
     "type": "item_group",
     "items": [
-      { "item": "dogfood", "prob": 20, "container-item": "can_medium" },
-      { "item": "catfood", "prob": 20, "container-item": "can_food" },
+      { "group": "dogfood_can_medium", "prob": 20, "container-item": "can_medium" },
+      { "group": "catfood_can_food", "prob": 20, "container-item": "can_food" },
       { "prob": 5, "group": "dogfood_dry_bag_plastic_24" },
       { "prob": 5, "group": "catfood_dry_bag_plastic_24" },
       [ "birdfood", 15 ],
@@ -1303,16 +1303,16 @@
     "id": "petstore_shelves",
     "type": "item_group",
     "items": [
-      { "item": "dogfood", "prob": 10, "container-item": "can_medium" },
-      { "item": "catfood", "prob": 10, "container-item": "can_food" },
+      { "group": "dogfood_can_medium", "prob": 10, "container-item": "can_medium" },
+      { "group": "catfood_can_food", "prob": 10, "container-item": "can_food" },
       { "prob": 10, "group": "dogfood_dry_bag_plastic_24" },
       { "prob": 10, "group": "catfood_dry_bag_plastic_24" },
-      { "item": "salt_water", "prob": 10, "container-item": "aquarium_medium" },
-      { "item": "water", "prob": 10, "container-item": "aquarium_medium" },
-      { "item": "salt_water", "prob": 10, "container-item": "aquarium_small" },
-      { "item": "water", "prob": 10, "container-item": "aquarium_small" },
-      { "item": "salt_water", "prob": 3, "container-item": "aquarium_large" },
-      { "item": "water", "prob": 3, "container-item": "aquarium_large" },
+      { "group": "salt_water_bottle_plastic", "prob": 10, "container-item": "aquarium_medium" },
+      { "group": "water_bottle_plastic", "prob": 10, "container-item": "aquarium_medium" },
+      { "group": "salt_water_bottle_plastic", "prob": 10, "container-item": "aquarium_small" },
+      { "group": "water_bottle_plastic", "prob": 10, "container-item": "aquarium_small" },
+      { "group": "salt_water_bottle_plastic", "prob": 3, "container-item": "aquarium_large" },
+      { "group": "water_bottle_plastic", "prob": 3, "container-item": "aquarium_large" },
       [ "birdfood", 15 ],
       [ "can_tuna", 15 ],
       [ "can_chicken", 15 ],
@@ -1387,9 +1387,9 @@
     "id": "oa_ig_cd_fuel",
     "//": "for cs_car_dealership",
     "items": [
-      { "item": "gasoline", "prob": 20, "charges": [ 450, 2000 ], "container-item": "jug_plastic", "sealed": false },
-      { "item": "gasoline", "prob": 30, "charges": [ 450, 4000 ], "container-item": "jerrycan" },
-      { "item": "gasoline", "prob": 10, "charges": [ 2650, 10000 ], "container-item": "jerrycan_big" }
+      { "group": "gasoline_jerrycan", "prob": 20, "charges": [ 450, 2000 ], "container-item": "jug_plastic", "sealed": false },
+      { "group": "gasoline_jerrycan", "prob": 30, "charges": [ 450, 4000 ], "container-item": "jerrycan" },
+      { "group": "gasoline_jerrycan", "prob": 10, "charges": [ 2650, 10000 ], "container-item": "jerrycan_big" }
     ]
   },
   {
@@ -1594,7 +1594,7 @@
       { "item": "blanket", "prob": 20 },
       { "item": "candle", "prob": 20, "charges": [ 0, 100 ] },
       { "item": "bodypillow", "prob": 10 },
-      { "item": "pillow", "prob": 20 }
+      { "group": "pillow_pillowcase", "prob": 20 }
     ]
   },
   {
@@ -1845,11 +1845,11 @@
       { "group": "adhesive_bandages_box_used", "prob": 30 },
       { "item": "liq_bandage_spray", "prob": 5, "charges": [ 1, -1 ] },
       { "group": "full_1st_aid", "prob": 10 },
-      { "item": "saline", "prob": 20, "charges": [ 1, 5 ] },
+      { "group": "saline_bottle_plastic_small", "prob": 20, "charges": [ 1, 5 ] },
       { "prob": 15, "group": "vitamins_bottle_plastic_pill_supplement_1_20" },
       { "prob": 15, "group": "calcium_tablet_bottle_plastic_pill_supplement_1_20" },
-      { "item": "nyquil", "prob": 5, "charges": [ 1, 5 ] },
-      { "item": "disinfectant", "prob": 15, "charges": [ 1, 10 ] },
+      { "group": "nyquil_bottle_plastic_small", "prob": 5, "charges": [ 1, 5 ] },
+      { "group": "disinfectant_bottle_plastic_small", "prob": 15, "charges": [ 1, 10 ] },
       [ "protein_powder", 15 ],
       { "item": "smoxygen_tank", "prob": 20, "charges": [ 0, 12 ] },
       { "item": "elec_hairtrimmer", "prob": 15, "charges": [ 0, 50 ] },
@@ -1861,7 +1861,7 @@
       [ "fungicide", 10 ],
       { "group": "insecticide_bag_plastic", "prob": 10 },
       { "item": "soap", "prob": 20, "charges": [ 1, 10 ] },
-      { "item": "chem_hydrogen_peroxide", "prob": 10, "charges": [ 1, 10 ] },
+      { "group": "chem_hydrogen_peroxide_bottle_plastic_small", "prob": 10, "charges": [ 1, 10 ] },
       [ "canister_empty", 5 ],
       [ "stethoscope", 50 ],
       [ "scalpel", 50 ],
@@ -1884,8 +1884,8 @@
       [ "dog_whistle", 10 ],
       [ "pet_carrier", 30 ],
       [ "petpack", 3 ],
-      { "item": "dogfood", "prob": 20, "container-item": "can_medium" },
-      { "item": "catfood", "prob": 20, "container-item": "can_food" },
+      { "group": "dogfood_can_medium", "prob": 20, "container-item": "can_medium" },
+      { "group": "catfood_can_food", "prob": 20, "container-item": "can_food" },
       [ "birdfood", 10 ],
       [ "towel", 20 ],
       { "item": "soap", "prob": 10, "charges": [ 1, 10 ] },
@@ -1909,7 +1909,7 @@
       { "prob": 7, "group": "thorazine_bottle_plastic_pill_prescription_1_10" },
       { "item": "morphine", "prob": 10, "count": [ 1, 4 ] },
       { "prob": 15, "group": "codeine_bottle_plastic_pill_painkiller_1_10" },
-      { "item": "saline", "prob": 15, "charges": [ 1, 5 ] },
+      { "group": "saline_bottle_plastic_small", "prob": 15, "charges": [ 1, 5 ] },
       { "item": "smoxygen_tank", "prob": 10, "charges": [ 0, 12 ] },
       { "group": "full_1st_aid", "prob": 30 },
       { "group": "medical_tape_roll_part", "prob": 35 },
@@ -2065,7 +2065,10 @@
   {
     "id": "farm_supply_quicklime_and_saltpetre",
     "type": "item_group",
-    "items": [ { "group": "quicklime_bag", "prob": 85 }, { "item": "chem_saltpetre", "prob": 15, "charges": [ 10, 50 ] } ]
+    "items": [
+      { "group": "quicklime_bag", "prob": 85 },
+      { "group": "chem_saltpetre_bag_canvas", "prob": 15, "charges": [ 10, 50 ] }
+    ]
   },
   {
     "id": "farm_supply_animal_feed",
@@ -2114,7 +2117,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic",
-    "entries": [ { "item": "dogfood_dry", "container-item": "null", "count": 24 } ]
+    "entries": [ { "group": "dogfood_dry_bag_plastic", "container-item": "null", "count": 24 } ]
   },
   {
     "type": "item_group",
@@ -2122,7 +2125,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic",
-    "entries": [ { "item": "catfood_dry", "container-item": "null", "count": 24 } ]
+    "entries": [ { "group": "catfood_dry_bag_plastic", "container-item": "null", "count": 24 } ]
   },
   {
     "type": "item_group",
@@ -2130,7 +2133,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "item": "antifungal", "container-item": "null", "count": [ 1, 10 ] } ]
+    "entries": [ { "group": "antifungal_bottle_plastic_pill_prescription", "container-item": "null", "count": [ 1, 10 ] } ]
   },
   {
     "type": "item_group",

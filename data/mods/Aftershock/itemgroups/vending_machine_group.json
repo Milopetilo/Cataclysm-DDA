@@ -38,7 +38,7 @@
       { "group": "drugs_pharmacy", "count": [ 5, 20 ] },
       { "group": "drugs_soldier", "prob": 40, "count": [ 5, 25 ] },
       { "group": "drugs_soldier", "prob": 40, "count": [ 5, 25 ] },
-      { "item": "afs_synth_blood", "prob": 40, "count": [ 1, 5 ] },
+      { "group": "afs_synth_blood_bag_iv", "prob": 40, "count": [ 1, 5 ] },
       { "group": "afs_ifak", "prob": 40, "count": [ 1, 2 ] },
       { "group": "harddrugs", "prob": 10, "count": [ 5, 25 ] }
     ]

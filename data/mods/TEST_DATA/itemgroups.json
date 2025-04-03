@@ -133,6 +133,6 @@
     "type": "item_group",
     "id": "test_bottle_water",
     "subtype": "collection",
-    "entries": [ { "item": "water_clean", "charges": 1, "container-item": "bottle_plastic", "sealed": false } ]
+    "entries": [ { "group": "water_clean_bottle_plastic", "charges": 1, "container-item": "bottle_plastic", "sealed": false } ]
   }
 ]

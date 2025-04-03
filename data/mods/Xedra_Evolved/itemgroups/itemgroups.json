@@ -17,13 +17,13 @@
       { "item": "recipe_augs", "prob": 1 },
       { "item": "decoy_anarch", "prob": 10 },
       {
-        "item": "aspirin",
+        "group": "aspirin_bottle_plastic_pill_painkiller",
         "prob": 85,
         "count": [ 1, 20 ],
         "container-item": "null",
         "entry-wrapper": "bottle_plastic_pill_painkiller"
       },
-      { "item": "maltballs", "prob": 30 },
+      { "group": "maltballs_box_snack", "prob": 30 },
       { "group": "cigar_box_opened", "prob": 20 },
       { "group": "cigar_box_unopened", "prob": 5 },
       { "group": "tobacco_products", "prob": 151 },
@@ -99,7 +99,7 @@
       [ "decoy_anarch", 8 ],
       [ "recipe_augs", 8 ],
       {
-        "item": "aspirin",
+        "group": "aspirin_bottle_plastic_pill_painkiller",
         "prob": 85,
         "count": [ 1, 20 ],
         "container-item": "null",
@@ -195,7 +195,7 @@
     "id": "softdrugs",
     "subtype": "distribution",
     "copy-from": "softdrugs",
-    "extend": { "entries": [ { "item": "truckstop_viagra", "prob": 15 } ] }
+    "extend": { "entries": [ { "group": "truckstop_viagra_bottle_plastic_pill_supplement", "prob": 15 } ] }
   },
   {
     "type": "item_group",
@@ -516,17 +516,17 @@
     "items": [
       [ "flask_hip", 100 ],
       [ "bowl_skull", 100 ],
-      { "item": "blood", "prob": 40, "container-item": "flask_hip" },
-      { "item": "blood", "prob": 20, "container-item": "2lcanteen" },
-      { "item": "blood", "prob": 40, "container-item": "bag_iv" },
-      { "item": "blood", "prob": 40, "container-item": "bottle_glass" },
-      { "item": "blood", "prob": 30, "container-item": "bottle_plastic" },
-      { "item": "blood", "prob": 20, "container-item": "bottle_plastic_small" },
-      { "item": "blood", "prob": 20, "container-item": "camelbak" },
-      { "item": "blood", "prob": 20, "container-item": "canteen" },
-      { "item": "blood", "prob": 10, "container-item": "thermos" },
-      { "item": "blood", "prob": 5, "container-item": "blood_camel" },
-      { "item": "blood", "prob": 1, "container-item": "blood_bank" }
+      { "group": "blood_bag_iv", "prob": 40, "container-item": "flask_hip" },
+      { "group": "blood_bag_iv", "prob": 20, "container-item": "2lcanteen" },
+      { "group": "blood_bag_iv", "prob": 40, "container-item": "bag_iv" },
+      { "group": "blood_bag_iv", "prob": 40, "container-item": "bottle_glass" },
+      { "group": "blood_bag_iv", "prob": 30, "container-item": "bottle_plastic" },
+      { "group": "blood_bag_iv", "prob": 20, "container-item": "bottle_plastic_small" },
+      { "group": "blood_bag_iv", "prob": 20, "container-item": "camelbak" },
+      { "group": "blood_bag_iv", "prob": 20, "container-item": "canteen" },
+      { "group": "blood_bag_iv", "prob": 10, "container-item": "thermos" },
+      { "group": "blood_bag_iv", "prob": 5, "container-item": "blood_camel" },
+      { "group": "blood_bag_iv", "prob": 1, "container-item": "blood_bank" }
     ]
   },
   {
@@ -535,6 +535,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "wrapper_wyld",
-    "entries": [ { "item": "wyld_candy", "container-item": "null", "count": 20 } ]
+    "entries": [ { "group": "wyld_candy_wrapper_wyld", "container-item": "null", "count": 20 } ]
   }
 ]

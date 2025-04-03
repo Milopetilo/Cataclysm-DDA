@@ -82,7 +82,6 @@
     "symbol": "+",
     "color": "white",
     "looks_like": "cotton_ball",
-    "container": "bag_plastic_small",
     "price": "25 cent",
     "price_postapoc": "2 USD",
     "//": "Makes a decent trade commodity but can be acquired in bulk.",
@@ -119,7 +118,6 @@
     "symbol": "=",
     "color": "white",
     "looks_like": "bandages",
-    "container": "bag_plastic_small",
     "price": "25 cent",
     "price_postapoc": "2 USD",
     "//": "Makes a decent trade commodity but can be acquired in bulk.",
@@ -156,7 +154,6 @@
     "symbol": "v",
     "color": "pink",
     "looks_like": "bottle_plastic_small",
-    "container": "bag_plastic_small",
     "price": "10 USD",
     "price_postapoc": "5 USD",
     "//": "Makes a decent trade commodity.",
@@ -191,8 +188,7 @@
     "copy-from": "base_toiletries",
     "symbol": ",",
     "weight": "20 g",
-    "volume": "25 ml",
-    "container": "box_small"
+    "volume": "25 ml"
   },
   {
     "id": "string_floss",
@@ -260,7 +256,6 @@
     "description": "A luxurious remnant of civilization.",
     "symbol": "~",
     "color": "white",
-    "container": "bag_plastic_small",
     "price": "89 cent",
     "price_postapoc": "1 USD 80 cent",
     "volume": "250 ml",

@@ -120,9 +120,9 @@
     "entries": [
       {
         "collection": [
-          { "item": "flour", "prob": 50 },
-          { "item": "cornmeal", "prob": 75 },
-          { "item": "oatmeal", "prob": 90 },
+          { "group": "flour_bag_paper_powder", "prob": 50 },
+          { "group": "cornmeal_box_small", "prob": 75 },
+          { "group": "oatmeal_box_small", "prob": 90 },
           { "item": "barley", "prob": 90 }
         ],
         "prob": 20
@@ -131,8 +131,8 @@
         "collection": [
           { "item": "salt", "prob": 100 },
           { "group": "sugar_jar_glass_sealed_10_140", "prob": 25 },
-          { "item": "chem_saltpetre", "prob": 10 },
-          { "item": "yeast", "prob": 30 }
+          { "group": "chem_saltpetre_bag_canvas", "prob": 10 },
+          { "group": "yeast_bag_plastic_small", "prob": 30 }
         ],
         "prob": 50
       },
@@ -147,16 +147,16 @@
         "prob": 10
       },
       {
-        "collection": [ { "item": "dry_beans", "prob": 80 }, { "item": "dry_lentils", "prob": 80 }, { "item": "dry_rice", "prob": 50 } ],
+        "collection": [ { "group": "dry_beans_bag_plastic_small", "prob": 80 }, { "group": "dry_lentils_bag_plastic_small", "prob": 80 }, { "group": "dry_rice_bag_plastic_small", "prob": 50 } ],
         "prob": 50
       },
       {
         "collection": [
-          { "item": "chem_agar", "prob": 20 },
-          { "item": "lye", "prob": 45 },
+          { "group": "chem_agar_bottle_plastic_small", "prob": 20 },
+          { "group": "lye_bottle_plastic", "prob": 45 },
           { "group": "lye_powder_bottle_part", "prob": 20 },
-          { "item": "chem_sulphur", "prob": 30, "charges": [ 100, -1 ], "container-item": "bottle_plastic_small" },
-          { "item": "chem_peptone_broth", "prob": 95 }
+          { "group": "chem_sulphur_bottle_plastic_small", "prob": 30, "charges": [ 100, -1 ], "container-item": "bottle_plastic_small" },
+          { "group": "chem_peptone_broth_bottle_plastic_small", "prob": 95 }
         ],
         "prob": 20
       }

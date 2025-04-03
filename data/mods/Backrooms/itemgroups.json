@@ -36,10 +36,10 @@
     "copy-from": "vending_drink_items",
     "extend": {
       "items": [
-        { "item": "gasoline", "container-item": "bottle_glass", "prob": 25 },
-        { "item": "diesel", "container-item": "bottle_glass", "prob": 25 },
-        { "item": "lamp_oil", "container-item": "bottle_glass", "prob": 15 },
-        { "item": "motor_oil", "container-item": "bottle_plastic", "prob": 5 }
+        { "group": "gasoline_jerrycan", "container-item": "bottle_glass", "prob": 25 },
+        { "group": "diesel_jerrycan", "container-item": "bottle_glass", "prob": 25 },
+        { "group": "lamp_oil_fuel_tin", "container-item": "bottle_glass", "prob": 15 },
+        { "group": "motor_oil_bottle_plastic", "container-item": "bottle_plastic", "prob": 5 }
       ]
     }
   },
@@ -140,7 +140,7 @@
       { "group": "condiments", "prob": 50 },
       { "group": "snacks", "prob": 75 },
       { "group": "alcohol", "prob": 25 },
-      { "item": "water_clean", "prob": 100 },
+      { "group": "water_clean_bottle_plastic", "prob": 100 },
       { "group": "misc_smoking", "prob": 20 },
       { "group": "office_supplies", "prob": 5 },
       { "group": "car_misc", "prob": 5 },

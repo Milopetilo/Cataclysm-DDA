@@ -12,7 +12,6 @@
     "phase": "liquid",
     "price": "10 cent",
     "price_postapoc": "1 cent",
-    "container": "flask_glass",
     "flags": [ "TRADER_AVOID" ],
     "symbol": "~",
     "color": "black",

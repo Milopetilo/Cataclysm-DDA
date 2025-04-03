@@ -7,11 +7,11 @@
       [ "water_mineral", 5 ],
       { "group": "softdrinks_canned", "prob": 380 },
       { "group": "salty_snacks", "prob": 135 },
-      { "item": "cola", "prob": 25, "container-item": "bottle_glass" },
-      { "item": "creamsoda", "prob": 25, "container-item": "bottle_glass" },
-      { "item": "lemonlime", "prob": 25, "container-item": "bottle_glass" },
-      { "item": "orangesoda", "prob": 25, "container-item": "bottle_glass" },
-      { "item": "colamdew", "prob": 25, "container-item": "bottle_glass" },
+      { "group": "cola_can_drink", "prob": 25, "container-item": "bottle_glass" },
+      { "group": "creamsoda_can_drink", "prob": 25, "container-item": "bottle_glass" },
+      { "group": "lemonlime_can_drink", "prob": 25, "container-item": "bottle_glass" },
+      { "group": "orangesoda_can_drink", "prob": 25, "container-item": "bottle_glass" },
+      { "group": "colamdew_can_drink", "prob": 25, "container-item": "bottle_glass" },
       [ "salted_fish", 35 ],
       [ "ravioli", 25 ],
       [ "cheese_hard", 15 ],
@@ -230,7 +230,7 @@
     "entries": [
       { "group": "MRE", "count": 2, "prob": 100 },
       { "group": "bugout_cans", "prob": 100 },
-      { "item": "protein_bar_evac", "count": 1, "prob": 100 },
+      { "group": "protein_bar_evac_wrapper_pr", "count": 1, "prob": 100 },
       { "group": "snacks", "count": 4, "prob": 100 }
     ]
   },
@@ -250,8 +250,8 @@
         "prob": 50
       },
       { "item": "water_mineral", "count": 1, "prob": 50 },
-      { "item": "rehydration_drink", "count": 1, "prob": 50 },
-      { "item": "sports_drink", "count": 1, "prob": 50 }
+      { "group": "rehydration_drink_bottle_plastic", "count": 1, "prob": 50 },
+      { "group": "sports_drink_bottle_plastic", "count": 1, "prob": 50 }
     ]
   },
   {
@@ -419,7 +419,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "item": "pills_sleep", "container-item": "null", "count": [ 1, 10 ] } ]
+    "entries": [ { "group": "pills_sleep_bottle_plastic_pill_prescription", "container-item": "null", "count": [ 1, 10 ] } ]
   },
   {
     "type": "item_group",
@@ -427,7 +427,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "item": "oxycodone", "container-item": "null", "count": [ 1, 10 ] } ]
+    "entries": [ { "group": "oxycodone_bottle_plastic_pill_prescription", "container-item": "null", "count": [ 1, 10 ] } ]
   },
   {
     "type": "item_group",
@@ -435,7 +435,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "item": "xanax", "container-item": "null", "count": [ 1, 10 ] } ]
+    "entries": [ { "group": "xanax_bottle_plastic_pill_prescription", "container-item": "null", "count": [ 1, 10 ] } ]
   },
   {
     "type": "item_group",
@@ -443,7 +443,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "item": "tobacco", "container-item": "null", "count": [ 1, 20 ] } ]
+    "entries": [ { "group": "tobacco_bag_plastic_small", "container-item": "null", "count": [ 1, 20 ] } ]
   },
   {
     "type": "item_group",
@@ -451,7 +451,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_zipper",
-    "entries": [ { "item": "crack", "container-item": "null", "count": [ 1, 4 ] } ]
+    "entries": [ { "group": "crack_bag_zipper", "container-item": "null", "count": [ 1, 4 ] } ]
   },
   {
     "type": "item_group",
@@ -459,7 +459,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "item": "antifungal", "container-item": "null", "count": [ 1, 5 ] } ]
+    "entries": [ { "group": "antifungal_bottle_plastic_pill_prescription", "container-item": "null", "count": [ 1, 5 ] } ]
   },
   {
     "type": "item_group",
@@ -467,7 +467,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_supplement",
-    "entries": [ { "item": "homeopathic_pills", "container-item": "null", "count": 20 } ]
+    "entries": [ { "group": "homeopathic_pills_bottle_plastic_pill_supplement", "container-item": "null", "count": 20 } ]
   },
   {
     "type": "item_group",
@@ -475,6 +475,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "box_snack",
-    "entries": [ { "item": "cookies", "container-item": "null", "count": [ 1, 4 ] } ]
+    "entries": [ { "group": "cookies_null", "container-item": "null", "count": [ 1, 4 ] } ]
   }
 ]

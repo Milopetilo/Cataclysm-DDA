@@ -85,7 +85,7 @@
       { "item": "2x4" },
       { "group": "ammo_any_batteries_full" },
       { "item": "nail" },
-      { "item": "gasoline" }
+      { "group": "gasoline_jerrycan" }
     ]
   },
   {

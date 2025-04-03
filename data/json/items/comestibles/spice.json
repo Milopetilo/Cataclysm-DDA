@@ -18,7 +18,6 @@
   },
   {
     "id": "hot_sauce",
-    "container": "bottle_plastic_small",
     "type": "COMESTIBLE",
     "comestible_type": "DRINK",
     "name": { "str_sp": "hot sauce" },
@@ -128,7 +127,6 @@
     "name": { "str_sp": "sprinkles" },
     "weight": "4 g",
     "copy-from": "sugar",
-    "container": "bottle_plastic_small",
     "description": "Known as nonpareils, sprinkles, jimmies, sugar strands or 'hundreds-and-thousands', these colorful balls, rods or flakes of sugar and starch are intended for use decorating soft surfaces of sweets.  Like sugar, they are bad for your teeth and surprisingly not very tasty on their own.",
     "price": "6 cent",
     "price_postapoc": "3 cent",
@@ -168,7 +166,6 @@
     "material": [ "water" ],
     "calories": 17,
     "comestible_type": "DRINK",
-    "container": "bottle_glass",
     "primary_material": "water",
     "quench": -20,
     "charges": 10,
