@@ -7,7 +7,6 @@ just temporarily move them to their own folder.
 import argparse
 import json
 import os
-import re
 
 args = argparse.ArgumentParser()
 args.add_argument("dir", action="store", help="specify json directory")
@@ -80,19 +79,57 @@ for item in containers_removed_dic:
     with open(output_path, "w") as output:
         json.dump(output_list, output, indent=4)
 
+
+def replace_item_with_group(dir_path):
+    change = False
+    with open(dir_path, "r", encoding="utf-8") as json_file:
+        try:
+            json_data = json.load(json_file)
+        except json.JSONDecodeError:
+            failures.add(
+                "Json Decode Error at:\n" +
+                dir_path +
+                "\nEnsure that the file is a JSON"
+                "file consisting of an array of objects!"
+            )
+            return None
+        for jo in json_data:
+            if (isinstance(jo, dict)):
+                if (
+                    ("type" in jo and "id" in jo and "entries" in jo) and
+                    (jo["type"] == "item_group")
+
+                ):
+                    # If itemgroup has only 1 entry and has container item it's probably an itemgroup used to put items in containers
+                    if "container-item" in jo and len(jo["entries"]) == 1:
+                        return None
+                    else:
+                        jo["entries"], change = check_entry(jo["entries"], change)
+
+    return json_data if change else None
+
+
+def check_entry(entries, change):
+    for entry in entries:
+        if "distribution" in entry or "collection" in entry:
+            entry, change = check_entry(entry, change)
+        elif "item" in entry and entry["item"] in containers_removed_dic.keys():
+            if "container-item" not in entry:
+                entry["group"] = entry["item"] + "_" + containers_removed_dic[entry["item"]]
+                del entry["item"]
+                change = True
+
+    return entries, change
+
+
 for root, directories, filenames in os.walk(args_dict["dir"]):
     for filename in filenames:
         path = os.path.join(root, filename)
-        if path.endswith(".json") and "itemgroups" in path:
-            with open(path, "r", encoding="utf-8") as f:
-                file_content = f.read()
-                print("Working on file: " + path)
-                for key in containers_removed_dic:
-                    pattern = r'"item": "' + re.escape(str(key)) + '"'
-                    file_content = re.sub(pattern, r'"group": "' + key + "_" + containers_removed_dic[key] + '"',
-                                          file_content)
-            with open(path, "w", encoding="utf-8") as jf:
-                jf.write(file_content)
+        if path.endswith(".json"):
+            new = replace_item_with_group(path)
+            if new is not None:
+                with open(path, "w", encoding="utf-8") as jf:
+                    json.dump(new, jf, ensure_ascii=False)
                 format_json(path)
 format_json(os.path.join(os.path.dirname(__file__), "../container_itemgroups.json"))
 for statement in failures:
