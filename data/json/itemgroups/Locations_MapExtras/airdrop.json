@@ -23,8 +23,8 @@
     "type": "item_group",
     "subtype": "collection",
     "entries": [
-      { "group": "protein_bar_evac_wrapper_pr", "prob": 60, "count": [ 2, 100 ] },
-      { "group": "toilet_paper_bag_plastic_small", "count": [ 0, 10 ], "prob": 50 },
+      { "item": "protein_bar_evac", "prob": 60, "count": [ 2, 100 ] },
+      { "item": "toilet_paper", "count": [ 0, 10 ], "prob": 50 },
       { "group": "soap_packed", "count": [ 0, 1 ], "prob": 50 },
       { "item": "large_tent_kit", "count": [ 0, 3 ], "prob": 50 },
       { "item": "emer_blanket", "count": [ 0, 7 ], "prob": 75 },
@@ -36,7 +36,7 @@
     "type": "item_group",
     "subtype": "collection",
     "container-item": "box_medium",
-    "entries": [ { "group": "protein_bar_evac_wrapper_pr", "count": 100 } ]
+    "entries": [ { "item": "protein_bar_evac", "count": 100 } ]
   },
   {
     "id": "bottle_pur_tablets",
@@ -50,20 +50,20 @@
     "type": "item_group",
     "subtype": "collection",
     "container-item": "shrink_wrap",
-    "entries": [ { "group": "water_clean_bottle_plastic", "container-item": "bottle_twoliter", "charges": 8, "count": 6 } ]
+    "entries": [ { "item": "water_clean", "container-item": "bottle_twoliter", "charges": 8, "count": 6 } ]
   },
   {
     "id": "disinfectant_bottle",
     "type": "item_group",
     "subtype": "collection",
     "container-item": "box_small",
-    "entries": [ { "group": "disinfectant_bottle_plastic_small", "charges": 10, "container-item": "bottle_plastic_small", "count": 8 } ]
+    "entries": [ { "item": "disinfectant", "charges": 10, "container-item": "bottle_plastic_small", "count": 8 } ]
   },
   {
     "id": "toilet_paper_packed",
     "type": "item_group",
     "subtype": "collection",
-    "entries": [ { "group": "toilet_paper_bag_plastic_small", "container-item": "bag_plastic", "count": 24 } ]
+    "entries": [ { "item": "toilet_paper", "container-item": "bag_plastic", "count": 24 } ]
   },
   {
     "id": "soap_packed",
@@ -107,9 +107,9 @@
     "//": "This is a small diesel generator, outputting ~1.3kW. It is not military spec, but it is the only generator we have. Should be replaced with milspec 5kW generator item in the future",
     "//2": "yes, they should be 50-75% full, according to FM 10-535.",
     "entries": [
-      { "group": "jp8_jerrycan", "charges": [ 10000, 15000 ], "container-item": "diesel_generator" },
+      { "item": "jp8", "charges": [ 10000, 15000 ], "container-item": "diesel_generator" },
       { "item": "standing_directed_floodlight" },
-      { "group": "jp8_jerrycan", "charges": [ 19000, 20000 ], "container-item": "jerrycan_big", "count": 5 },
+      { "item": "jp8", "charges": [ 19000, 20000 ], "container-item": "jerrycan_big", "count": 5 },
       { "item": "cardboard", "count": [ 1200, 1700 ] }
     ]
   },

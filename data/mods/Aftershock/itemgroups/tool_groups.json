@@ -237,7 +237,7 @@
         "prob": 20
       },
       {
-        "collection": [ { "item": "afs_jetpack", "prob": 50 }, { "group": "ammonia_liquid_pressure_tank", "prob": 100, "count": [ 1, 2 ] } ],
+        "collection": [ { "item": "afs_jetpack", "prob": 50 }, { "item": "ammonia_liquid", "prob": 100, "count": [ 1, 2 ] } ],
         "prob": 10
       },
       { "item": "afs_imager", "prob": 30 },
@@ -264,7 +264,7 @@
       [ "fertilizer_liquid", 20 ],
       { "group": "fertilizer_commercial_bag_canvas_60", "prob": 30 },
       [ "fungicide", 20 ],
-      { "group": "chem_saltpetre_bag_canvas", "prob": 15, "charges": [ 10, 50 ] },
+      { "item": "chem_saltpetre", "prob": 15, "charges": [ 10, 50 ] },
       [ "sickle", 40 ],
       { "group": "tools_toolbox", "prob": 10 },
       [ "bullwhip", 30 ],

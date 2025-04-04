@@ -32,8 +32,8 @@
       { "item": "seasoning_salt", "prob": 50, "container-item": "afs_foil_bag" },
       { "group": "ketchup_sealed_rng", "prob": 35 },
       { "group": "mustard_sealed_rng", "prob": 35 },
-      { "group": "soysauce_bottle_glass", "prob": 25 },
-      { "group": "hot_sauce_bottle_plastic_small", "prob": 25 }
+      { "item": "soysauce", "prob": 25 },
+      { "item": "hot_sauce", "prob": 25 }
     ]
   },
   {
@@ -44,15 +44,15 @@
     "subtype": "distribution",
     "entries": [
       { "item": "instant_coffee", "prob": 40, "container-item": "afs_foil_bag" },
-      { "group": "flour_bag_paper_powder", "prob": 40, "container-item": "afs_foil_bag" },
-      { "group": "yeast_bag_plastic_small", "prob": 50, "container-item": "afs_foil_bag" },
-      { "group": "fruit_leather_bag_plastic_small", "prob": 15, "container-item": "afs_foil_bag" },
-      { "group": "dry_beans_bag_plastic_small", "prob": 10, "container-item": "afs_foil_bag" },
-      { "group": "dry_lentils_bag_plastic_small", "prob": 10, "container-item": "afs_foil_bag" },
-      { "group": "dry_rice_bag_plastic_small", "prob": 10, "container-item": "afs_foil_bag" },
-      { "group": "gelatin_powder_bag_plastic_small", "prob": 40, "container-item": "afs_foil_bag" },
-      { "group": "chem_agar_bottle_plastic_small", "prob": 15, "container-item": "afs_foil_bag" },
-      { "group": "gelatin_dessert_powder_box_snack", "prob": 40, "container-item": "afs_foil_bag" }
+      { "item": "flour", "prob": 40, "container-item": "afs_foil_bag" },
+      { "item": "yeast", "prob": 50, "container-item": "afs_foil_bag" },
+      { "item": "fruit_leather", "prob": 15, "container-item": "afs_foil_bag" },
+      { "item": "dry_beans", "prob": 10, "container-item": "afs_foil_bag" },
+      { "item": "dry_lentils", "prob": 10, "container-item": "afs_foil_bag" },
+      { "item": "dry_rice", "prob": 10, "container-item": "afs_foil_bag" },
+      { "item": "gelatin_powder", "prob": 40, "container-item": "afs_foil_bag" },
+      { "item": "chem_agar", "prob": 15, "container-item": "afs_foil_bag" },
+      { "item": "gelatin_dessert_powder", "prob": 40, "container-item": "afs_foil_bag" }
     ]
   },
   {
@@ -60,7 +60,7 @@
     "id": "afs_cafe_rack",
     "subtype": "collection",
     "entries": [
-      { "group": "afs_caffex_can_drink", "prob": 5 },
+      { "item": "afs_caffex", "prob": 5 },
       { "item": "instant_coffee", "prob": 50, "container-item": "afs_foil_bag" },
       { "item": "sugar", "prob": 40, "container-item": "afs_foil_bag" },
       { "item": "artificial_sweetener", "prob": 40, "container-item": "afs_foil_bag" },
@@ -104,10 +104,10 @@
     "subtype": "collection",
     "id": "afs_mealgrub_procesing",
     "entries": [
-      { "group": "afs_mealgrub_jelly_jug_plastic", "count": [ 5, 20 ] },
+      { "item": "afs_mealgrub_jelly", "count": [ 5, 20 ] },
       { "prob": 15, "count": [ 5, 25 ], "group": "afs_mealgrubs_afs_foil_bag_5" },
       { "prob": 5, "count": [ 5, 25 ], "group": "afs_mealgrubs_afs_foil_bag_5" },
-      { "group": "water_bottle_plastic", "prob": 10, "charges": [ 20, 40 ], "container-item": "jerrycan" }
+      { "item": "water", "prob": 10, "charges": [ 20, 40 ], "container-item": "jerrycan" }
     ]
   },
   {
@@ -115,9 +115,9 @@
     "subtype": "collection",
     "id": "afs_mealgrub_precursor",
     "entries": [
-      { "group": "afs_mealgrub_spores_bottle_plastic_small", "count": [ 1, 6 ] },
-      { "group": "afs_mealgrub_medium_jug_plastic", "prob": 80, "count": [ 23, 6 ] },
-      { "group": "afs_mealgrub_medium_jug_plastic", "prob": 33, "count": [ 2, 6 ] }
+      { "item": "afs_mealgrub_spores", "count": [ 1, 6 ] },
+      { "item": "afs_mealgrub_medium", "prob": 80, "count": [ 23, 6 ] },
+      { "item": "afs_mealgrub_medium", "prob": 33, "count": [ 2, 6 ] }
     ]
   },
   {

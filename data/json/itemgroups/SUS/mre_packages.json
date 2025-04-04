@@ -82,7 +82,7 @@
     "entries": [
       {
         "distribution": [
-          { "group": "crackers_box_small", "container-item": "null", "count": 2 },
+          { "item": "crackers", "container-item": "null", "count": 2 },
           { "item": "snack_bread", "container-item": "null", "count": 2 }
         ]
       }
@@ -94,7 +94,7 @@
     "container-item": "bag_plastic",
     "subtype": "collection",
     "entries": [
-      { "group": "gummy_vitamins_null" },
+      { "item": "gummy_vitamins" },
       { "item": "matches", "charges": 20 },
       { "item": "napkin", "count": 8 },
       { "item": "gum", "count": 2 },
@@ -104,7 +104,7 @@
       {
         "distribution": [
           { "item": "instant_coffee", "count": 1, "container-item": "bag_zipper" },
-          { "group": "lemonade_powder_bottle_plastic_small", "count": 1, "container-item": "bag_zipper" },
+          { "item": "lemonade_powder", "count": 1, "container-item": "bag_zipper" },
           { "item": "orangeade_powder", "count": 1, "container-item": "bag_zipper" },
           { "item": "grapeade_powder", "count": 1, "container-item": "bag_zipper" }
         ]
@@ -121,15 +121,15 @@
       { "group": "mre_sides", "container-item": "mre_bag_small", "sealed": true },
       {
         "distribution": [
-          { "group": "can_cheese_can_food", "container-item": "null", "entry-wrapper": "mre_bag_spread", "sealed": true },
+          { "item": "can_cheese", "container-item": "null", "entry-wrapper": "mre_bag_spread", "sealed": true },
           {
-            "group": "spread_peanutbutter_can_food",
+            "item": "spread_peanutbutter",
             "container-item": "null",
             "entry-wrapper": "mre_bag_spread",
             "sealed": true
           },
           {
-            "group": "jam_fruit_jar_3l_glass_sealed",
+            "item": "jam_fruit",
             "container-item": "null",
             "entry-wrapper": "mre_bag_jam",
             "sealed": true,
@@ -156,10 +156,10 @@
     "entries": [
       {
         "distribution": [
-          { "group": "cookies_null", "count": [ 0, 1 ], "container-item": "null" },
+          { "item": "cookies", "count": [ 0, 1 ], "container-item": "null" },
           { "item": "mre_carrot_cake", "count": [ 0, 1 ], "container-item": "null" },
           { "item": "mre_poppyseed_cake", "count": [ 0, 1 ], "container-item": "null" },
-          { "group": "chocolate_wrapper", "count": [ 0, 1 ], "container-item": "null" }
+          { "item": "chocolate", "count": [ 0, 1 ], "container-item": "null" }
         ]
       }
     ]
@@ -174,22 +174,16 @@
       { "item": "heatpack", "prob": 40 },
       {
         "distribution": [
+          { "item": "can_cheese", "container-item": "null", "entry-wrapper": "mre_bag_spread", "prob": 40, "sealed": true },
           {
-            "group": "can_cheese_can_food",
+            "item": "spread_peanutbutter",
             "container-item": "null",
             "entry-wrapper": "mre_bag_spread",
             "prob": 40,
             "sealed": true
           },
           {
-            "group": "spread_peanutbutter_can_food",
-            "container-item": "null",
-            "entry-wrapper": "mre_bag_spread",
-            "prob": 40,
-            "sealed": true
-          },
-          {
-            "group": "jam_fruit_jar_3l_glass_sealed",
+            "item": "jam_fruit",
             "container-item": "null",
             "entry-wrapper": "mre_bag_jam",
             "sealed": true,
@@ -215,7 +209,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "wrapper",
-    "entries": [ { "group": "candy2_bag_plastic_small", "container-item": "null" } ]
+    "entries": [ { "item": "candy2", "container-item": "null" } ]
   },
   {
     "type": "item_group",
@@ -223,7 +217,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "wrapper",
-    "entries": [ { "group": "cookies_null", "container-item": "null" } ]
+    "entries": [ { "item": "cookies", "container-item": "null" } ]
   },
   {
     "type": "item_group",
@@ -247,7 +241,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "mre_bag_small",
-    "entries": [ { "group": "crackers_box_small", "container-item": "null", "count": 2 } ]
+    "entries": [ { "item": "crackers", "container-item": "null", "count": 2 } ]
   },
   {
     "type": "item_group",
@@ -271,6 +265,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "mre_bag_small",
-    "entries": [ { "group": "crackers_box_small", "container-item": "null", "count": [ 0, 2 ] } ]
+    "entries": [ { "item": "crackers", "container-item": "null", "count": [ 0, 2 ] } ]
   }
 ]

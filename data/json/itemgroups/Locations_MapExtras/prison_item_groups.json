@@ -2,7 +2,7 @@
   {
     "id": "prison_canine_food",
     "type": "item_group",
-    "items": [ { "group": "dogfood_can_medium", "prob": 100, "container-item": "can_medium" } ]
+    "items": [ { "item": "dogfood", "prob": 100, "container-item": "can_medium" } ]
   },
   {
     "id": "prison_canine_bowl",

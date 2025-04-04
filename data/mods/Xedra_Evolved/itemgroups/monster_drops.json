@@ -229,13 +229,7 @@
     "copy-from": "default_zombie_children_clothes",
     "extend": {
       "entries": [
-        {
-          "group": "wyld_candy_wrapper_wyld",
-          "prob": 15,
-          "container-item": "null",
-          "entry-wrapper": "wrapper_wyld",
-          "sealed": false
-        },
+        { "item": "wyld_candy", "prob": 15, "container-item": "null", "entry-wrapper": "wrapper_wyld", "sealed": false },
         { "item": "scrap_dreamdross", "prob": 35, "count": [ 1, 4 ] }
       ]
     }

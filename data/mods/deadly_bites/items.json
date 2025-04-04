@@ -11,6 +11,7 @@
     "price_postapoc": "2 USD",
     "symbol": "!",
     "color": "white",
+    "container": "bottle_plastic_pill_prescription",
     "use_action": {
       "type": "effect_on_conditions",
       "description": "Reduces the effect of certain viral infections.",

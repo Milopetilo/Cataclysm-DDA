@@ -266,7 +266,8 @@
     "copy-from": "liver_cooked",
     "name": { "str_sp": "canned liver" },
     "description": "Livers preserved in a can.  Chock-full of B vitamins!",
-    "sealed": true
+    "sealed": true,
+    "container": "can_food"
   },
   {
     "id": "canned_heart",
@@ -274,7 +275,8 @@
     "copy-from": "heart_cooked",
     "name": { "str_sp": "canned heart" },
     "description": "Chunks of heart preserved in a can.",
-    "sealed": true
+    "sealed": true,
+    "container": "can_food"
   },
   {
     "id": "lung_provence",

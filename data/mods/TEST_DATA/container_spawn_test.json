@@ -109,6 +109,7 @@
     "comestible_type": "FOOD",
     "charges": 4,
     "stackable": true,
+    "container": "test_backpack",
     "name": "test item with charges",
     "volume": "1ml",
     "weight": "1g",
@@ -127,6 +128,7 @@
   {
     "id": "test_item_with_container_without_charges",
     "type": "GENERIC",
+    "container": "test_backpack",
     "name": "test item without charges",
     "volume": "1ml",
     "weight": "1g",

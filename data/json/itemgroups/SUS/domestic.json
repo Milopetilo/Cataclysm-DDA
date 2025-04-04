@@ -198,7 +198,7 @@
       { "item": "condom", "prob": 40 },
       { "item": "razor_shaving", "prob": 40 },
       { "item": "scorecard", "prob": 40 },
-      { "group": "gummy_vitamins_null", "prob": 40 },
+      { "item": "gummy_vitamins", "prob": 40 },
       { "item": "survnote", "prob": 25 },
       { "item": "joint_roach", "prob": 30 },
       { "item": "file", "prob": 30 },
@@ -488,7 +488,7 @@
     "//2": "This group is for the cleaning materials under a kitchen sink.",
     "subtype": "collection",
     "entries": [
-      { "group": "detergent_box_small", "charges": [ 1, 40 ], "container-item": "box_small" },
+      { "item": "detergent", "charges": [ 1, 40 ], "container-item": "box_small" },
       { "item": "cotton_patchwork", "count": [ 1, 3 ] },
       { "item": "dish_towel", "count": [ 1, 6 ] },
       { "item": "brush" },
@@ -498,9 +498,9 @@
       { "item": "methed_alcohol", "prob": 5, "charges": [ 1, -1 ] },
       { "item": "denat_alcohol", "prob": 5, "charges": [ 1, -1 ] },
       { "item": "chem_methanol", "prob": 5, "charges": [ 1, -1 ] },
-      { "group": "chem_washing_soda_box_small", "prob": 50, "charges": [ 1, -1 ] },
-      { "group": "bleach_jug_plastic", "prob": 75, "charges": [ 1, -1 ] },
-      { "group": "ammonia_hydroxide_jug_plastic", "prob": 65, "charges": [ 1, -1 ] }
+      { "item": "chem_washing_soda", "prob": 50, "charges": [ 1, -1 ] },
+      { "item": "bleach", "prob": 75, "charges": [ 1, -1 ] },
+      { "item": "ammonia_hydroxide", "prob": 65, "charges": [ 1, -1 ] }
     ]
   },
   {
@@ -566,10 +566,10 @@
       { "distribution": [ { "item": "coffeemaker", "prob": 90 }, { "item": "atomic_coffeepot", "prob": 10 } ], "prob": 75 },
       {
         "distribution": [
-          { "group": "coffee_raw_bag_plastic_small", "prob": 30 },
+          { "item": "coffee_raw", "prob": 30 },
           { "item": "instant_coffee", "prob": 40, "count": [ 1, 5 ] },
           {
-            "group": "coffee_raw_bag_plastic_small",
+            "item": "coffee_raw",
             "prob": 30,
             "count": [ 1, 200 ],
             "container-item": "null",
@@ -586,21 +586,21 @@
       {
         "distribution": [
           {
-            "group": "milk_powder_bag_plastic_small",
+            "item": "milk_powder",
             "count": [ 5, 20 ],
             "container-item": "null",
             "entry-wrapper": "jar_3l_glass_sealed",
             "prob": 60,
             "sealed": false
           },
-          { "group": "con_milk_can_medium", "count": [ 1, 6 ], "prob": 10 },
-          { "group": "milk_evap_can_medium", "count": [ 1, 6 ], "prob": 20 },
-          { "group": "milk_UHT_carton_sealed", "prob": 10 }
+          { "item": "con_milk", "count": [ 1, 6 ], "prob": 10 },
+          { "item": "milk_evap", "count": [ 1, 6 ], "prob": 20 },
+          { "item": "milk_UHT", "prob": 10 }
         ],
         "prob": 30
       },
       {
-        "distribution": [ { "group": "honey_glassed_jar_glass_sealed", "prob": 20 }, { "group": "honey_bottled_bottle_plastic", "prob": 80 } ],
+        "distribution": [ { "item": "honey_glassed", "prob": 20 }, { "item": "honey_bottled", "prob": 80 } ],
         "prob": 60
       },
       { "item": "spoon", "count": [ 1, 6 ] },
@@ -620,15 +620,9 @@
           { "item": "toaster" },
           {
             "distribution": [
+              { "item": "bread", "count": [ 2, 14 ], "prob": 70, "container-item": "null", "entry-wrapper": "bag_plastic" },
               {
-                "group": "bread_bag_plastic",
-                "count": [ 2, 14 ],
-                "prob": 70,
-                "container-item": "null",
-                "entry-wrapper": "bag_plastic"
-              },
-              {
-                "group": "sourdough_bread_bag_plastic",
+                "item": "sourdough_bread",
                 "count": [ 2, 12 ],
                 "prob": 30,
                 "container-item": "null",
@@ -639,7 +633,7 @@
           },
           {
             "distribution": [
-              { "group": "toastem_box_small", "count": [ 1, 8 ], "prob": 40, "container-item": "null", "entry-wrapper": "box_small" },
+              { "item": "toastem", "count": [ 1, 8 ], "prob": 40, "container-item": "null", "entry-wrapper": "box_small" },
               {
                 "item": "toastem2",
                 "count": [ 1, 8 ],
@@ -660,37 +654,29 @@
         ],
         "prob": 80
       },
-      { "group": "jam_fruit_jar_3l_glass_sealed", "prob": 80 },
-      { "group": "peanutbutter_jar_glass_sealed", "prob": 80 },
-      { "group": "marshmallow_fluff_jar_glass_sealed", "prob": 80 },
-      { "group": "syrup_bottle_glass", "prob": 50 },
+      { "item": "jam_fruit", "prob": 80 },
+      { "item": "peanutbutter", "prob": 80 },
+      { "item": "marshmallow_fluff", "prob": 80 },
+      { "item": "syrup", "prob": 50 },
       {
-        "distribution": [
-          { "group": "cereal_box_small", "prob": 50 },
-          { "item": "cereal2", "prob": 50 },
-          { "group": "cereal3_box_small", "prob": 50 }
-        ]
+        "distribution": [ { "item": "cereal", "prob": 50 }, { "item": "cereal2", "prob": 50 }, { "item": "cereal3", "prob": 50 } ]
       },
       {
-        "distribution": [
-          { "group": "cereal_box_small", "prob": 50 },
-          { "item": "cereal2", "prob": 50 },
-          { "group": "cereal3_box_small", "prob": 50 }
-        ],
+        "distribution": [ { "item": "cereal", "prob": 50 }, { "item": "cereal2", "prob": 50 }, { "item": "cereal3", "prob": 50 } ],
         "prob": 75
       },
       {
         "distribution": [
           {
-            "group": "milk_powder_bag_plastic_small",
+            "item": "milk_powder",
             "count": [ 5, 20 ],
             "container-item": "null",
             "entry-wrapper": "jar_3l_glass_sealed",
             "prob": 60,
             "sealed": false
           },
-          { "group": "milk_evap_can_medium", "count": [ 1, 6 ], "prob": 20 },
-          { "group": "milk_UHT_carton_sealed", "prob": 20 }
+          { "item": "milk_evap", "count": [ 1, 6 ], "prob": 20 },
+          { "item": "milk_UHT", "prob": 20 }
         ],
         "prob": 20
       }
@@ -722,28 +708,28 @@
         "distribution": [
           { "item": "pot", "prob": 20 },
           {
-            "group": "tuna_noodle_casserole_casserole",
+            "item": "tuna_noodle_casserole",
             "count": 4,
             "container-item": "null",
             "entry-wrapper": "casserole",
             "prob": 10
           },
           {
-            "group": "hot_corn_casserole_casserole",
+            "item": "hot_corn_casserole",
             "count": 4,
             "container-item": "null",
             "entry-wrapper": "casserole",
             "prob": 10
           },
           {
-            "group": "cheesy_spinach_casserole_casserole",
+            "item": "cheesy_spinach_casserole",
             "count": 4,
             "container-item": "null",
             "entry-wrapper": "casserole",
             "prob": 5
           },
           {
-            "group": "lazy_lobster_casserole_casserole",
+            "item": "lazy_lobster_casserole",
             "count": 4,
             "container-item": "null",
             "entry-wrapper": "casserole",
@@ -799,13 +785,13 @@
       { "group": "cotton_ball_bag_used", "prob": 50 },
       { "group": "cotton_ball_bag_full", "prob": 5 },
       { "item": "comb_lice", "prob": 2 },
-      { "group": "bleach_jug_plastic", "prob": 15, "charges": [ 1, -1 ] },
-      { "group": "ammonia_hydroxide_jug_plastic", "prob": 20, "charges": [ 1, -1 ] },
-      { "group": "chem_washing_soda_box_small", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "bleach", "prob": 15, "charges": [ 1, -1 ] },
+      { "item": "ammonia_hydroxide", "prob": 20, "charges": [ 1, -1 ] },
+      { "item": "chem_washing_soda", "prob": 10, "charges": [ 1, -1 ] },
       { "item": "string_floss", "count": [ 1, 2 ], "prob": 60 },
       { "group": "tampon_box_used", "prob": 10 },
       { "group": "menstrual_pad_box_used", "prob": 10 },
-      { "group": "menstrual_cup_bag_plastic_small", "prob": 1 },
+      { "item": "menstrual_cup", "prob": 1 },
       { "item": "toothbrush_plain", "count": [ 1, 3 ], "prob": 45 },
       { "item": "dentures", "count": [ 1, 2 ], "prob": 15 },
       { "item": "toothbrush_electric", "count": [ 1, 3 ], "prob": 25 }
@@ -821,42 +807,42 @@
       {
         "distribution": [
           {
-            "group": "aspirin_bottle_plastic_pill_painkiller",
+            "item": "aspirin",
             "prob": 50,
             "count": [ 1, 30 ],
             "container-item": "null",
             "entry-wrapper": "bottle_plastic_pill_painkiller"
           },
           {
-            "group": "acetaminophen_bottle_plastic_pill_painkiller",
+            "item": "acetaminophen",
             "prob": 70,
             "count": [ 1, 30 ],
             "container-item": "null",
             "entry-wrapper": "bottle_plastic_pill_painkiller"
           },
           {
-            "group": "ibuprofen_bottle_plastic_pill_painkiller",
+            "item": "ibuprofen",
             "prob": 80,
             "count": [ 1, 30 ],
             "container-item": "null",
             "entry-wrapper": "bottle_plastic_pill_painkiller"
           },
           {
-            "group": "naproxen_bottle_plastic_pill_painkiller",
+            "item": "naproxen",
             "prob": 20,
             "count": [ 1, 30 ],
             "container-item": "null",
             "entry-wrapper": "bottle_plastic_pill_painkiller"
           },
           {
-            "group": "codeine_bottle_plastic_pill_painkiller",
+            "item": "codeine",
             "prob": 30,
             "count": [ 1, 15 ],
             "container-item": "null",
             "entry-wrapper": "bottle_plastic_pill_painkiller"
           },
           {
-            "group": "tramadol_bottle_plastic_pill_prescription",
+            "item": "tramadol",
             "prob": 10,
             "count": [ 1, 15 ],
             "container-item": "null",
@@ -868,31 +854,26 @@
       { "item": "comb_lice", "prob": 10 },
       { "item": "eyedrops", "prob": 15, "count": 10 },
       { "item": "steroid_eyedrops", "prob": 5, "count": 5 },
-      {
-        "group": "pepto_bottle_plastic_small",
-        "prob": 60,
-        "charges": [ 1, -1 ],
-        "container-item": "bottle_plastic_small"
-      },
+      { "item": "pepto", "prob": 60, "charges": [ 1, -1 ], "container-item": "bottle_plastic_small" },
       { "prob": 60, "group": "tums_bottle_plastic_small_1_20" },
       { "item": "inhaler", "prob": 25, "charges": [ 10, 100 ] },
       { "group": "tampon_box_used", "prob": 20 },
       { "group": "menstrual_pad_box_used", "prob": 20 },
-      { "group": "menstrual_cup_bag_plastic_small", "prob": 2 },
-      { "group": "disinfectant_bottle_plastic_small", "prob": 40, "charges": [ 1, -1 ] },
+      { "item": "menstrual_cup", "prob": 2 },
+      { "item": "disinfectant", "prob": 40, "charges": [ 1, -1 ] },
       { "group": "alcohol_wipes_box_used", "prob": 60 },
       { "group": "alcohol_wipes_box_full", "prob": 20 },
       {
         "distribution": [
           {
-            "group": "pills_sleep_bottle_plastic_pill_prescription",
+            "item": "pills_sleep",
             "prob": 60,
             "count": [ 1, 10 ],
             "container-item": "null",
             "entry-wrapper": "bottle_plastic_pill_prescription"
           },
           {
-            "group": "melatonin_tablet_bottle_plastic_pill_supplement",
+            "item": "melatonin_tablet",
             "prob": 40,
             "count": [ 1, 30 ],
             "container-item": "null",
@@ -902,10 +883,7 @@
         "prob": 10
       },
       {
-        "distribution": [
-          { "group": "nyquil_bottle_plastic_small", "prob": 60, "charges": [ 1, -1 ] },
-          { "group": "dayquil_bottle_plastic_small", "prob": 20, "charges": [ 1, -1 ] }
-        ],
+        "distribution": [ { "item": "nyquil", "prob": 60, "charges": [ 1, -1 ] }, { "item": "dayquil", "prob": 20, "charges": [ 1, -1 ] } ],
         "prob": 50
       },
       {
@@ -921,14 +899,14 @@
       {
         "distribution": [
           {
-            "group": "vitamins_bottle_plastic_pill_supplement",
+            "item": "vitamins",
             "prob": 60,
             "count": [ 1, 40 ],
             "container-item": "null",
             "entry-wrapper": "bottle_plastic_small"
           },
           {
-            "group": "gummy_vitamins_null",
+            "item": "gummy_vitamins",
             "prob": 20,
             "count": [ 1, 20 ],
             "container-item": "null",
@@ -936,7 +914,7 @@
           },
           { "item": "vitc_tablet", "prob": 7, "count": [ 1, 30 ], "entry-wrapper": "bottle_plastic_small" },
           {
-            "group": "calcium_tablet_bottle_plastic_pill_supplement",
+            "item": "calcium_tablet",
             "prob": 10,
             "count": [ 1, 40 ],
             "container-item": "null",
@@ -948,14 +926,14 @@
       {
         "distribution": [
           {
-            "group": "weak_antibiotic_bottle_plastic_pill_prescription",
+            "item": "weak_antibiotic",
             "prob": 40,
             "count": [ 1, 20 ],
             "container-item": "null",
             "entry-wrapper": "bottle_plastic_small"
           },
           {
-            "group": "antibiotics_bottle_plastic_pill_prescription",
+            "item": "antibiotics",
             "prob": 10,
             "count": [ 1, 20 ],
             "container-item": "null",
@@ -967,14 +945,14 @@
       {
         "distribution": [
           {
-            "group": "antifungal_bottle_plastic_pill_prescription",
+            "item": "antifungal",
             "prob": 5,
             "count": [ 1, 10 ],
             "container-item": "null",
             "entry-wrapper": "bottle_plastic_small"
           },
           {
-            "group": "antiparasitic_bottle_plastic_pill_prescription",
+            "item": "antiparasitic",
             "prob": 20,
             "count": [ 1, 10 ],
             "container-item": "null",
@@ -996,10 +974,7 @@
       { "item": "comb_pocket", "count": [ 1, 2 ], "prob": 75 },
       { "item": "scissors", "count": [ 1, 2 ], "prob": 60 },
       { "item": "hair_dryer", "prob": 60 },
-      {
-        "collection": [ { "item": "curling_iron", "count": [ 1, 2 ] }, { "group": "curler_hair_box_small" } ],
-        "prob": 25
-      },
+      { "collection": [ { "item": "curling_iron", "count": [ 1, 2 ] }, { "item": "curler_hair" } ], "prob": 25 },
       { "item": "elec_hairtrimmer", "prob": 30, "charges": [ 0, 50 ] }
     ]
   },
@@ -1015,7 +990,7 @@
         "prob": 90
       },
       { "item": "brush_toilet", "prob": 75 },
-      { "group": "toilet_paper_bag_plastic_small", "prob": 95, "container-item": "wrapper" },
+      { "item": "toilet_paper", "prob": 95, "container-item": "wrapper" },
       { "item": "bathroom_scale", "prob": 50 }
     ]
   },
@@ -1027,7 +1002,7 @@
     "subtype": "collection",
     "entries": [
       { "item": "soap", "count": [ 1, 4 ], "prob": 70, "charges": [ 1, 10 ] },
-      { "group": "liquid_soap_bottle_bathroom", "count": [ 1, 6 ], "prob": 70, "charges": [ 1, -1 ] },
+      { "item": "liquid_soap", "count": [ 1, 6 ], "prob": 70, "charges": [ 1, -1 ] },
       { "item": "bath_toy", "count": [ 1, 4 ], "prob": 40 },
       {
         "distribution": [
@@ -1039,7 +1014,7 @@
       { "item": "mirror", "prob": 25 },
       { "item": "sponge", "count": [ 1, 3 ], "prob": 75 },
       { "item": "moisturizer", "prob": 60, "charges": [ 1, -1 ], "container-item": "bottle_plastic_small" },
-      { "group": "chem_hydrogen_peroxide_bottle_plastic_small", "prob": 40, "charges": [ 1, -1 ] },
+      { "item": "chem_hydrogen_peroxide", "prob": 40, "charges": [ 1, -1 ] },
       {
         "collection": [
           { "item": "candle", "count": [ 1, 2 ], "charges": [ 10, -1 ] },
@@ -1048,7 +1023,7 @@
         ],
         "prob": 20
       },
-      { "group": "toilet_paper_bag_plastic_small", "prob": 80 },
+      { "item": "toilet_paper", "prob": 80 },
       { "item": "towel", "count": [ 1, 2 ], "prob": 75 }
     ]
   },
@@ -1170,7 +1145,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "group": "adderall_bottle_plastic_pill_prescription", "container-item": "null" } ]
+    "entries": [ { "item": "adderall", "container-item": "null" } ]
   },
   {
     "type": "item_group",
@@ -1178,7 +1153,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "group": "weak_antibiotic_bottle_plastic_pill_prescription", "container-item": "null" } ]
+    "entries": [ { "item": "weak_antibiotic", "container-item": "null" } ]
   },
   {
     "type": "item_group",
@@ -1226,7 +1201,7 @@
     "id": "baking_soda_box",
     "subtype": "collection",
     "container-item": "box_small",
-    "entries": [ { "group": "chem_baking_soda_box_small", "container-item": "null", "count": [ 1, 2 ] } ]
+    "entries": [ { "item": "chem_baking_soda", "container-item": "null", "count": [ 1, 2 ] } ]
   },
   {
     "type": "item_group",
@@ -1250,6 +1225,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_small",
-    "entries": [ { "group": "tums_bottle_plastic_small", "container-item": "null", "count": [ 1, 20 ] } ]
+    "entries": [ { "item": "tums", "container-item": "null", "count": [ 1, 20 ] } ]
   }
 ]

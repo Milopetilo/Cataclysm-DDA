@@ -330,7 +330,7 @@
       { "item": "gunpowder_rifle", "prob": 85, "charges": [ 200, 4540 ], "container-item": "bottle_plastic" },
       { "item": "gunpowder_large_rifle", "prob": 40, "charges": [ 200, 4540 ], "container-item": "bottle_plastic" },
       { "item": "gunpowder_artillery", "prob": 5, "charges": [ 200, 4540 ], "container-item": "bottle_plastic" },
-      { "group": "incendiary_bag_plastic", "prob": 20 },
+      { "item": "incendiary", "prob": 20 },
       { "item": "copper", "prob": 160 },
       { "item": "lead", "prob": 160 },
       { "item": "shotgun_primer", "prob": 80 },

@@ -4,17 +4,17 @@
     "type": "item_group",
     "subtype": "collection",
     "entries": [
-      { "group": "bleach_jug_plastic", "charges": [ 1, -1 ], "prob": 40, "container-item": "jug_plastic", "sealed": false },
-      { "group": "ammonia_liquid_pressure_tank", "charges": [ 6, -1 ], "prob": 40, "container-item": "pressure_tank" },
+      { "item": "bleach", "charges": [ 1, -1 ], "prob": 40, "container-item": "jug_plastic", "sealed": false },
+      { "item": "ammonia_liquid", "charges": [ 6, -1 ], "prob": 40, "container-item": "pressure_tank" },
       {
-        "distribution": [ { "group": "honey_glassed_jar_glass_sealed", "prob": 20 }, { "group": "honey_bottled_bottle_plastic", "prob": 80 } ],
+        "distribution": [ { "item": "honey_glassed", "prob": 20 }, { "item": "honey_bottled", "prob": 80 } ],
         "prob": 30
       },
-      { "group": "can_clams_can_food", "count": [ 1, 3 ], "prob": 30 },
+      { "item": "can_clams", "count": [ 1, 3 ], "prob": 30 },
       { "group": "lye_powder_bottle_part", "prob": 30 },
       { "item": "honeycomb", "prob": 30 },
       { "prob": 30, "group": "iodine_bottle_plastic_pill_supplement_10" },
-      { "group": "disinfectant_bottle_plastic_small", "prob": 30 },
+      { "item": "disinfectant", "prob": 30 },
       { "prob": 30, "group": "protein_powder_bottle_plastic_small_9" },
       { "item": "bee_sting", "prob": 20 },
       { "item": "slime_scrap", "prob": 20 },
@@ -64,13 +64,7 @@
       { "item": "slime_sample", "prob": 40, "count": [ 1, 3 ] },
       { "item": "bird_sample", "prob": 40, "count": [ 1, 3 ] },
       { "item": "crustacean_sample", "prob": 40, "count": [ 1, 3 ] },
-      {
-        "group": "water_clean_bottle_plastic",
-        "container-item": "bottle_plastic",
-        "prob": 65,
-        "count": [ 1, 3 ],
-        "sealed": false
-      },
+      { "item": "water_clean", "container-item": "bottle_plastic", "prob": 65, "count": [ 1, 3 ], "sealed": false },
       { "item": "water_mineral", "container-item": "bottle_plastic", "prob": 35, "count": [ 1, 2 ], "sealed": false }
     ]
   },
@@ -142,7 +136,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_small",
-    "entries": [ { "group": "protein_powder_bottle_plastic_small", "container-item": "null", "count": 9 } ]
+    "entries": [ { "item": "protein_powder", "container-item": "null", "count": 9 } ]
   },
   {
     "type": "item_group",
@@ -150,7 +144,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_zipper",
-    "entries": [ { "group": "heroin_bag_zipper", "container-item": "null", "count": 4 } ]
+    "entries": [ { "item": "heroin", "container-item": "null", "count": 4 } ]
   },
   {
     "type": "item_group",
@@ -158,7 +152,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "group": "tramadol_bottle_plastic_pill_prescription", "container-item": "null", "count": 10 } ]
+    "entries": [ { "item": "tramadol", "container-item": "null", "count": 10 } ]
   },
   {
     "type": "item_group",
@@ -166,7 +160,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "group": "thorazine_bottle_plastic_pill_prescription", "container-item": "null", "count": 10 } ]
+    "entries": [ { "item": "thorazine", "container-item": "null", "count": 10 } ]
   },
   {
     "type": "item_group",
@@ -174,7 +168,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "group": "pills_sleep_bottle_plastic_pill_prescription", "container-item": "null", "count": 10 } ]
+    "entries": [ { "item": "pills_sleep", "container-item": "null", "count": 10 } ]
   },
   {
     "type": "item_group",
@@ -182,6 +176,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_supplement",
-    "entries": [ { "group": "vitamins_bottle_plastic_pill_supplement", "container-item": "null", "count": 20 } ]
+    "entries": [ { "item": "vitamins", "container-item": "null", "count": 20 } ]
   }
 ]

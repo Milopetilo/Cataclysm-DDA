@@ -129,6 +129,6 @@
     "id": "blood_containers",
     "type": "item_group",
     "subtype": "distribution",
-    "items": [ [ "bowl_skull", 100 ], { "group": "blood_bag_iv", "prob": 400, "container-item": "waterskin" } ]
+    "items": [ [ "bowl_skull", 100 ], { "item": "blood", "prob": 400, "container-item": "waterskin" } ]
   }
 ]

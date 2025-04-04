@@ -863,6 +863,7 @@
     "volume": "10 ml",
     "charges": 1,
     "phase": "liquid",
+    "container": "test_tube",
     "symbol": "?",
     "color": "white",
     "healthy": -30,

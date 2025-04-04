@@ -38,8 +38,8 @@
     "//": "Civilian Grade Medical supplies with a low chance of rare medical goods.",
     "entries": [
       { "group": "drugs_pharmacy", "prob": 100, "count": [ 3, 6 ] },
-      { "group": "afs_synth_blood_bag_iv", "prob": 30, "count": [ 1, 3 ] },
-      { "group": "afs_medigel_bag_iv", "prob": 60, "count": [ 1, 3 ] }
+      { "item": "afs_synth_blood", "prob": 30, "count": [ 1, 3 ] },
+      { "item": "afs_medigel", "prob": 60, "count": [ 1, 3 ] }
     ]
   },
   {

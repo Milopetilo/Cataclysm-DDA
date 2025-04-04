@@ -73,7 +73,7 @@
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "group": "tea_bottle_plastic", "prob": 70 },
+      { "item": "tea", "prob": 70 },
       { "prob": 70, "group": "tea_raw_bag_plastic_33" },
       { "prob": 35, "group": "tea_green_raw_bag_plastic_33" },
       { "item": "ceramic_cup", "prob": 70 },
@@ -87,7 +87,7 @@
     "type": "item_group",
     "subtype": "distribution",
     "items": [
-      { "group": "tea_bottle_plastic", "prob": 60 },
+      { "item": "tea", "prob": 60 },
       { "item": "bee_balm_tea", "prob": 20 },
       {
         "item": "dandelionburdock_tea",
@@ -104,12 +104,12 @@
         "sealed": false
       },
       { "item": "pine_tea", "prob": 10, "charges": [ 0, 2 ], "container-item": "bottle_plastic", "sealed": false },
-      { "group": "herbal_tea_bottle_plastic", "prob": 50 },
+      { "item": "herbal_tea", "prob": 50 },
       { "item": "chamomile_tea", "prob": 40 },
       { "item": "lotus_tea", "prob": 30 },
       { "item": "spurge_tea", "prob": 20 },
-      { "group": "milk_tea_jug_plastic", "prob": 20 },
-      { "group": "chai_tea_bottle_plastic", "prob": 30 }
+      { "item": "milk_tea", "prob": 20 },
+      { "item": "chai_tea", "prob": 30 }
     ]
   },
   {
@@ -128,9 +128,9 @@
     "type": "item_group",
     "subtype": "distribution",
     "items": [
-      { "group": "honey_bottled_bottle_plastic", "prob": 20 },
+      { "item": "honey_bottled", "prob": 20 },
       { "prob": 20, "group": "honey_glassed_jar_glass_sealed_5" },
-      { "group": "con_milk_can_medium", "prob": 10 },
+      { "item": "con_milk", "prob": 10 },
       { "prob": 20, "group": "bee_balm_jar_3l_glass_sealed_1_12" },
       { "item": "jar_3l_glass_sealed", "prob": 40, "contents-group": "teashop_bulk_teas_no_stackable" },
       { "prob": 10, "group": "raw_burdock_jar_3l_glass_sealed_1_inf" },
@@ -168,8 +168,8 @@
       { "group": "wines_worthy", "prob": 100 },
       { "group": "liquor_and_spirits", "prob": 116 },
       { "group": "mixed_alcoholic_drinks", "prob": 202 },
-      { "group": "fruit_wine_bottle_glass", "prob": 5 },
-      { "group": "sherry_bottle_glass", "prob": 10 },
+      { "item": "fruit_wine", "prob": 5 },
+      { "item": "sherry", "prob": 10 },
       { "item": "bristol_sherry", "prob": 5 },
       { "item": "madeira", "prob": 5 }
     ]
@@ -180,11 +180,11 @@
     "//": "Alcohol you'd find in at a still or moonshine camp",
     "subtype": "distribution",
     "entries": [
-      { "group": "brandied_fruit_jar_3l_glass_sealed", "prob": 75 },
-      { "group": "moonshine_jug_plastic", "prob": 86 },
-      { "group": "beer_can_drink", "prob": 80 },
-      { "group": "fruit_wine_bottle_glass", "prob": 40 },
-      { "group": "brandy_bottle_glass", "prob": 20 }
+      { "item": "brandied_fruit", "prob": 75 },
+      { "item": "moonshine", "prob": 86 },
+      { "item": "beer", "prob": 80 },
+      { "item": "fruit_wine", "prob": 40 },
+      { "item": "brandy", "prob": 20 }
     ]
   },
   {
@@ -192,20 +192,20 @@
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "group": "mayonnaise_condiment_bottle_sealed", "prob": 3 },
+      { "item": "mayonnaise", "prob": 3 },
       { "group": "ketchup_sealed_rng", "prob": 3 },
       { "group": "mustard_sealed_rng", "prob": 3 },
       { "group": "barbecue_sauce_sealed_rng", "prob": 2 },
       { "group": "honey_mustard_sealed_rng", "prob": 1 },
       { "prob": 5, "group": "pickle_jar_glass_sealed_2" },
       { "item": "pickle", "prob": 5 },
-      { "group": "cheeseburger_wrapper", "prob": 10 },
+      { "item": "cheeseburger", "prob": 10 },
       { "prob": 5, "group": "fried_mozzarella_sticks_bag_plastic_4" },
-      { "group": "hamburger_wrapper", "prob": 8 },
-      { "group": "sloppyjoe_wrapper", "prob": 6 },
-      { "group": "fries_box_small", "prob": 10 },
-      { "group": "cheese_fries_box_small", "prob": 7 },
-      { "group": "onion_rings_box_small", "prob": 8 },
+      { "item": "hamburger", "prob": 8 },
+      { "item": "sloppyjoe", "prob": 6 },
+      { "item": "fries", "prob": 10 },
+      { "item": "cheese_fries", "prob": 7 },
+      { "item": "onion_rings", "prob": 8 },
       { "prob": 6, "group": "hotdogs_cooked_wrapper_1_inf" },
       { "prob": 5, "group": "hotdogs_newyork_wrapper_1_inf" },
       { "prob": 8, "group": "crab_cakes_box_small_1_inf" },
@@ -217,20 +217,20 @@
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "group": "water_clean_bottle_plastic", "prob": 50 },
+      { "item": "water_clean", "prob": 50 },
       { "item": "water_mineral", "prob": 20 },
-      { "group": "grenadine_syrup_bottle_glass", "prob": 40 },
-      { "group": "syrup_simple_bottle_glass", "prob": 60 },
-      { "group": "oj_bottle_plastic", "prob": 40 },
+      { "item": "grenadine_syrup", "prob": 40 },
+      { "item": "syrup_simple", "prob": 60 },
+      { "item": "oj", "prob": 40 },
       { "item": "pineapple_juice", "prob": 35 },
-      { "group": "juice_bottle_plastic", "prob": 35 },
-      { "group": "tomato_juice_bottle_plastic", "prob": 25 },
-      { "group": "cranberry_juice_bottle_plastic", "prob": 35 },
+      { "item": "juice", "prob": 35 },
+      { "item": "tomato_juice", "prob": 25 },
+      { "item": "cranberry_juice", "prob": 35 },
       { "group": "softdrinks_canned", "prob": 95 },
-      { "group": "V8_can_drink", "prob": 15 },
-      { "group": "fries_box_small", "prob": 7 },
-      { "group": "cheese_fries_box_small", "prob": 5 },
-      { "group": "onion_rings_box_small", "prob": 7 },
+      { "item": "V8", "prob": 15 },
+      { "item": "fries", "prob": 7 },
+      { "item": "cheese_fries", "prob": 5 },
+      { "item": "onion_rings", "prob": 7 },
       { "prob": 7, "group": "pizza_veggy_box_small_4" },
       { "prob": 7, "group": "pizza_meat_box_small_4" }
     ]
@@ -348,8 +348,8 @@
     "items": [
       [ "towel", 15 ],
       { "item": "soap", "prob": 15, "charges": [ 1, 10 ] },
-      { "group": "detergent_box_small", "prob": 15, "charges": [ 1, 20 ] },
-      { "group": "bleach_jug_plastic", "prob": 15, "charges": [ 1, -1 ] },
+      { "item": "detergent", "prob": 15, "charges": [ 1, 20 ] },
+      { "item": "bleach", "prob": 15, "charges": [ 1, -1 ] },
       [ "broom", 13 ],
       { "item": "fursuit", "variant": "dinosuit", "prob": 7 },
       [ "hat_ball", 19 ],
@@ -384,7 +384,7 @@
       { "prob": 25, "group": "chips3_bag_plastic_3" },
       { "prob": 50, "group": "choco_coffee_beans_bag_plastic_5" },
       { "prob": 50, "group": "coffee_raw_bag_plastic_20" },
-      { "group": "coffee_syrup_bottle_plastic", "prob": 15 },
+      { "item": "coffee_syrup", "prob": 15 },
       { "prob": 10, "group": "licorice_bag_plastic_4" },
       { "prob": 35, "group": "cookies_box_snack_4" },
       { "prob": 50, "group": "tea_raw_bag_plastic_33" },
@@ -400,9 +400,9 @@
     "entries": [
       { "item": "bag_plastic", "prob": 25 },
       { "item": "box_small", "prob": 30 },
-      { "group": "honey_bottled_bottle_plastic", "prob": 10 },
+      { "item": "honey_bottled", "prob": 10 },
       { "prob": 10, "group": "honey_glassed_jar_glass_sealed_5" },
-      { "group": "milk_jug_plastic", "prob": 10 },
+      { "item": "milk", "prob": 10 },
       { "prob": 65, "group": "milk_powder_various" },
       { "prob": 15, "group": "salt_various" },
       { "prob": 70, "group": "sugar_bulk" },
@@ -419,15 +419,15 @@
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "group": "atomic_coffee_bottle_plastic", "prob": 3 },
+      { "item": "atomic_coffee", "prob": 3 },
       { "item": "bottle_glass", "prob": 5 },
       { "item": "ceramic_cup", "prob": 30 },
       { "prob": 40, "group": "choco_coffee_beans_bag_plastic_5" },
       { "prob": 10, "group": "licorice_bag_plastic_4" },
-      { "group": "coffee_bottle_plastic", "prob": 55 },
+      { "item": "coffee", "prob": 55 },
       { "prob": 5, "group": "cookies_box_snack_4" },
       { "item": "cup_plastic", "prob": 70 },
-      { "group": "tea_bottle_plastic", "prob": 15 },
+      { "item": "tea", "prob": 15 },
       { "prob": 10, "group": "toast_bag_plastic_2" }
     ]
   },
@@ -449,7 +449,7 @@
       { "item": "atomic_coffeepot", "prob": 1 },
       { "item": "bottle_glass", "prob": 15 },
       { "prob": 25, "group": "coffee_raw_bag_plastic_20" },
-      { "group": "coffee_syrup_bottle_plastic", "prob": 25 },
+      { "item": "coffee_syrup", "prob": 25 },
       { "item": "cup_plastic", "prob": 35 },
       { "item": "jug_plastic", "prob": 15 }
     ]
@@ -461,13 +461,13 @@
     "entries": [
       { "prob": 40, "group": "blt_wrapper_2" },
       { "item": "insta_salad", "prob": 60 },
-      { "group": "pudding_cup_plastic", "prob": 40 },
-      { "group": "sandwich_pb_wrapper", "prob": 35 },
-      { "group": "sandwich_pbh_wrapper", "prob": 35 },
-      { "group": "sandwich_pbj_wrapper", "prob": 40 },
-      { "group": "sandwich_pbm_wrapper", "prob": 10 },
+      { "item": "pudding", "prob": 40 },
+      { "item": "sandwich_pb", "prob": 35 },
+      { "item": "sandwich_pbh", "prob": 35 },
+      { "item": "sandwich_pbj", "prob": 40 },
+      { "item": "sandwich_pbm", "prob": 10 },
       { "prob": 45, "group": "sandwich_t_wrapper_2" },
-      { "group": "yoghurt_cup_plastic", "prob": 40 }
+      { "item": "yoghurt", "prob": 40 }
     ]
   },
   {
@@ -483,12 +483,12 @@
       { "item": "hat_ball", "prob": 25 },
       { "item": "towel", "prob": 10 },
       { "item": "soap", "prob": 8, "charges": [ 1, 10 ] },
-      { "group": "detergent_box_small", "prob": 8, "charges": [ 1, 20 ] },
+      { "item": "detergent", "prob": 8, "charges": [ 1, 20 ] },
       { "item": "cotton_patchwork", "prob": 15 },
       { "item": "broom", "prob": 8 },
-      { "group": "bleach_jug_plastic", "prob": 8, "charges": [ 1, -1 ] },
+      { "item": "bleach", "prob": 8, "charges": [ 1, -1 ] },
       { "item": "hotplate", "prob": 1 },
-      { "group": "vinegar_jug_plastic", "prob": 3 }
+      { "item": "vinegar", "prob": 3 }
     ]
   },
   {
@@ -525,13 +525,13 @@
       { "item": "wrapper_foil", "prob": 6 },
       { "item": "bag_plastic", "prob": 45 },
       { "item": "cotton_patchwork", "prob": 10 },
-      { "group": "fries_box_small", "prob": 25 },
-      { "group": "cheese_fries_box_small", "prob": 15 },
-      { "group": "onion_rings_box_small", "prob": 20 },
-      { "group": "cheeseburger_wrapper", "prob": 15 },
+      { "item": "fries", "prob": 25 },
+      { "item": "cheese_fries", "prob": 15 },
+      { "item": "onion_rings", "prob": 20 },
+      { "item": "cheeseburger", "prob": 15 },
       { "prob": 15, "group": "fried_mozzarella_sticks_bag_plastic_4" },
-      { "group": "hamburger_wrapper", "prob": 15 },
-      { "group": "fish_sandwich_wrapper", "prob": 10 },
+      { "item": "hamburger", "prob": 15 },
+      { "item": "fish_sandwich", "prob": 10 },
       { "group": "softdrinks_canned", "prob": 75 },
       { "prob": 25, "group": "hotdogs_cooked_wrapper_1_inf" },
       { "prob": 15, "group": "hotdogs_newyork_wrapper_1_inf" },
@@ -551,8 +551,8 @@
       { "prob": 30, "group": "can_chicken_can_medium_2" },
       { "prob": 40, "group": "sugar_bulk" },
       { "prob": 10, "group": "artificial_sweetener_box_small_71" },
-      { "group": "soysauce_bottle_glass", "prob": 10 },
-      { "group": "hot_sauce_bottle_plastic_small", "prob": 10 },
+      { "item": "soysauce", "prob": 10 },
+      { "item": "hot_sauce", "prob": 10 },
       { "prob": 40, "group": "flour_bulk" },
       { "prob": 40, "group": "curry_powder_various" },
       { "prob": 52, "group": "cornmeal_box_small_10" },
@@ -566,7 +566,7 @@
     "entries": [
       { "prob": 30, "group": "hotdogs_frozen_bag_plastic_10" },
       { "prob": 60, "group": "cheese_bag_plastic" },
-      { "group": "fries_box_small", "prob": 40 },
+      { "item": "fries", "prob": 40 },
       { "prob": 40, "group": "can_chicken_can_medium_2" },
       { "prob": 40, "group": "can_spam_can_medium_6" },
       { "item": "lettuce", "prob": 50, "count": 5 },
@@ -594,10 +594,10 @@
       { "item": "sm_extinguisher", "prob": 40, "charges": 10 },
       { "item": "towel", "prob": 40 },
       { "item": "soap", "prob": 30, "charges": [ 1, 10 ] },
-      { "group": "detergent_box_small", "prob": 30, "charges": [ 1, 20 ] },
+      { "item": "detergent", "prob": 30, "charges": [ 1, 20 ] },
       { "item": "cotton_patchwork", "prob": 30 },
-      { "group": "bleach_jug_plastic", "prob": 30, "charges": [ 1, -1 ] },
-      { "group": "vinegar_jug_plastic", "prob": 30 },
+      { "item": "bleach", "prob": 30, "charges": [ 1, -1 ] },
+      { "item": "vinegar", "prob": 30 },
       { "item": "backpack", "prob": 5 }
     ]
   },
@@ -631,18 +631,18 @@
     "subtype": "distribution",
     "entries": [
       { "prob": 50, "group": "blt_wrapper_2" },
-      { "group": "sandwich_pbj_wrapper", "prob": 50 },
-      { "group": "sandwich_pbh_wrapper", "prob": 20 },
-      { "group": "sandwich_pbf_wrapper", "prob": 20 },
-      { "group": "sandwich_pbm_wrapper", "prob": 10 },
-      { "group": "sandwich_pb_wrapper", "prob": 35 },
-      { "group": "fish_sandwich_wrapper", "prob": 20 },
+      { "item": "sandwich_pbj", "prob": 50 },
+      { "item": "sandwich_pbh", "prob": 20 },
+      { "item": "sandwich_pbf", "prob": 20 },
+      { "item": "sandwich_pbm", "prob": 10 },
+      { "item": "sandwich_pb", "prob": 35 },
+      { "item": "fish_sandwich", "prob": 20 },
       { "prob": 50, "group": "sandwich_t_wrapper_2" },
-      { "group": "junk_burrito_bag_plastic_small", "prob": 30 },
-      { "group": "taco_wrapper", "prob": 40 },
+      { "item": "junk_burrito", "prob": 30 },
+      { "item": "taco", "prob": 40 },
       { "item": "insta_salad", "prob": 60 },
-      { "group": "yoghurt_cup_plastic", "prob": 50 },
-      { "group": "macaroni_cooked_box_small", "prob": 20 }
+      { "item": "yoghurt", "prob": 50 },
+      { "item": "macaroni_cooked", "prob": 20 }
     ]
   },
   {
@@ -671,10 +671,10 @@
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "group": "spaghetti_raw_box_small", "prob": 60 },
-      { "group": "lasagne_raw_box_small", "prob": 50 },
-      { "group": "macaroni_raw_box_small", "prob": 60 },
-      { "group": "noodles_fast_bag_plastic_small", "prob": 50 }
+      { "item": "spaghetti_raw", "prob": 60 },
+      { "item": "lasagne_raw", "prob": 50 },
+      { "item": "macaroni_raw", "prob": 60 },
+      { "item": "noodles_fast", "prob": 50 }
     ]
   },
   {
@@ -689,13 +689,13 @@
       { "prob": 10, "group": "yogurt_starter_culture_bag_plastic_4" },
       { "prob": 2, "group": "koji_bag_plastic_25" },
       { "prob": 55, "group": "powder_eggs_bottle_plastic_small_16" },
-      { "group": "milk_UHT_carton_sealed", "prob": 15 },
-      { "group": "milk_evap_can_medium", "prob": 25 },
-      { "group": "con_milk_can_medium", "prob": 25 },
+      { "item": "milk_UHT", "prob": 15 },
+      { "item": "milk_evap", "prob": 25 },
+      { "item": "con_milk", "prob": 25 },
       { "prob": 45, "group": "milk_powder_various_full" },
       { "prob": 50, "group": "salt_various_full" },
-      { "group": "soysauce_bottle_glass", "prob": 25 },
-      { "group": "hot_sauce_bottle_plastic_small", "prob": 25 },
+      { "item": "soysauce", "prob": 25 },
+      { "item": "hot_sauce", "prob": 25 },
       { "prob": 60, "group": "sugar_various_full" },
       { "prob": 15, "group": "artificial_sweetener_box_small_71" },
       { "prob": 65, "group": "dry_rice_bag_plastic_3" },
@@ -708,41 +708,41 @@
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "group": "lemonade_bottle_plastic", "prob": 30 },
-      { "group": "sports_drink_bottle_plastic", "prob": 40 },
-      { "group": "energy_drink_can_drink", "prob": 40 },
+      { "item": "lemonade", "prob": 30 },
+      { "item": "sports_drink", "prob": 40 },
+      { "item": "energy_drink", "prob": 40 },
       { "item": "energy_drink_atomic", "prob": 5 },
       { "group": "softdrinks_canned", "prob": 290 },
-      { "group": "spezi_can_drink", "prob": 10 },
-      { "group": "cola_can_drink", "prob": 30, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "creamsoda_can_drink", "prob": 20, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "lemonlime_can_drink", "prob": 20, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "orangesoda_can_drink", "prob": 15, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "colamdew_can_drink", "prob": 10, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "zerocola_can_drink", "prob": 10, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "zeroorange_can_drink", "prob": 10, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "zerotropical_can_drink", "prob": 10, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "zeromdew_can_drink", "prob": 10, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "foodplace_zero_drink_can_drink", "prob": 3, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "rootbeer_can_drink", "prob": 20, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "tonic_water_bottle_plastic_small", "prob": 5, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "sparkling_can_drink", "prob": 7, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "sparkling_peach_can_drink", "prob": 7, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "sparkling_pomegranate_can_drink", "prob": 7, "container-item": "bottle_plastic", "sealed": false },
-      { "group": "cola_can_drink", "prob": 20, "container-item": "bottle_twoliter" },
-      { "group": "creamsoda_can_drink", "prob": 10, "container-item": "bottle_twoliter" },
-      { "group": "lemonlime_can_drink", "prob": 15, "container-item": "bottle_twoliter" },
-      { "group": "orangesoda_can_drink", "prob": 15, "container-item": "bottle_twoliter" },
-      { "group": "colamdew_can_drink", "prob": 10, "container-item": "bottle_twoliter" },
-      { "group": "zerocola_can_drink", "prob": 10, "container-item": "bottle_twoliter" },
-      { "group": "zeroorange_can_drink", "prob": 10, "container-item": "bottle_twoliter" },
-      { "group": "zerotropical_can_drink", "prob": 10, "container-item": "bottle_twoliter" },
-      { "group": "zeromdew_can_drink", "prob": 10, "container-item": "bottle_twoliter" },
-      { "group": "sparkling_can_drink", "prob": 7, "container-item": "bottle_twoliter" },
-      { "group": "sparkling_peach_can_drink", "prob": 7, "container-item": "bottle_twoliter" },
-      { "group": "sparkling_pomegranate_can_drink", "prob": 7, "container-item": "bottle_twoliter" },
-      { "group": "tonic_water_bottle_plastic_small", "prob": 2, "container-item": "bottle_twoliter" },
-      { "group": "rootbeer_can_drink", "prob": 15, "container-item": "bottle_twoliter" }
+      { "item": "spezi", "prob": 10 },
+      { "item": "cola", "prob": 30, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "creamsoda", "prob": 20, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "lemonlime", "prob": 20, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "orangesoda", "prob": 15, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "colamdew", "prob": 10, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "zerocola", "prob": 10, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "zeroorange", "prob": 10, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "zerotropical", "prob": 10, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "zeromdew", "prob": 10, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "foodplace_zero_drink", "prob": 3, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "rootbeer", "prob": 20, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "tonic_water", "prob": 5, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "sparkling", "prob": 7, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "sparkling_peach", "prob": 7, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "sparkling_pomegranate", "prob": 7, "container-item": "bottle_plastic", "sealed": false },
+      { "item": "cola", "prob": 20, "container-item": "bottle_twoliter" },
+      { "item": "creamsoda", "prob": 10, "container-item": "bottle_twoliter" },
+      { "item": "lemonlime", "prob": 15, "container-item": "bottle_twoliter" },
+      { "item": "orangesoda", "prob": 15, "container-item": "bottle_twoliter" },
+      { "item": "colamdew", "prob": 10, "container-item": "bottle_twoliter" },
+      { "item": "zerocola", "prob": 10, "container-item": "bottle_twoliter" },
+      { "item": "zeroorange", "prob": 10, "container-item": "bottle_twoliter" },
+      { "item": "zerotropical", "prob": 10, "container-item": "bottle_twoliter" },
+      { "item": "zeromdew", "prob": 10, "container-item": "bottle_twoliter" },
+      { "item": "sparkling", "prob": 7, "container-item": "bottle_twoliter" },
+      { "item": "sparkling_peach", "prob": 7, "container-item": "bottle_twoliter" },
+      { "item": "sparkling_pomegranate", "prob": 7, "container-item": "bottle_twoliter" },
+      { "item": "tonic_water", "prob": 2, "container-item": "bottle_twoliter" },
+      { "item": "rootbeer", "prob": 15, "container-item": "bottle_twoliter" }
     ]
   },
   {
@@ -751,35 +751,35 @@
     "//": "might split this into two categories; condiments and seasonings, and preserves",
     "subtype": "distribution",
     "entries": [
-      { "group": "mayonnaise_condiment_bottle_sealed", "prob": 40 },
+      { "item": "mayonnaise", "prob": 40 },
       { "group": "ketchup_sealed_rng", "prob": 60 },
       { "group": "mustard_sealed_rng", "prob": 60 },
       { "group": "barbecue_sauce_sealed_rng", "prob": 40 },
       { "group": "honey_mustard_sealed_rng", "prob": 30 },
-      { "group": "horseradish_jar_glass_sealed", "prob": 10 },
+      { "item": "horseradish", "prob": 10 },
       { "prob": 20, "group": "sprinkles_bottle_plastic_small_62" },
-      { "group": "honey_bottled_bottle_plastic", "prob": 35 },
+      { "item": "honey_bottled", "prob": 35 },
       { "prob": 35, "group": "honey_glassed_jar_glass_sealed_5" },
-      { "group": "peanutbutter_jar_glass_sealed", "prob": 60 },
-      { "group": "marshmallow_fluff_jar_glass_sealed", "prob": 35 },
+      { "item": "peanutbutter", "prob": 60 },
+      { "item": "marshmallow_fluff", "prob": 35 },
       { "prob": 40, "group": "pickle_jar_glass_sealed_2" },
-      { "group": "coffee_syrup_bottle_plastic", "prob": 35 },
+      { "item": "coffee_syrup", "prob": 35 },
       { "prob": 45, "group": "coffee_raw_bag_plastic_20" },
       { "prob": 45, "group": "tea_raw_bag_plastic_33" },
       { "prob": 20, "group": "tea_green_raw_bag_plastic_33" },
       { "prob": 50, "group": "salt_various_full" },
       { "prob": 50, "group": "pepper_various_full" },
-      { "group": "soysauce_bottle_glass", "prob": 50 },
-      { "group": "hot_sauce_bottle_plastic_small", "prob": 50 },
+      { "item": "soysauce", "prob": 50 },
+      { "item": "hot_sauce", "prob": 50 },
       { "prob": 20, "group": "cinnamon_various_full" },
-      { "group": "syrup_bottle_glass", "prob": 50 },
-      { "group": "syrup_corn_bottle_glass", "prob": 5 },
+      { "item": "syrup", "prob": 50 },
+      { "item": "syrup_corn", "prob": 5 },
       { "prob": 45, "group": "seasoning_salt_various_full" },
       { "prob": 50, "group": "seasoning_italian_various_full" },
       { "prob": 40, "group": "curry_powder_various_full" },
       { "prob": 30, "group": "can_cheese_can_food_8" },
-      { "group": "sauce_red_can_medium", "prob": 40 },
-      { "group": "sauce_pesto_jar_glass_sealed", "prob": 20 },
+      { "item": "sauce_red", "prob": 40 },
+      { "item": "sauce_pesto", "prob": 20 },
       { "prob": 30, "group": "oyster_crackers_plastic_bag_vac_1_inf" },
       { "group": "teabag_box", "prob": 45 }
     ]
@@ -792,10 +792,10 @@
       { "prob": 80, "group": "frozen_dinner_box_small_2" },
       { "prob": 50, "group": "pizza_veggy_box_small_4" },
       { "prob": 50, "group": "pizza_meat_box_small_4" },
-      { "group": "junk_burrito_bag_plastic_small", "prob": 50 },
+      { "item": "junk_burrito", "prob": 50 },
       { "item": "icecream_artificial", "prob": 30 },
       { "item": "icecream_candy", "prob": 20 },
-      { "group": "sundae_cup_cup_plastic", "prob": 30 }
+      { "item": "sundae_cup", "prob": 30 }
     ]
   },
   {
@@ -808,7 +808,7 @@
       { "item": "bratwurst_sausage", "prob": 35, "count": 10 },
       { "item": "sweet_sausage", "prob": 10 },
       { "prob": 50, "group": "hotdogs_frozen_bag_plastic_10" },
-      { "group": "lunchmeat_bag_plastic_small", "prob": 60 },
+      { "item": "lunchmeat", "prob": 60 },
       { "item": "meat", "prob": 60 }
     ]
   },
@@ -818,18 +818,18 @@
     "subtype": "distribution",
     "entries": [
       { "prob": 65, "group": "egg_bird_unfert_carton_egg_6_12" },
-      { "group": "milk_jug_plastic", "prob": 80 },
+      { "item": "milk", "prob": 80 },
       { "item": "milk_raw", "prob": 5 },
       { "item": "milk_raw", "prob": 5 },
       { "prob": 35, "group": "butter_wrapper_8" },
-      { "group": "buttermilk_bottle_plastic", "prob": 15 },
+      { "item": "buttermilk", "prob": 15 },
       { "prob": 60, "group": "cheese_bag_plastic" },
-      { "group": "cottage_cheese_plastic_bucket", "prob": 30 },
-      { "group": "yoghurt_cup_plastic", "prob": 40 },
-      { "group": "pudding_cup_plastic", "prob": 30 },
-      { "group": "icecream_plastic_bucket", "prob": 30 },
+      { "item": "cottage_cheese", "prob": 30 },
+      { "item": "yoghurt", "prob": 40 },
+      { "item": "pudding", "prob": 30 },
+      { "item": "icecream", "prob": 30 },
       { "item": "icecream_artificial", "prob": 15 },
-      { "group": "sundae_cup_cup_plastic", "prob": 30 }
+      { "item": "sundae_cup", "prob": 30 }
     ]
   },
   {
@@ -888,13 +888,7 @@
       [ "water_mineral", 10 ],
       [ "milk", 20 ],
       { "prob": 35, "group": "butter_wrapper_8_64" },
-      {
-        "group": "ghee_jar_glass_sealed",
-        "prob": 5,
-        "charges": [ 1, 64 ],
-        "container-item": "jar_glass_sealed",
-        "sealed": false
-      },
+      { "item": "ghee", "prob": 5, "charges": [ 1, 64 ], "container-item": "jar_glass_sealed", "sealed": false },
       [ "yoghurt", 10 ],
       [ "pudding", 15 ],
       [ "apple", 10 ],
@@ -944,13 +938,7 @@
       [ "milk", 20 ],
       [ "egg_bird_unfert", 20 ],
       { "prob": 35, "group": "butter_wrapper_8_64" },
-      {
-        "group": "ghee_jar_glass_sealed",
-        "prob": 5,
-        "charges": [ 1, 64 ],
-        "container-item": "jar_glass_sealed",
-        "sealed": false
-      },
+      { "item": "ghee", "prob": 5, "charges": [ 1, 64 ], "container-item": "jar_glass_sealed", "sealed": false },
       [ "apple", 10 ],
       [ "fish_sandwich", 15 ],
       [ "lobster_roll", 15 ],
@@ -992,7 +980,7 @@
       [ "vinegar", 20 ],
       [ "jam_fruit", 5 ],
       { "prob": 17, "group": "bread_bag_plastic_14" },
-      { "group": "confit_meat_can_medium", "prob": 14 },
+      { "item": "confit_meat", "prob": 14 },
       [ "meat", 20 ],
       { "prob": 7, "group": "cornbread_bag_plastic_6" },
       [ "biscuit", 8 ],
@@ -1131,14 +1119,14 @@
     "type": "item_group",
     "items": [
       [ "pot", 90 ],
-      { "group": "soup_chicken_can_medium", "prob": 12, "charges": 1, "container-item": "pot" },
-      { "group": "soup_chicken_can_medium", "prob": 6, "charges": 2, "container-item": "pot" },
-      { "group": "soup_fish_can_medium", "prob": 9, "charges": 1, "container-item": "pot" },
-      { "group": "soup_fish_can_medium", "prob": 4, "charges": 2, "container-item": "pot" },
-      { "group": "soup_tomato_can_food", "prob": 10, "charges": 1, "container-item": "pot" },
-      { "group": "soup_tomato_can_food", "prob": 5, "charges": 2, "container-item": "pot" },
-      { "group": "soup_veggy_can_medium", "prob": 10, "charges": 1, "container-item": "pot" },
-      { "group": "soup_veggy_can_medium", "prob": 5, "charges": 2, "container-item": "pot" },
+      { "item": "soup_chicken", "prob": 12, "charges": 1, "container-item": "pot" },
+      { "item": "soup_chicken", "prob": 6, "charges": 2, "container-item": "pot" },
+      { "item": "soup_fish", "prob": 9, "charges": 1, "container-item": "pot" },
+      { "item": "soup_fish", "prob": 4, "charges": 2, "container-item": "pot" },
+      { "item": "soup_tomato", "prob": 10, "charges": 1, "container-item": "pot" },
+      { "item": "soup_tomato", "prob": 5, "charges": 2, "container-item": "pot" },
+      { "item": "soup_veggy", "prob": 10, "charges": 1, "container-item": "pot" },
+      { "item": "soup_veggy", "prob": 5, "charges": 2, "container-item": "pot" },
       { "prob": 25, "group": "oyster_crackers_plastic_bag_vac_8" }
     ]
   },
@@ -1147,18 +1135,18 @@
     "type": "item_group",
     "subtype": "distribution",
     "entries": [
-      { "group": "cheeseburger_wrapper", "prob": 6 },
-      { "group": "hamburger_wrapper", "prob": 8 },
-      { "group": "sloppyjoe_wrapper", "prob": 6 },
+      { "item": "cheeseburger", "prob": 6 },
+      { "item": "hamburger", "prob": 8 },
+      { "item": "sloppyjoe", "prob": 6 },
       { "prob": 6, "group": "blt_wrapper_2" },
-      { "group": "fries_box_small", "prob": 10 },
+      { "item": "fries", "prob": 10 },
       { "prob": 6, "group": "fried_mozzarella_sticks_bag_plastic_4" },
-      { "group": "onion_rings_box_small", "prob": 8 },
+      { "item": "onion_rings", "prob": 8 },
       { "prob": 8, "group": "fchicken_box_small_4" },
       { "item": "sausage", "prob": 8 },
       { "item": "bratwurst_sausage", "prob": 6, "count": 10 },
       { "item": "sweet_sausage", "prob": 2 },
-      { "group": "hotdogs_cooked_wrapper", "prob": 8 },
+      { "item": "hotdogs_cooked", "prob": 8 },
       { "prob": 6, "group": "chilidogs_wrapper_2" },
       { "prob": 8, "group": "corndogs_cooked_wrapper_2" },
       { "item": "scrambled_eggs", "prob": 8, "count": 2 },
@@ -1187,8 +1175,8 @@
     "entries": [
       { "prob": 20, "group": "pickle_jar_glass_sealed_2" },
       { "prob": 20, "group": "bacon_bag_plastic_2" },
-      { "group": "fries_box_small", "prob": 20 },
-      { "group": "onion_rings_box_small", "prob": 20 },
+      { "item": "fries", "prob": 20 },
+      { "item": "onion_rings", "prob": 20 },
       { "item": "sausage", "prob": 20 },
       { "item": "bratwurst_sausage", "prob": 10, "count": 10 },
       { "item": "sweet_sausage", "prob": 5 },
@@ -1198,9 +1186,9 @@
       { "item": "waffles", "prob": 20 },
       { "item": "tomato", "prob": 20 },
       { "item": "lettuce", "prob": 20, "count": 5 },
-      { "group": "soup_veggy_can_medium", "prob": 20 },
-      { "group": "soup_meat_can_medium", "prob": 20 },
-      { "group": "soup_tomato_can_food", "prob": 20 },
+      { "item": "soup_veggy", "prob": 20 },
+      { "item": "soup_meat", "prob": 20 },
+      { "item": "soup_tomato", "prob": 20 },
       { "prob": 12, "group": "crab_cakes_box_small_1_inf" },
       { "prob": 12, "group": "stuffed_clams_box_small_1_inf" }
     ]
@@ -1211,15 +1199,15 @@
     "subtype": "distribution",
     "items": [
       [ "keg", 100 ],
-      { "group": "beer_can_drink", "prob": 40, "container-item": "keg" },
-      { "group": "drink_hard_seltzer_can_drink", "prob": 40, "container-item": "keg" },
-      { "group": "belgian_ale_bottle_glass", "prob": 30, "container-item": "keg" },
-      { "group": "european_pilsner_can_drink", "prob": 20, "container-item": "keg" },
-      { "group": "wine_barley_can_drink", "prob": 17, "container-item": "keg" },
-      { "group": "india_pale_ale_can_drink", "prob": 20, "container-item": "keg" },
-      { "group": "pale_ale_can_drink", "prob": 20, "container-item": "keg" },
-      { "group": "stout_bottle_glass", "prob": 10, "container-item": "keg" },
-      { "group": "imperial_stout_bottle_glass", "prob": 5, "container-item": "keg" }
+      { "item": "beer", "prob": 40, "container-item": "keg" },
+      { "item": "drink_hard_seltzer", "prob": 40, "container-item": "keg" },
+      { "item": "belgian_ale", "prob": 30, "container-item": "keg" },
+      { "item": "european_pilsner", "prob": 20, "container-item": "keg" },
+      { "item": "wine_barley", "prob": 17, "container-item": "keg" },
+      { "item": "india_pale_ale", "prob": 20, "container-item": "keg" },
+      { "item": "pale_ale", "prob": 20, "container-item": "keg" },
+      { "item": "stout", "prob": 10, "container-item": "keg" },
+      { "item": "imperial_stout", "prob": 5, "container-item": "keg" }
     ]
   },
   {
@@ -1228,16 +1216,16 @@
     "subtype": "distribution",
     "items": [
       [ "flask_hip", 100 ],
-      { "group": "whiskey_bottle_glass", "prob": 40, "container-item": "flask_hip" },
+      { "item": "whiskey", "prob": 40, "container-item": "flask_hip" },
       { "item": "single_pot_whiskey", "prob": 20, "container-item": "flask_hip" },
       { "item": "cheap_whiskey", "prob": 40, "container-item": "flask_hip" },
       { "item": "canadian_whiskey", "prob": 40, "container-item": "flask_hip" },
-      { "group": "vodka_bottle_glass", "prob": 30, "container-item": "flask_hip" },
-      { "group": "gin_bottle_glass", "prob": 20, "container-item": "flask_hip" },
-      { "group": "rum_bottle_glass", "prob": 20, "container-item": "flask_hip" },
-      { "group": "tequila_bottle_glass", "prob": 20, "container-item": "flask_hip" },
-      { "group": "brandy_bottle_glass", "prob": 10, "container-item": "flask_hip" },
-      { "group": "moonshine_jug_plastic", "prob": 5, "container-item": "flask_hip" }
+      { "item": "vodka", "prob": 30, "container-item": "flask_hip" },
+      { "item": "gin", "prob": 20, "container-item": "flask_hip" },
+      { "item": "rum", "prob": 20, "container-item": "flask_hip" },
+      { "item": "tequila", "prob": 20, "container-item": "flask_hip" },
+      { "item": "brandy", "prob": 10, "container-item": "flask_hip" },
+      { "item": "moonshine", "prob": 5, "container-item": "flask_hip" }
     ]
   },
   {
@@ -1248,7 +1236,7 @@
       { "item": "stomach_large", "prob": 2 },
       { "item": "stomach_boiled", "prob": 2 },
       { "item": "meat", "prob": 8 },
-      { "group": "lunchmeat_bag_plastic_small", "prob": 6 },
+      { "item": "lunchmeat", "prob": 6 },
       { "prob": 6, "group": "hotdogs_frozen_bag_plastic_10" },
       { "item": "lung", "prob": 2, "count": 5 },
       { "item": "kidney", "prob": 2, "count": 5 },
@@ -1262,14 +1250,14 @@
     "id": "butcher_meat",
     "subtype": "distribution",
     "entries": [
-      { "group": "lunchmeat_bag_plastic_small", "prob": 15 },
+      { "item": "lunchmeat", "prob": 15 },
       { "prob": 10, "group": "bologna_bag_plastic_10" },
       { "item": "sausage", "prob": 4 },
       { "item": "sweet_sausage", "prob": 2 },
       { "item": "bratwurst_sausage", "prob": 4, "count": 10 },
-      { "group": "meat_salted_plastic_bag_vac", "prob": 2 },
-      { "group": "meat_canned_can_food", "prob": 2 },
-      { "group": "offal_canned_can_medium", "prob": 2 },
+      { "item": "meat_salted", "prob": 2 },
+      { "item": "meat_canned", "prob": 2 },
+      { "item": "offal_canned", "prob": 2 },
       { "item": "meat_smoked", "prob": 2 },
       { "prob": 2, "group": "meat_pickled_jar_glass_sealed_2" },
       { "prob": 2, "group": "offal_pickled_jar_glass_sealed_2" }
@@ -1297,11 +1285,11 @@
     "items": [
       {
         "distribution": [
-          { "group": "nachosc_bag_plastic_small", "prob": 60, "container-item": "ceramic_bowl" },
-          { "group": "nachosmc_bag_plastic_small", "prob": 60, "container-item": "ceramic_bowl" },
-          { "group": "nachosv_bag_plastic_small", "prob": 60, "container-item": "bowl_plastic" },
-          { "group": "nachosvc_bag_plastic_small", "prob": 60, "container-item": "ceramic_bowl" },
-          { "group": "nachosm_bag_plastic_small", "prob": 60, "container-item": "ceramic_bowl" }
+          { "item": "nachosc", "prob": 60, "container-item": "ceramic_bowl" },
+          { "item": "nachosmc", "prob": 60, "container-item": "ceramic_bowl" },
+          { "item": "nachosv", "prob": 60, "container-item": "bowl_plastic" },
+          { "item": "nachosvc", "prob": 60, "container-item": "ceramic_bowl" },
+          { "item": "nachosm", "prob": 60, "container-item": "ceramic_bowl" }
         ],
         "prob": 40
       },
@@ -1316,21 +1304,21 @@
       },
       {
         "distribution": [
-          { "group": "taco_wrapper", "prob": 50, "count": [ 1, 3 ], "container-item": "wrapper" },
+          { "item": "taco", "prob": 50, "count": [ 1, 3 ], "container-item": "wrapper" },
           { "item": "homemade_burrito", "prob": 60, "container-item": "wrapper" },
           { "item": "nopalitos", "prob": 20, "container-item": "ceramic_bowl" },
-          { "group": "quesadilla_cheese_wrapper", "prob": 40, "count": [ 1, 2 ], "container-item": "wrapper" }
+          { "item": "quesadilla_cheese", "prob": 40, "count": [ 1, 2 ], "container-item": "wrapper" }
         ],
         "prob": 60
       },
       {
         "collection": [
-          { "group": "nachos_bag_plastic_small", "prob": 100, "container-item": "ceramic_bowl" },
-          { "group": "salsa_jar_glass_sealed", "prob": 90, "container-item": "ceramic_bowl" }
+          { "item": "nachos", "prob": 100, "container-item": "ceramic_bowl" },
+          { "item": "salsa", "prob": 90, "container-item": "ceramic_bowl" }
         ],
         "prob": 60
       },
-      { "group": "hot_sauce_bottle_plastic_small", "prob": 40 }
+      { "item": "hot_sauce", "prob": 40 }
     ]
   },
   {
@@ -1340,11 +1328,11 @@
     "items": [
       {
         "distribution": [
-          { "group": "nachosc_bag_plastic_small", "prob": 60, "container-item": "bowl_plastic" },
-          { "group": "nachosmc_bag_plastic_small", "prob": 60, "container-item": "bowl_plastic" },
-          { "group": "nachosv_bag_plastic_small", "prob": 60, "container-item": "bowl_plastic" },
-          { "group": "nachosvc_bag_plastic_small", "prob": 60, "container-item": "bowl_plastic" },
-          { "group": "nachosm_bag_plastic_small", "prob": 60, "container-item": "bowl_plastic" }
+          { "item": "nachosc", "prob": 60, "container-item": "bowl_plastic" },
+          { "item": "nachosmc", "prob": 60, "container-item": "bowl_plastic" },
+          { "item": "nachosv", "prob": 60, "container-item": "bowl_plastic" },
+          { "item": "nachosvc", "prob": 60, "container-item": "bowl_plastic" },
+          { "item": "nachosm", "prob": 60, "container-item": "bowl_plastic" }
         ],
         "prob": 40
       },
@@ -1359,15 +1347,15 @@
       },
       {
         "distribution": [
-          { "group": "taco_wrapper", "prob": 50, "count": [ 1, 3 ], "container-item": "wrapper" },
+          { "item": "taco", "prob": 50, "count": [ 1, 3 ], "container-item": "wrapper" },
           { "item": "homemade_burrito", "prob": 60, "container-item": "wrapper" },
           { "item": "nopalitos", "prob": 20, "container-item": "bowl_plastic" },
-          { "group": "quesadilla_cheese_wrapper", "prob": 40, "count": [ 1, 2 ], "container-item": "wrapper" }
+          { "item": "quesadilla_cheese", "prob": 40, "count": [ 1, 2 ], "container-item": "wrapper" }
         ],
         "prob": 60
       },
       { "prob": 30, "group": "nachos_bowl_plastic_3" },
-      { "group": "hot_sauce_bottle_plastic_small", "prob": 40 }
+      { "item": "hot_sauce", "prob": 40 }
     ]
   },
   {
@@ -1379,13 +1367,7 @@
       [ "water_mineral", 10 ],
       [ "milk", 20 ],
       { "prob": 35, "group": "butter_wrapper_8_64" },
-      {
-        "group": "ghee_jar_glass_sealed",
-        "prob": 5,
-        "charges": [ 1, 64 ],
-        "container-item": "jar_glass_sealed",
-        "sealed": false
-      },
+      { "item": "ghee", "prob": 5, "charges": [ 1, 64 ], "container-item": "jar_glass_sealed", "sealed": false },
       [ "cactus_pad", 20 ],
       [ "papaya", 20 ],
       [ "fish_cooked", 20 ],
@@ -1440,7 +1422,7 @@
       { "group": "pantry_liquids", "prob": 30 },
       { "prob": 50, "count": [ 1, 3 ], "group": "tortilla_corn_bag_plastic_12" },
       { "prob": 50, "count": [ 1, 3 ], "group": "tortilla_flour_bag_plastic_12" },
-      { "group": "sauce_red_can_medium", "prob": 30 },
+      { "item": "sauce_red", "prob": 30 },
       { "prob": 60, "count": [ 1, 3 ], "group": "nachos_bag_plastic_3" },
       { "prob": 40, "group": "cheese_hard_wrapper_8" },
       { "prob": 20, "count": [ 1, 3 ], "group": "can_beans_can_medium_2" },
@@ -1459,16 +1441,16 @@
     "subtype": "distribution",
     "container-item": "jar_3l_glass_sealed",
     "entries": [
-      { "group": "meat_canned_can_food", "prob": 4, "container-item": "null", "count": 12 },
-      { "group": "veggy_canned_can_food", "prob": 4, "container-item": "null", "count": 12 },
-      { "group": "apple_canned_can_food", "prob": 4, "container-item": "null", "count": 24 },
-      { "group": "offal_canned_can_medium", "prob": 1, "container-item": "null", "count": 12 },
-      { "group": "can_tomato_can_food", "prob": 8, "container-item": "null", "count": 24 },
-      { "group": "fish_pickled_jar_glass_sealed", "prob": 2, "container-item": "null", "count": 12 },
-      { "group": "meat_pickled_jar_glass_sealed", "prob": 2, "container-item": "null", "count": 12 },
-      { "group": "fish_pickled_jar_glass_sealed", "prob": 2, "container-item": "null", "count": 12 },
-      { "group": "sauce_red_can_medium", "prob": 8, "container-item": "null", "count": 6 },
-      { "group": "kompot_jar_3l_glass_sealed", "prob": 4, "container-item": "null", "count": 12 }
+      { "item": "meat_canned", "prob": 4, "container-item": "null", "count": 12 },
+      { "item": "veggy_canned", "prob": 4, "container-item": "null", "count": 12 },
+      { "item": "apple_canned", "prob": 4, "container-item": "null", "count": 24 },
+      { "item": "offal_canned", "prob": 1, "container-item": "null", "count": 12 },
+      { "item": "can_tomato", "prob": 8, "container-item": "null", "count": 24 },
+      { "item": "fish_pickled", "prob": 2, "container-item": "null", "count": 12 },
+      { "item": "meat_pickled", "prob": 2, "container-item": "null", "count": 12 },
+      { "item": "fish_pickled", "prob": 2, "container-item": "null", "count": 12 },
+      { "item": "sauce_red", "prob": 8, "container-item": "null", "count": 6 },
+      { "item": "kompot", "prob": 4, "container-item": "null", "count": 12 }
     ]
   },
   {
@@ -1477,13 +1459,13 @@
     "subtype": "distribution",
     "container-item": "bag_plastic",
     "entries": [
-      { "group": "dry_beans_bag_plastic_small", "prob": 4, "container-item": "null", "count": [ 1, 96 ] },
-      { "group": "dry_rice_bag_plastic_small", "prob": 4, "container-item": "null", "count": [ 1, 48 ] },
-      { "group": "dry_lentils_bag_plastic_small", "prob": 4, "container-item": "null", "count": [ 1, 32 ] },
-      { "group": "tortilla_flour_bag_plastic", "prob": 4, "container-item": "null", "count": [ 1, 50 ] },
-      { "group": "tortilla_corn_bag_plastic", "prob": 4, "container-item": "null", "count": [ 1, 50 ] },
+      { "item": "dry_beans", "prob": 4, "container-item": "null", "count": [ 1, 96 ] },
+      { "item": "dry_rice", "prob": 4, "container-item": "null", "count": [ 1, 48 ] },
+      { "item": "dry_lentils", "prob": 4, "container-item": "null", "count": [ 1, 32 ] },
+      { "item": "tortilla_flour", "prob": 4, "container-item": "null", "count": [ 1, 50 ] },
+      { "item": "tortilla_corn", "prob": 4, "container-item": "null", "count": [ 1, 50 ] },
       { "item": "oats", "prob": 4, "container-item": "null", "count": [ 1, 8 ] },
-      { "group": "flour_bag_paper_powder", "prob": 4, "container-item": "null", "count": [ 1, 100 ] }
+      { "item": "flour", "prob": 4, "container-item": "null", "count": [ 1, 100 ] }
     ]
   },
   {
@@ -1516,7 +1498,7 @@
     "type": "item_group",
     "id": "milk_full_gallon",
     "subtype": "distribution",
-    "entries": [ { "group": "milk_jug_plastic", "container-item": "jug_plastic" } ]
+    "entries": [ { "item": "milk", "container-item": "jug_plastic" } ]
   },
   {
     "type": "item_group",
@@ -1524,7 +1506,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "box_snack",
-    "entries": [ { "group": "cookies_null", "container-item": "null", "count": 4 } ]
+    "entries": [ { "item": "cookies", "container-item": "null", "count": 4 } ]
   },
   {
     "type": "item_group",
@@ -1532,7 +1514,7 @@
     "subtype": "collection",
     "//": "100 g of tea",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "tea_raw_bag_plastic_small", "container-item": "null", "count": [ 2, 33 ] } ]
+    "entries": [ { "item": "tea_raw", "container-item": "null", "count": [ 2, 33 ] } ]
   },
   {
     "type": "item_group",
@@ -1548,7 +1530,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "jar_glass_sealed",
-    "entries": [ { "group": "honey_glassed_jar_glass_sealed", "container-item": "null", "count": 5 } ]
+    "entries": [ { "item": "honey_glassed", "container-item": "null", "count": 5 } ]
   },
   {
     "type": "item_group",
@@ -1572,7 +1554,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "jar_glass_sealed",
-    "entries": [ { "group": "tea_raw_bag_plastic_small", "container-item": "null", "count": [ 10, 40 ] } ]
+    "entries": [ { "item": "tea_raw", "container-item": "null", "count": [ 10, 40 ] } ]
   },
   {
     "type": "item_group",
@@ -1604,7 +1586,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "jar_glass_sealed",
-    "entries": [ { "group": "milk_powder_bag_plastic_small", "container-item": "null", "count": [ 1, 8 ] } ]
+    "entries": [ { "item": "milk_powder", "container-item": "null", "count": [ 1, 8 ] } ]
   },
   {
     "type": "item_group",
@@ -1763,7 +1745,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "fried_mozzarella_sticks_bag_plastic_small", "container-item": "null", "count": 4 } ]
+    "entries": [ { "item": "fried_mozzarella_sticks", "container-item": "null", "count": 4 } ]
   },
   {
     "type": "item_group",
@@ -1771,7 +1753,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "wrapper",
-    "entries": [ { "group": "hotdogs_cooked_wrapper", "container-item": "null", "count": [ 1, -1 ] } ]
+    "entries": [ { "item": "hotdogs_cooked", "container-item": "null", "count": [ 1, -1 ] } ]
   },
   {
     "type": "item_group",
@@ -1820,7 +1802,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "flour_bag_paper_powder", "container-item": "null", "count": 20 } ]
+    "entries": [ { "item": "flour", "container-item": "null", "count": 20 } ]
   },
   {
     "type": "item_group",
@@ -1828,7 +1810,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_paper_powder",
-    "entries": [ { "group": "flour_bag_paper_powder", "container-item": "null", "count": 100 } ]
+    "entries": [ { "item": "flour", "container-item": "null", "count": 100 } ]
   },
   {
     "type": "item_group",
@@ -1845,14 +1827,14 @@
     "id": "flour_bottle_plastic",
     "subtype": "collection",
     "container-item": "bottle_plastic_seasoning",
-    "entries": [ { "group": "flour_bag_paper_powder", "container-item": "null", "count": [ 2, 20 ] } ]
+    "entries": [ { "item": "flour", "container-item": "null", "count": [ 2, 20 ] } ]
   },
   {
     "type": "item_group",
     "id": "flour_bottle_glass",
     "subtype": "collection",
     "container-item": "bottle_glass_seasoning",
-    "entries": [ { "group": "flour_bag_paper_powder", "container-item": "null", "count": [ 2, 20 ] } ]
+    "entries": [ { "item": "flour", "container-item": "null", "count": [ 2, 20 ] } ]
   },
   {
     "type": "item_group",
@@ -1860,7 +1842,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_paper_powder",
-    "entries": [ { "group": "flour_bag_paper_powder", "container-item": "null", "count": [ 10, 100 ] } ]
+    "entries": [ { "item": "flour", "container-item": "null", "count": [ 10, 100 ] } ]
   },
   {
     "type": "item_group",
@@ -1868,7 +1850,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_paper_powder_bulk",
-    "entries": [ { "group": "flour_bag_paper_powder", "container-item": "null", "count": [ 10, 400 ] } ]
+    "entries": [ { "item": "flour", "container-item": "null", "count": [ 10, 400 ] } ]
   },
   {
     "type": "item_group",
@@ -1876,7 +1858,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "flour_bag_paper_powder", "container-item": "null", "count": [ 2, 20 ] } ]
+    "entries": [ { "item": "flour", "container-item": "null", "count": [ 2, 20 ] } ]
   },
   {
     "type": "item_group",
@@ -1884,7 +1866,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_paper_powder",
-    "entries": [ { "group": "bread_flour_bag_paper_powder", "container-item": "null", "count": 20 } ]
+    "entries": [ { "item": "bread_flour", "container-item": "null", "count": 20 } ]
   },
   {
     "type": "item_group",
@@ -1922,7 +1904,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "choco_coffee_beans_bag_plastic_small", "container-item": "null", "count": 5 } ]
+    "entries": [ { "item": "choco_coffee_beans", "container-item": "null", "count": 5 } ]
   },
   {
     "type": "item_group",
@@ -1930,7 +1912,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "coffee_raw_bag_plastic_small", "container-item": "null", "count": 20 } ]
+    "entries": [ { "item": "coffee_raw", "container-item": "null", "count": 20 } ]
   },
   {
     "type": "item_group",
@@ -2332,7 +2314,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "box_small",
-    "entries": [ { "group": "cornmeal_box_small", "container-item": "null", "count": 10 } ]
+    "entries": [ { "item": "cornmeal", "container-item": "null", "count": 10 } ]
   },
   {
     "type": "item_group",
@@ -2340,7 +2322,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "plastic_bag_vac",
-    "entries": [ { "group": "oyster_crackers_plastic_bag_vac", "container-item": "null", "count": [ 1, -1 ] } ]
+    "entries": [ { "item": "oyster_crackers", "container-item": "null", "count": [ 1, -1 ] } ]
   },
   {
     "type": "item_group",
@@ -2348,7 +2330,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic",
-    "entries": [ { "group": "brown_bread_can_medium", "container-item": "null", "count": 10 } ]
+    "entries": [ { "item": "brown_bread", "container-item": "null", "count": 10 } ]
   },
   {
     "type": "item_group",
@@ -2356,7 +2338,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "box_small",
-    "entries": [ { "group": "brioche_box_small", "container-item": "null", "count": 6 } ]
+    "entries": [ { "item": "brioche", "container-item": "null", "count": 6 } ]
   },
   {
     "type": "item_group",
@@ -2364,7 +2346,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "almond_shelled_bag_plastic_small", "container-item": "null", "count": 4 } ]
+    "entries": [ { "item": "almond_shelled", "container-item": "null", "count": 4 } ]
   },
   {
     "type": "item_group",
@@ -2372,7 +2354,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic",
-    "entries": [ { "group": "pecan_shelled_bag_plastic_small", "container-item": "null", "count": 4 } ]
+    "entries": [ { "item": "pecan_shelled", "container-item": "null", "count": 4 } ]
   },
   {
     "type": "item_group",
@@ -2380,7 +2362,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "cashews_bag_plastic_small", "container-item": "null", "count": 4 } ]
+    "entries": [ { "item": "cashews", "container-item": "null", "count": 4 } ]
   },
   {
     "type": "item_group",
@@ -2388,7 +2370,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "pistachio_shelled_bag_plastic_small", "container-item": "null", "count": 4 } ]
+    "entries": [ { "item": "pistachio_shelled", "container-item": "null", "count": 4 } ]
   },
   {
     "type": "item_group",
@@ -2396,7 +2378,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "peanut_shelled_bag_plastic_small", "container-item": "null", "count": 4 } ]
+    "entries": [ { "item": "peanut_shelled", "container-item": "null", "count": 4 } ]
   },
   {
     "type": "item_group",
@@ -2404,7 +2386,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "box_small",
-    "entries": [ { "group": "oatmeal_box_small", "container-item": "null", "count": 4 } ]
+    "entries": [ { "item": "oatmeal", "container-item": "null", "count": 4 } ]
   },
   {
     "type": "item_group",
@@ -2468,7 +2450,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "koji_bag_plastic_small", "container-item": "null", "count": 25 } ]
+    "entries": [ { "item": "koji", "container-item": "null", "count": 25 } ]
   },
   {
     "type": "item_group",
@@ -2476,7 +2458,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "dry_rice_bag_plastic_small", "container-item": "null", "count": 3 } ]
+    "entries": [ { "item": "dry_rice", "container-item": "null", "count": 3 } ]
   },
   {
     "type": "item_group",
@@ -2484,7 +2466,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "dry_wild_rice_bag_plastic_small", "container-item": "null", "count": 3 } ]
+    "entries": [ { "item": "dry_wild_rice", "container-item": "null", "count": 3 } ]
   },
   {
     "type": "item_group",
@@ -2492,7 +2474,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_glass",
-    "entries": [ { "group": "chem_citric_acid_bottle_glass", "container-item": "null", "count": 50 } ]
+    "entries": [ { "item": "chem_citric_acid", "container-item": "null", "count": 50 } ]
   },
   {
     "type": "item_group",
@@ -2500,7 +2482,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_small",
-    "entries": [ { "group": "sprinkles_bottle_plastic_small", "container-item": "null", "count": 62 } ]
+    "entries": [ { "item": "sprinkles", "container-item": "null", "count": 62 } ]
   },
   {
     "type": "item_group",
@@ -2741,7 +2723,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "wrapper",
-    "entries": [ { "group": "butter_wrapper", "container-item": "null", "count": 8 } ]
+    "entries": [ { "item": "butter", "container-item": "null", "count": 8 } ]
   },
   {
     "type": "item_group",
@@ -2749,7 +2731,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "wrapper",
-    "entries": [ { "group": "butter_wrapper", "container-item": "null", "count": [ 8, 64 ] } ]
+    "entries": [ { "item": "butter", "container-item": "null", "count": [ 8, 64 ] } ]
   },
   {
     "type": "item_group",
@@ -2773,7 +2755,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "wrapper",
-    "entries": [ { "group": "chilidogs_wrapper", "container-item": "null", "count": 2 } ]
+    "entries": [ { "item": "chilidogs", "container-item": "null", "count": 2 } ]
   },
   {
     "type": "item_group",
@@ -2781,7 +2763,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "wrapper",
-    "entries": [ { "group": "corndogs_cooked_wrapper", "container-item": "null", "count": 2 } ]
+    "entries": [ { "item": "corndogs_cooked", "container-item": "null", "count": 2 } ]
   },
   {
     "type": "item_group",
@@ -2789,7 +2771,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "box_small",
-    "entries": [ { "group": "pie_box_small", "container-item": "null", "count": 8 } ]
+    "entries": [ { "item": "pie", "container-item": "null", "count": 8 } ]
   },
   {
     "type": "item_group",
@@ -2797,7 +2779,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "box_small",
-    "entries": [ { "group": "pie_meat_box_small", "container-item": "null", "count": 8 } ]
+    "entries": [ { "item": "pie_meat", "container-item": "null", "count": 8 } ]
   },
   {
     "type": "item_group",
@@ -2813,7 +2795,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "jar_glass_sealed",
-    "entries": [ { "group": "offal_pickled_jar_glass_sealed", "container-item": "null", "count": 2 } ]
+    "entries": [ { "item": "offal_pickled", "container-item": "null", "count": 2 } ]
   },
   {
     "type": "item_group",
@@ -2821,7 +2803,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bowl_plastic",
-    "entries": [ { "group": "nachos_bag_plastic_small", "container-item": "null", "count": 3 } ]
+    "entries": [ { "item": "nachos", "container-item": "null", "count": 3 } ]
   },
   {
     "type": "item_group",
@@ -2829,7 +2811,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "tortilla_corn_bag_plastic", "container-item": "null", "count": 12 } ]
+    "entries": [ { "item": "tortilla_corn", "container-item": "null", "count": 12 } ]
   },
   {
     "type": "item_group",
@@ -2837,7 +2819,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "tortilla_flour_bag_plastic", "container-item": "null", "count": 12 } ]
+    "entries": [ { "item": "tortilla_flour", "container-item": "null", "count": 12 } ]
   },
   {
     "type": "item_group",
@@ -2845,7 +2827,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "nachos_bag_plastic_small", "container-item": "null", "count": 3 } ]
+    "entries": [ { "item": "nachos", "container-item": "null", "count": 3 } ]
   },
   {
     "type": "item_group",
@@ -2853,7 +2835,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "dry_beans_bag_plastic_small", "container-item": "null", "count": 6 } ]
+    "entries": [ { "item": "dry_beans", "container-item": "null", "count": 6 } ]
   },
   {
     "type": "item_group",
@@ -2861,6 +2843,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "flatbread_bag_plastic", "container-item": "null", "count": 2 } ]
+    "entries": [ { "item": "flatbread", "container-item": "null", "count": 2 } ]
   }
 ]

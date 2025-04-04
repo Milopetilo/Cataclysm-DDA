@@ -13,7 +13,7 @@
       { "group": "mre_entrees", "count": 2 },
       { "item": "heatpack", "count": 2 },
       {
-        "group": "crackers_box_small",
+        "item": "crackers",
         "count": [ 0, 2 ],
         "container-item": "null",
         "entry-wrapper": "mre_bag_small",

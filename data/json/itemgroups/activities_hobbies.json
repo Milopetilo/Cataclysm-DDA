@@ -177,7 +177,7 @@
       { "group": "sports", "prob": 2290 },
       { "group": "camping", "prob": 1284 },
       { "item": "ski_jacket", "prob": 5 },
-      { "group": "sports_drink_bottle_plastic", "prob": 20 },
+      { "item": "sports_drink", "prob": 20 },
       { "group": "book_mag_combat", "prob": 105 },
       { "group": "book_mag_surv", "prob": 50 },
       { "item": "mag_firstaid", "prob": 15 },
@@ -398,7 +398,7 @@
       { "item": "gasoline_lantern", "prob": 5, "charges": [ 0, -1 ] },
       { "item": "electric_lantern", "prob": 8, "charges": [ 0, 100 ] },
       { "item": "oil_lamp", "prob": 5, "charges": [ 0, -1 ] },
-      { "group": "lamp_oil_fuel_tin", "prob": 5, "charges": [ 0, -1 ] },
+      { "item": "lamp_oil", "prob": 5, "charges": [ 0, -1 ] },
       [ "folded_bicycle", 1 ],
       [ "folded_skateboard_generic", 1 ],
       [ "coat_rain", 10 ],
@@ -539,7 +539,7 @@
       { "item": "gasoline_lantern", "prob": 5, "charges": [ 0, -1 ] },
       { "item": "electric_lantern", "prob": 8, "charges": [ 0, 100 ] },
       { "item": "oil_lamp", "prob": 5, "charges": [ 0, -1 ] },
-      { "group": "lamp_oil_fuel_tin", "prob": 5, "charges": [ 0, -1 ] },
+      { "item": "lamp_oil", "prob": 5, "charges": [ 0, -1 ] },
       [ "coat_rain", 10 ],
       [ "hood_rain", 5 ],
       [ "jacket_windbreaker", 5 ],
@@ -718,9 +718,9 @@
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_painkiller",
     "entries": [
-      { "group": "aspirin_bottle_plastic_pill_painkiller", "container-item": "null", "count": [ 1, 20 ] },
-      { "group": "ibuprofen_bottle_plastic_pill_painkiller", "container-item": "null", "count": [ 1, 20 ] },
-      { "group": "acetaminophen_bottle_plastic_pill_painkiller", "container-item": "null", "count": [ 1, 20 ] }
+      { "item": "aspirin", "container-item": "null", "count": [ 1, 20 ] },
+      { "item": "ibuprofen", "container-item": "null", "count": [ 1, 20 ] },
+      { "item": "acetaminophen", "container-item": "null", "count": [ 1, 20 ] }
     ]
   },
   {
@@ -729,7 +729,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_small",
-    "entries": [ { "group": "protein_powder_bottle_plastic_small", "container-item": "null", "count": [ 1, 9 ] } ]
+    "entries": [ { "item": "protein_powder", "container-item": "null", "count": [ 1, 9 ] } ]
   },
   {
     "type": "item_group",
@@ -737,7 +737,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "quikclot_bag_plastic_small", "container-item": "null", "count": [ 1, 6 ] } ]
+    "entries": [ { "item": "quikclot", "container-item": "null", "count": [ 1, 6 ] } ]
   },
   {
     "type": "item_group",
@@ -745,7 +745,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_small",
-    "entries": [ { "group": "bfipowder_bottle_plastic_small", "container-item": "null", "count": [ 1, 4 ] } ]
+    "entries": [ { "item": "bfipowder", "container-item": "null", "count": [ 1, 4 ] } ]
   },
   {
     "type": "item_group",

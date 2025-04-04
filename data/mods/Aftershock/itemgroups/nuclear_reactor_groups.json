@@ -17,9 +17,9 @@
     "subtype": "collection",
     "entries": [
       { "item": "hazmat_suit", "prob": 33 },
-      { "group": "prussian_blue_bottle_plastic_pill_supplement", "prob": 33 },
+      { "item": "prussian_blue", "prob": 33 },
       { "item": "rad_monitor", "prob": 33 },
-      { "group": "iodine_bottle_plastic_pill_supplement", "prob": 33 },
+      { "item": "iodine", "prob": 33 },
       { "item": "flashlight", "prob": 33 },
       { "group": "full_1st_aid", "prob": 15 },
       { "item": "geiger_off", "prob": 15 }

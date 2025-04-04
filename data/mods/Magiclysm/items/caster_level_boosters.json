@@ -364,6 +364,7 @@
     "symbol": "~",
     "color": "pink",
     "phase": "liquid",
+    "container": "flask_glass",
     "ammo_data": { "ammo_type": "biomancer_booster_sludge" },
     "flags": [ "NO_INGEST" ]
   }

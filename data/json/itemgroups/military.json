@@ -452,7 +452,7 @@
       { "group": "any_MRE", "count": [ 1, 3 ], "prob": 70 },
       { "prob": 20, "group": "chocolate_wrapper_1_3" },
       { "prob": 20, "group": "neccowafers_bag_plastic_3" },
-      { "group": "water_clean_bottle_plastic", "container-item": "canteen", "prob": 80, "charges": [ 0, 6 ] }
+      { "item": "water_clean", "container-item": "canteen", "prob": 80, "charges": [ 0, 6 ] }
     ]
   },
   {
@@ -636,7 +636,7 @@
     "subtype": "distribution",
     "entries": [
       { "item": "blanket", "prob": 70 },
-      { "group": "pillow_pillowcase", "prob": 70 },
+      { "item": "pillow", "prob": 70 },
       { "item": "sheet", "prob": 70 },
       { "item": "mag_porn", "prob": 40 },
       { "item": "mag_comic", "prob": 10 },
@@ -687,13 +687,13 @@
       { "prob": 40, "group": "can_beans_can_medium_2" },
       { "prob": 40, "group": "pork_beans_can_medium_2" },
       { "distribution": [ { "group": "full_ifak" }, { "group": "used_ifak" } ], "prob": 35 },
-      { "group": "saline_bottle_plastic_small", "prob": 10 },
+      { "item": "saline", "prob": 10 },
       { "item": "instant_coffee", "prob": 25 },
-      { "group": "con_milk_can_medium", "prob": 10 },
-      { "group": "milk_UHT_carton_sealed", "prob": 25 },
+      { "item": "con_milk", "prob": 10 },
+      { "item": "milk_UHT", "prob": 25 },
       { "prob": 20, "group": "cereal_box_small_4" },
-      { "group": "sports_drink_bottle_plastic", "prob": 40 },
-      { "group": "water_clean_bottle_plastic", "prob": 90 }
+      { "item": "sports_drink", "prob": 40 },
+      { "item": "water_clean", "prob": 90 }
     ]
   },
   {
@@ -870,7 +870,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "wrapper",
-    "entries": [ { "group": "chocolate_wrapper", "container-item": "null", "count": [ 1, 3 ] } ]
+    "entries": [ { "item": "chocolate", "container-item": "null", "count": [ 1, 3 ] } ]
   },
   {
     "type": "item_group",
@@ -878,7 +878,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bag_plastic_small",
-    "entries": [ { "group": "neccowafers_bag_plastic_small", "container-item": "null", "count": 3 } ]
+    "entries": [ { "item": "neccowafers", "container-item": "null", "count": 3 } ]
   },
   {
     "type": "item_group",
@@ -886,7 +886,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_supplement",
-    "entries": [ { "group": "iodine_bottle_plastic_pill_supplement", "container-item": "null", "count": 10 } ]
+    "entries": [ { "item": "iodine", "container-item": "null", "count": 10 } ]
   },
   {
     "type": "item_group",
@@ -894,7 +894,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_supplement",
-    "entries": [ { "group": "prussian_blue_bottle_plastic_pill_supplement", "container-item": "null", "count": 10 } ]
+    "entries": [ { "item": "prussian_blue", "container-item": "null", "count": 10 } ]
   },
   {
     "type": "item_group",
@@ -902,7 +902,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "group": "antiparasitic_bottle_plastic_pill_prescription", "container-item": "null", "count": 5 } ]
+    "entries": [ { "item": "antiparasitic", "container-item": "null", "count": 5 } ]
   },
   {
     "type": "item_group",
@@ -910,7 +910,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_painkiller",
-    "entries": [ { "group": "codeine_bottle_plastic_pill_painkiller", "container-item": "null", "count": [ 1, 10 ] } ]
+    "entries": [ { "item": "codeine", "container-item": "null", "count": [ 1, 10 ] } ]
   },
   {
     "type": "item_group",
@@ -918,7 +918,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "group": "antibiotics_bottle_plastic_pill_prescription", "container-item": "null", "count": [ 1, 15 ] } ]
+    "entries": [ { "item": "antibiotics", "container-item": "null", "count": [ 1, 15 ] } ]
   },
   {
     "type": "item_group",
@@ -926,7 +926,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_pill_prescription",
-    "entries": [ { "group": "weak_antibiotic_bottle_plastic_pill_prescription", "container-item": "null", "count": [ 1, 5 ] } ]
+    "entries": [ { "item": "weak_antibiotic", "container-item": "null", "count": [ 1, 5 ] } ]
   },
   {
     "type": "item_group",
@@ -934,6 +934,6 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "wrapper",
-    "entries": [ { "group": "chocolate_wrapper", "container-item": "null", "count": 3 } ]
+    "entries": [ { "item": "chocolate", "container-item": "null", "count": 3 } ]
   }
 ]

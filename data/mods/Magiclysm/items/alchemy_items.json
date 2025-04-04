@@ -191,6 +191,7 @@
     "volume": "250 ml",
     "weight": "300 g",
     "flags": [ "TRADER_AVOID", "INEDIBLE" ],
+    "container": "flask_glass",
     "charges": 1,
     "phase": "liquid",
     "freezing_point": -73

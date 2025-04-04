@@ -5,6 +5,7 @@
     "category": "chems",
     "name": { "str_sp": "potassium alum" },
     "description": "A handful of small, water-soluble white crystals with a watery metallic odor, historically used for many different purposes.  Also known as potash alum and potassium aluminum sulfate; often called simply alum, as it's the most important member of the generic class of compounds called alums.",
+    "container": "bottle_plastic_small",
     "weight": "1725 mg",
     "volume": "250 ml",
     "price": "25 USD",
@@ -21,6 +22,7 @@
     "category": "chems",
     "name": { "str_sp": "cloth dye powder" },
     "description": "A handful of powdered colorful cloth dye, which can be used to dye many fabrics if combined with water and some mordant.",
+    "container": "bottle_plastic_small",
     "weight": "1540 mg",
     "volume": "250 ml",
     "price": "25 USD",
@@ -41,6 +43,7 @@
     "symbol": "=",
     "color": "white",
     "description": "A handful of white, odorless, strongly hygroscopic powder with an extremely salty taste.  Often used as a de-icing agent or as dessicant.",
+    "container": "bag_canvas",
     "material": [ "powder_nonflam" ],
     "volume": "250 ml",
     "weight": "2150 mg",
@@ -57,6 +60,7 @@
     "symbol": "=",
     "color": "white",
     "description": "A handful of white, odorless, hygroscopic powder.  Often used as a cleansing agent and for glass manufacturing, among other things.  Also known as sodium carbonate or soda ash.",
+    "container": "box_small",
     "material": [ "powder_nonflam" ],
     "volume": "250 ml",
     "weight": "2540 mg",
@@ -73,6 +77,7 @@
     "symbol": "=",
     "color": "white",
     "description": "A handful of white, odorless powder with a slightly salty alkaline taste.  Often used in baking as a leavening agent, and has many other niche uses.  Also known as sodium bicarbonate.",
+    "container": "box_small",
     "material": [ "powder_nonflam" ],
     "volume": "250 ml",
     "weight": "2200 mg",
@@ -94,6 +99,7 @@
     "volume": "250 ml",
     "weight": "13534 mg",
     "phase": "liquid",
+    "container": "flask_glass",
     "freezing_point": -39,
     "charges": 250
   },
@@ -112,6 +118,7 @@
     "weight": "442 mg",
     "//": "density: 4.42 g/cm3",
     "ammo_type": "components",
+    "container": "bottle_plastic_small",
     "count": 2500
   },
   {
@@ -129,6 +136,7 @@
     "volume": "250 ml",
     "weight": "968 mg",
     "phase": "liquid",
+    "container": "flask_glass",
     "freezing_point": -50,
     "charges": 250
   },
@@ -147,6 +155,7 @@
     "volume": "250 ml",
     "weight": "860 mg",
     "phase": "liquid",
+    "container": "flask_glass",
     "freezing_point": -50,
     "charges": 250
   },
@@ -165,6 +174,7 @@
     "weight": "471 mg",
     "//": "density: 4.71 g/cm3",
     "ammo_type": "components",
+    "container": "bottle_plastic_small",
     "count": 2500
   },
   {
@@ -182,6 +192,7 @@
     "weight": "250 g",
     "phase": "liquid",
     "comestible_type": "INVALID",
+    "container": "bottle_plastic",
     "freezing_point": -4,
     "charges": 1
   },

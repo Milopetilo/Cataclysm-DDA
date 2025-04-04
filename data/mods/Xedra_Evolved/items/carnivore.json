@@ -72,6 +72,7 @@
     "name": { "str_sp": "fae blood" },
     "weight": "260 g",
     "color": "cyan",
+    "container": "flask_glass",
     "symbol": "~",
     "description": "Blood, from a specific part of the Nether.  Disgusting!",
     "price": "75 cent",

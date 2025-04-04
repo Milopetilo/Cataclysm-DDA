@@ -15,6 +15,7 @@
     "weight": "254 g",
     "color": "red",
     "spoils_in": "5 days",
+    "container": "can_medium",
     "comestible_type": "DRINK",
     "symbol": "~",
     "quench": 8,

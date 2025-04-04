@@ -522,6 +522,7 @@
     "id": "seed_beans",
     "copy-from": "dry_beans",
     "category": "seeds",
+    "container": "null",
     "name": { "str_sp": "bean seeds" },
     "extend": { "flags": [ "NUTRIENT_OVERRIDE", "INEDIBLE" ] },
     "description": "Dry beans, ready for planting.",
@@ -546,6 +547,7 @@
     "copy-from": "dry_lentils",
     "category": "seeds",
     "name": { "str_sp": "lentil seeds" },
+    "container": "null",
     "description": "Dried lentils, ready for planting.",
     "extend": { "flags": [ "NUTRIENT_OVERRIDE", "INEDIBLE" ] },
     "seed_data": { "plant_name": "lentils", "fruit": "dry_lentil_stalks", "seeds": false, "grow": "91 days" }
@@ -925,6 +927,7 @@
     "name": { "str_sp": "fried seeds" },
     "weight": "32 g",
     "color": "yellow",
+    "container": "bag_plastic_small",
     "comestible_type": "FOOD",
     "symbol": "%",
     "calories": 150,
@@ -967,6 +970,7 @@
   {
     "type": "COMESTIBLE",
     "id": "coffee_bean",
+    "container": "bag_plastic_small",
     "price": "1 cent",
     "material": [ "veggy" ],
     "primary_material": "dried_vegetable",
@@ -989,6 +993,7 @@
     "id": "roasted_coffee_bean",
     "copy-from": "coffee_bean",
     "category": "other",
+    "container": "bag_plastic_small",
     "name": { "str_sp": "roasted coffee beans" },
     "description": "Some roasted coffee beans, can be ground into powder.",
     "extend": { "flags": [ "RAW" ] }
@@ -1018,6 +1023,7 @@
     "id": "seed_popcorn",
     "copy-from": "kernels",
     "name": { "str_sp": "seed popcorn" },
+    "container": "null",
     "extend": { "flags": [ "NUTRIENT_OVERRIDE" ] },
     "description": "A bunch of dry unpopped corn.  It's intended for planting, but could be put to other uses.",
     "seed_data": { "plant_name": "popcorn", "fruit": "popcorn_cob", "seeds": false, "byproducts": [ "withered" ], "grow": "91 days" }

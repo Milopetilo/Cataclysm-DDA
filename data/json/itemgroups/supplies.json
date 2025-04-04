@@ -198,7 +198,7 @@
       { "item": "paint_gray", "prob": 45, "container-group": "paintcans" },
       [ "chipper", 55 ],
       [ "paint_brush", 55 ],
-      { "group": "chem_turpentine_bottle_plastic", "prob": 45, "charges": [ 20, -1 ] }
+      { "item": "chem_turpentine", "prob": 45, "charges": [ 20, -1 ] }
     ]
   },
   {
@@ -453,8 +453,8 @@
       [ "chem_sulphuric_acid", 30 ],
       [ "chem_muriatic_acid", 35 ],
       [ "peephole", 25 ],
-      { "group": "chem_chromium_oxide_bottle_plastic_small", "prob": 5, "charges": [ 100, -1 ] },
-      { "group": "chem_zinc_powder_bottle_plastic_small", "prob": 5, "charges": [ 100, -1 ] },
+      { "item": "chem_chromium_oxide", "prob": 5, "charges": [ 100, -1 ] },
+      { "item": "chem_zinc_powder", "prob": 5, "charges": [ 100, -1 ] },
       [ "denat_alcohol", 3 ],
       [ "methed_alcohol", 2 ],
       [ "lamp_oil", 25 ],
@@ -463,21 +463,9 @@
       [ "tempered_glass_sheet", 25 ],
       [ "rigid_plastic_sheet", 30 ],
       [ "gas_forge", 15 ],
-      { "group": "chem_turpentine_bottle_plastic", "prob": 20, "charges": [ 20, -1 ] },
-      {
-        "group": "silicone_squeeze_tube",
-        "prob": 15,
-        "charges": [ 29, -1 ],
-        "container-item": "squeeze_tube",
-        "sealed": true
-      },
-      {
-        "group": "silicone_squeeze_tube",
-        "prob": 35,
-        "charges": [ 8, -1 ],
-        "container-item": "squeeze_tube_small",
-        "sealed": true
-      }
+      { "item": "chem_turpentine", "prob": 20, "charges": [ 20, -1 ] },
+      { "item": "silicone", "prob": 15, "charges": [ 29, -1 ], "container-item": "squeeze_tube", "sealed": true },
+      { "item": "silicone", "prob": 35, "charges": [ 8, -1 ], "container-item": "squeeze_tube_small", "sealed": true }
     ]
   },
   {
@@ -485,39 +473,33 @@
     "id": "supplies_reagents_lab",
     "//": "General laboratory reagents and expendibles.  This list contains most conceivable chemicals in the game.  More specific lists for each type of lab would be reasonable eventually.",
     "items": [
-      {
-        "group": "water_clean_bottle_plastic",
-        "prob": 90,
-        "charges": [ 1, -1 ],
-        "container-item": "bottle_plastic",
-        "sealed": false
-      },
-      { "group": "salt_water_bottle_plastic", "prob": 20, "charges": [ 1, -1 ] },
-      { "group": "detergent_box_small", "prob": 10, "charges": [ 1, 20 ] },
-      { "group": "bleach_jug_plastic", "prob": 10, "charges": [ 10, -1 ] },
-      { "group": "ammonia_liquid_pressure_tank", "prob": 20, "charges": [ 6, -1 ] },
-      { "group": "ammonia_hydroxide_jug_plastic", "prob": 10, "charges": [ 10, -1 ] },
+      { "item": "water_clean", "prob": 90, "charges": [ 1, -1 ], "container-item": "bottle_plastic", "sealed": false },
+      { "item": "salt_water", "prob": 20, "charges": [ 1, -1 ] },
+      { "item": "detergent", "prob": 10, "charges": [ 1, 20 ] },
+      { "item": "bleach", "prob": 10, "charges": [ 10, -1 ] },
+      { "item": "ammonia_liquid", "prob": 20, "charges": [ 6, -1 ] },
+      { "item": "ammonia_hydroxide", "prob": 10, "charges": [ 10, -1 ] },
       { "prob": 10, "group": "iodine_bottle_plastic_pill_supplement_1_10" },
       { "group": "oxy_powder_bottle_part", "prob": 10 },
       [ "ash", 5 ],
       [ "lye", 5 ],
       [ "lye_potassium", 5 ],
       { "group": "lye_powder_bottle_part", "prob": 10 },
-      { "group": "magnesium_bag_plastic_small", "prob": 10, "charges": [ 50, 100 ] },
+      { "item": "magnesium", "prob": 10, "charges": [ 50, 100 ] },
       { "group": "charcoal_bag_part", "prob": 10 },
       { "prob": 10, "group": "chem_sulphur_bottle_plastic_small_100_inf" },
       [ "chunk_sulfur", 5 ],
       [ "chem_aluminium_powder", 10 ],
       [ "chem_aluminium_sulphate", 10 ],
       [ "chem_saltpetre", 10 ],
-      { "group": "red_phosphorous_bottle_plastic_small", "prob": 5, "charges": [ 100, -1 ] },
-      { "group": "white_phosphorous_bottle_plastic_small", "prob": 5, "charges": [ 100, -1 ] },
+      { "item": "red_phosphorous", "prob": 5, "charges": [ 100, -1 ] },
+      { "item": "white_phosphorous", "prob": 5, "charges": [ 100, -1 ] },
       { "item": "bismuth", "prob": 5, "charges": [ 1, -1 ] },
-      { "group": "chem_benzene_bottle_glass", "prob": 10, "charges": [ 1, -1 ] },
-      { "group": "chem_toluene_bottle_glass", "prob": 10, "charges": [ 1, -1 ] },
-      { "group": "chem_antimony_trichloride_bag_plastic_small", "prob": 2, "charges": [ 1, -1 ] },
-      { "group": "chem_ferric_chloride_bag_plastic_small", "prob": 15, "charges": [ 1, -1 ] },
-      { "group": "chem_nickel_powder_bag_plastic_small", "prob": 5, "charges": [ 1, -1 ] },
+      { "item": "chem_benzene", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_toluene", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_antimony_trichloride", "prob": 2, "charges": [ 1, -1 ] },
+      { "item": "chem_ferric_chloride", "prob": 15, "charges": [ 1, -1 ] },
+      { "item": "chem_nickel_powder", "prob": 5, "charges": [ 1, -1 ] },
       {
         "item": "chem_slaked_lime",
         "prob": 5,
@@ -525,32 +507,32 @@
         "container-item": "bag_plastic",
         "sealed": false
       },
-      { "group": "chem_baking_soda_box_small", "prob": 10, "charges": [ 1, -1 ] },
-      { "group": "chem_washing_soda_box_small", "prob": 10, "charges": [ 1, -1 ] },
-      { "group": "chem_calcium_chloride_bag_canvas", "prob": 5 },
-      { "group": "chem_nitric_acid_bottle_glass", "prob": 10, "charges": [ 1, -1 ] },
-      { "group": "chem_sulphuric_acid_bottle_glass", "prob": 10, "charges": [ 1, -1 ] },
-      { "group": "chem_muriatic_acid_bottle_glass", "prob": 10, "charges": [ 1, -1 ] },
-      { "group": "chem_acetic_acid_bottle_glass", "prob": 10, "charges": [ 1, -1 ] },
-      { "group": "chem_formaldehyde_bottle_glass", "prob": 10, "charges": [ 1, -1 ] },
-      { "group": "chem_acetone_bottle_glass", "prob": 10, "charges": [ 1, -1 ] },
-      { "group": "chem_carbide_bottle_plastic_small", "prob": 10, "charges": [ 100, -1 ] },
-      { "group": "chem_caco3_bottle_plastic_small", "prob": 10, "charges": [ 100, -1 ] },
-      { "group": "mercury_flask_glass", "prob": 10, "charges": [ 100, -1 ] },
-      { "group": "chem_sodium_flask_glass", "prob": 10, "charges": [ 100, -1 ] },
-      { "group": "chem_potassium_flask_glass", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "chem_baking_soda", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_washing_soda", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_calcium_chloride", "prob": 5 },
+      { "item": "chem_nitric_acid", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_sulphuric_acid", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_muriatic_acid", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_acetic_acid", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_formaldehyde", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_acetone", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_carbide", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "chem_caco3", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "mercury", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "chem_sodium", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "chem_potassium", "prob": 10, "charges": [ 100, -1 ] },
       [ "chem_ammonium_nitrate", 10 ],
-      { "group": "chem_chromium_oxide_bottle_plastic_small", "prob": 10, "charges": [ 100, -1 ] },
-      { "group": "chem_zinc_powder_bottle_plastic_small", "prob": 10, "charges": [ 100, -1 ] },
-      { "group": "chem_manganese_dioxide_bottle_plastic_small", "prob": 10, "charges": [ 100, -1 ] },
-      { "group": "chem_hydrogen_peroxide_conc_bottle_glass", "prob": 10, "charges": [ 1, -1 ] },
+      { "item": "chem_chromium_oxide", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "chem_zinc_powder", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "chem_manganese_dioxide", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "chem_hydrogen_peroxide_conc", "prob": 10, "charges": [ 1, -1 ] },
       [ "material_rocksalt", 2 ],
-      { "group": "ether_bottle_glass", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "ether", "prob": 10, "charges": [ 100, -1 ] },
       { "item": "denat_alcohol", "prob": 6, "charges": [ 250, -1 ] },
       { "item": "methed_alcohol", "prob": 4, "charges": [ 250, -1 ] },
-      { "group": "chem_DMSO_bottle_glass", "prob": 10, "charges": [ 100, -1 ] },
-      { "group": "chem_phenol_bottle_glass", "prob": 10, "charges": [ 100, -1 ] },
-      { "group": "chem_glycerol_bottle_glass", "prob": 10, "charges": [ 10, -1 ] },
+      { "item": "chem_DMSO", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "chem_phenol", "prob": 10, "charges": [ 100, -1 ] },
+      { "item": "chem_glycerol", "prob": 10, "charges": [ 10, -1 ] },
       { "prob": 10, "group": "chem_peptone_broth_bottle_plastic_small_1_inf" },
       { "prob": 10, "group": "chem_agar_bottle_plastic_small_1_inf" },
       { "prob": 10, "group": "chem_acrylamide_bottle_glass_1_inf" },
@@ -560,11 +542,11 @@
       { "item": "polycarbonate_sheet", "prob": 7, "count": [ 1, 30 ] },
       { "prob": 10, "group": "salt_bag_plastic" },
       { "prob": 10, "group": "sugar_bag_plastic" },
-      { "group": "chem_ethanol_bottle_glass", "prob": 10, "charges": [ 250, -1 ] },
+      { "item": "chem_ethanol", "prob": 10, "charges": [ 250, -1 ] },
       [ "oxygen_cylinder", 8 ],
       { "prob": 16, "group": "chem_citric_acid_bottle_glass_100_inf" },
-      { "group": "chem_ethanol_bottle_glass", "prob": 10, "charges": [ 250, -1 ] },
-      { "group": "chem_turpentine_bottle_plastic", "prob": 10, "charges": [ 20, -1 ] }
+      { "item": "chem_ethanol", "prob": 10, "charges": [ 250, -1 ] },
+      { "item": "chem_turpentine", "prob": 10, "charges": [ 20, -1 ] }
     ]
   },
   {
@@ -572,17 +554,11 @@
     "id": "supplies_fluid_catalytic_lab",
     "//": "General laboratory reagents and expendibles.  This list contains most conceivable chemicals in the game.  More specific lists for each type of lab would be reasonable eventually.",
     "items": [
-      {
-        "group": "water_clean_bottle_plastic",
-        "prob": 90,
-        "charges": [ 1, -1 ],
-        "container-item": "bottle_plastic",
-        "sealed": false
-      },
-      { "group": "cooking_oil_jug_plastic", "prob": 100, "count": 4, "charges": [ 10, -1 ] },
-      { "group": "chem_washing_soda_box_small", "prob": 100, "charges": [ 1, 20 ] },
+      { "item": "water_clean", "prob": 90, "charges": [ 1, -1 ], "container-item": "bottle_plastic", "sealed": false },
+      { "item": "cooking_oil", "prob": 100, "count": 4, "charges": [ 10, -1 ] },
+      { "item": "chem_washing_soda", "prob": 100, "charges": [ 1, 20 ] },
       { "item": "cooking_oil2", "prob": 100, "count": 4, "charges": [ 10, -1 ] },
-      { "group": "lamp_oil_fuel_tin", "prob": 100, "count": 4, "charges": [ 10, -1 ] }
+      { "item": "lamp_oil", "prob": 100, "count": 4, "charges": [ 10, -1 ] }
     ]
   },
   {
@@ -629,7 +605,7 @@
       { "group": "fertilizer_commercial_bag_canvas_60", "prob": 100 },
       [ "fertilizer_liquid", 60 ],
       { "group": "quicklime_bag", "prob": 80 },
-      { "group": "chem_saltpetre_bag_canvas", "prob": 15, "charges": [ 10, 50 ] }
+      { "item": "chem_saltpetre", "prob": 15, "charges": [ 10, 50 ] }
     ]
   },
   {
@@ -908,9 +884,9 @@
     "//": "barrel with gasoline, diesel or motor oil like you would find at fuel depot",
     "subtype": "distribution",
     "entries": [
-      { "group": "gasoline_jerrycan", "charges": [ 0, 50000 ], "container-item": "30gal_drum", "prob": 30 },
-      { "group": "diesel_jerrycan", "charges": [ 0, 50000 ], "container-item": "30gal_drum", "prob": 10 },
-      { "group": "motor_oil_bottle_plastic", "charges": [ 0, 10000 ], "container-item": "jerrycan", "prob": 5 }
+      { "item": "gasoline", "charges": [ 0, 50000 ], "container-item": "30gal_drum", "prob": 30 },
+      { "item": "diesel", "charges": [ 0, 50000 ], "container-item": "30gal_drum", "prob": 10 },
+      { "item": "motor_oil", "charges": [ 0, 10000 ], "container-item": "jerrycan", "prob": 5 }
     ]
   },
   {
@@ -918,14 +894,14 @@
     "type": "item_group",
     "//": "barrel with aviation gas like you would find at a fuel depot for planes or helicopters",
     "subtype": "distribution",
-    "entries": [ { "group": "avgas_jerrycan", "charges": [ 0, 50000 ], "container-item": "30gal_drum", "prob": 30 } ]
+    "entries": [ { "item": "avgas", "charges": [ 0, 50000 ], "container-item": "30gal_drum", "prob": 30 } ]
   },
   {
     "id": "jp8_barrel",
     "type": "item_group",
     "//": "barrel with aviation gas like you would find at a fuel depot for planes or helicopters",
     "subtype": "distribution",
-    "entries": [ { "group": "jp8_jerrycan", "charges": [ 0, 50000 ], "container-item": "30gal_drum", "prob": 30 } ]
+    "entries": [ { "item": "jp8", "charges": [ 0, 50000 ], "container-item": "30gal_drum", "prob": 30 } ]
   },
   {
     "id": "writing_utensils",
@@ -963,7 +939,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_small",
-    "entries": [ { "group": "chem_peptone_broth_bottle_plastic_small", "container-item": "null", "count": [ 1, -1 ] } ]
+    "entries": [ { "item": "chem_peptone_broth", "container-item": "null", "count": [ 1, -1 ] } ]
   },
   {
     "type": "item_group",
@@ -971,7 +947,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_plastic_small",
-    "entries": [ { "group": "chem_agar_bottle_plastic_small", "container-item": "null", "count": [ 1, -1 ] } ]
+    "entries": [ { "item": "chem_agar", "container-item": "null", "count": [ 1, -1 ] } ]
   },
   {
     "type": "item_group",
@@ -979,7 +955,7 @@
     "subtype": "collection",
     "//": "This group was created automatically and may contain errors.",
     "container-item": "bottle_glass",
-    "entries": [ { "group": "chem_acrylamide_bottle_glass", "container-item": "null", "count": [ 1, -1 ] } ]
+    "entries": [ { "item": "chem_acrylamide", "container-item": "null", "count": [ 1, -1 ] } ]
   },
   {
     "id": "hair_dye",

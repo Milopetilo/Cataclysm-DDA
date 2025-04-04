@@ -60,6 +60,7 @@
     "price_postapoc": "1 USD",
     "symbol": "!",
     "color": "magenta",
+    "container": "wrapper_wyld",
     "flags": [ "IRREPLACEABLE_CONSUMABLE", "WATER_DISSOLVE", "EDIBLE_FROZEN" ],
     "use_action": { "type": "consume_drug", "activation_message": "You take the %s.", "vitamins": [ [ "underhill_essence", 44, 122 ] ] }
   },
@@ -186,6 +187,7 @@
     "charges": 1,
     "fun": -1,
     "symbol": "~",
+    "container": "flask_glass",
     "color": "light_blue",
     "comestible_type": "DRINK",
     "flags": [ "EATEN_COLD", "NO_AUTO_CONSUME", "NUTRIENT_OVERRIDE" ],

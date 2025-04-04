@@ -22,6 +22,7 @@
     "color": "brown",
     "price": "40 USD",
     "price_postapoc": "1 USD 50 cent",
+    "container": "bottle_glass",
     "weight": "16 g",
     "volume": "750 ml",
     "charges": 48,

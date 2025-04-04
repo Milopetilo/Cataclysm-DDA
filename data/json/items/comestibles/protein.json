@@ -19,6 +19,7 @@
     "color": "light_gray",
     "spoils_in": "2 days",
     "phase": "liquid",
+    "container": "bottle_plastic",
     "sealed": false,
     "material": [ "water" ],
     "calories": 100,
@@ -47,6 +48,7 @@
     "material": [ "powder" ],
     "symbol": "%",
     "color": "white",
+    "container": "bottle_plastic_small",
     "calories": 100,
     "freezing_point": -274,
     "vitamins": [  ]
@@ -69,6 +71,7 @@
     "material": [ "fruit", "veggy" ],
     "symbol": "%",
     "color": "green",
+    "container": "wrapper_pr",
     "calories": 400,
     "vitamins": [
       [ "calcium", 30 ],
@@ -131,6 +134,7 @@
     "color": "white",
     "spoils_in": "1 day",
     "phase": "liquid",
+    "container": "bottle_plastic",
     "sealed": false,
     "material": [ "milk" ],
     "calories": 232,
