@@ -2050,8 +2050,7 @@
       "items": {
         ".": { "item": "clutter_basement", "chance": 1 },
         "K": { "item": "crate_stack", "chance": 100 },
-        "m": { "item": "hardware_plumbing", "chance": 40 },
-        "r": { "item": "pantry", "chance": 25 }
+        "m": { "item": "hardware_plumbing", "chance": 40 }
       }
     }
   },

@@ -73,8 +73,7 @@
         "³": [
           { "item": "restaur_kitchen", "chance": 20, "repeat": [ 1, 2 ] },
           { "item": "groce_bread", "chance": 30, "repeat": [ 1, 2 ] },
-          { "item": "pantry", "chance": 60, "repeat": [ 1, 2 ] },
-          { "item": "cannedfood", "chance": 60, "repeat": [ 1, 2 ] },
+          { "item": "SUS_pantry", "chance": 40 },
           { "item": "groce_condiment", "chance": 20, "repeat": [ 1, 2 ] }
         ],
         "t": { "item": "laundry", "chance": 20, "repeat": [ 1, 2 ] },
@@ -778,7 +777,7 @@
         "F": [
           { "item": "restaur_kitchen", "chance": 20, "repeat": [ 1, 2 ] },
           { "item": "groce_bread", "chance": 20, "repeat": [ 1, 2 ] },
-          { "item": "pantry", "chance": 20, "repeat": [ 1, 2 ] },
+          { "item": "SUS_pantry", "chance": 10 },
           { "item": "groce_condiment", "chance": 20, "repeat": [ 1, 2 ] }
         ],
         "z": { "item": "SUS_trash_trashcan", "chance": 80, "repeat": [ 1, 2 ] },
