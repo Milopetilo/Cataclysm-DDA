@@ -806,11 +806,6 @@
   },
   {
     "type": "MONSTER_FACTION",
-    "name": "balthazar",
-    "hate": [ "zombie" ]
-  },
-  {
-    "type": "MONSTER_FACTION",
     "name": "robofac",
     "neutral": [ "bot", "animal", "passive_machine" ],
     "hate": [ "zombie", "fungus", "cult", "triffid", "nether" ]
