@@ -1,0 +1,60 @@
+[
+  {
+    "type": "overmap_special",
+    "id": "cave_mutable",
+    "subtype": "mutable",
+    "locations": [ "subterranean_empty" ],
+    "city_distance": [ 4, 40 ],
+    "city_sizes": [ 0, -1 ],
+    "occurrences": [ 1, 10 ],
+    "flags": [ "CLASSIC", "WILDERNESS", "OVERMAP_UNIQUE" ],
+    "check_for_locations_area": [ { "type": [ "subterranean_empty" ], "from": [ -4, -4, 0 ], "to": [ 4, 4, -3 ] } ],
+    "check_for_locations": [ [ [ 0, 0, 1 ], [ "land", "agricultural" ] ] ],
+    "joins": [
+      "wide_cave_to_wide_cave",
+      "narrow_cave_to_narrow_cave",
+      { "id": "narrow_cave_to_wide_cave", "opposite": "wide_cave_to_narrow_cave" },
+      { "id": "root_to_cave_entrance", "opposite": "cave_entrance_to_root" },
+      { "id": "cave_to_surface", "opposite": "surface_to_cave" }
+    ],
+    "overmaps": {
+      "cave_root": { "overmap": "open_air", "below": "root_to_cave_entrance" },
+      "cave_entrance_surface_narrow": { "overmap": "cave_entrance_surface_narrow_north", "above": "cave_entrance_to_root", "below": "surface_to_cave" },
+      "cave_entrance_subterranean_narrow": {
+        "overmap": "cave_entrance_subterranean_narrow_north",
+        "north": { "id": "narrow_cave_to_narrow_cave", "alternatives": [ "narrow_cave_to_wide_cave" ] }
+      },
+      "cave_entrance_surface_wide": { "overmap": "cave_entrance_surface_wide_north", "below": "surface_to_cave" },
+      "cave_entrance_subterranean_wide": {
+        "overmap": "cave_entrance_subterranean_wide_north",
+        "north": { "id": "wide_cave_to_wide_cave", "alternatives": [ "wide_cave_to_narrow_cave" ] }
+      }
+    },
+    "root": "cave_root",
+    "phases": [
+      [
+        {
+          "name": "cave_entrance_narrow",
+          "chunk": [
+            { "overmap": "cave_entrance_surface_narrow", "pos": [ 0, 0, 0 ] },
+            { "overmap": "cave_entrance_subterranean_narrow", "pos": [ 0, 0, -1 ] }
+          ],
+          "max": 1
+        },
+        {
+          "name": "cave_entrance_wide",
+          "chunk": [
+            { "overmap": "cave_entrance_surface_wide", "pos": [ 0, 0, 0 ] },
+            { "overmap": "cave_entrance_subterranean_wide", "pos": [ 0, 0, -1 ] }
+          ],
+          "max": 1
+        }
+      ],
+      [
+        { "overmap": "dump_field", "weight": 12 },
+        { "overmap": "dump_edge", "weight": 20 },
+        { "overmap": "dump_core", "weight": 8 }
+      ]
+    ]
+  }
+]
