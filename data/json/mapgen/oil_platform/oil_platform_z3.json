@@ -144,7 +144,7 @@
           { "item": "kitchen_nonfood", "chance": 20, "repeat": [ 0, 1 ] },
           { "item": "kitchen_appliances", "chance": 20, "repeat": [ 0, 1 ] },
           { "item": "crate_kitchen", "chance": 20, "repeat": [ 0, 1 ] },
-          { "item": "kitchen_counters", "chance": 20, "repeat": [ 0, 1 ] }
+          { "item": "SUS_cookware", "chance": 20, "repeat": [ 0, 1 ] }
         ],
         "Q": [
           { "item": "tools_common", "chance": 15 },

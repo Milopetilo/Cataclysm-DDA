@@ -267,9 +267,9 @@
         ],
         "t": [
           { "item": "homebooks", "chance": 5, "repeat": [ 1, 2 ] },
-          { "item": "kitchen_counters", "chance": 20, "repeat": [ 1, 2 ] },
-          { "item": "dishes_dining", "chance": 20, "repeat": [ 1, 2 ] },
-          { "item": "dishes_utility", "chance": 20 },
+          { "item": "SUS_dishes", "chance": 20, "repeat": [ 1, 2 ] },
+          { "item": "SUS_utensils", "chance": 20, "repeat": [ 1, 2 ] },
+          { "item": "SUS_knife_drawer", "chance": 20 },
           { "item": "kitchen_appliances", "chance": 20 }
         ],
         "M": [

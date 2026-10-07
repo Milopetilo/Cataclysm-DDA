@@ -250,7 +250,7 @@
         { "item": "kitchen_nonfood", "chance": 80, "repeat": [ 0, 5 ] },
         { "item": "kitchen_appliances", "chance": 80, "repeat": [ 0, 5 ] },
         { "item": "crate_kitchen", "chance": 80, "repeat": [ 0, 5 ] },
-        { "item": "kitchen_counters", "chance": 80, "repeat": [ 0, 5 ] },
+        { "item": "SUS_cookware", "chance": 80, "repeat": [ 0, 5 ] },
         { "item": "groce_condiment", "chance": 80, "repeat": [ 2, 5 ] }
       ],
       "4": [ { "item": "SUS_oven", "chance": 85, "repeat": [ 0, 4 ] } ],

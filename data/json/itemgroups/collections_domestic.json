@@ -14,19 +14,6 @@
     ]
   },
   {
-    "id": "kitchen_counters",
-    "//": "Items that might be found scattered around a kitchen counter.",
-    "type": "item_group",
-    "subtype": "distribution",
-    "items": [
-      { "group": "dishes_dining", "prob": 100 },
-      { "group": "dishes_utility", "prob": 50 },
-      { "group": "kitchen_appliances", "prob": 25 },
-      { "group": "SUS_cooking_bookcase", "prob": 15 },
-      { "group": "pillbox_any_used", "prob": 5 }
-    ]
-  },
-  {
     "id": "dishes_dining",
     "//": "Mundane household dishes that would be used for eating, not food prep.",
     "//2": "May be some overlap for food prep dishes that could be used for serving, like mixing bowls and teapots.",

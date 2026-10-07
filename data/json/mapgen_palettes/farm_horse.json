@@ -73,7 +73,7 @@
       "o": { "item": "SUS_oven", "chance": 100 },
       "8": { "item": "ranch_homebooks", "chance": 40 },
       "r": { "item": "SUS_pantry", "chance": 50 },
-      "c": { "item": "kitchen_counters", "chance": 100 },
+      "c": { "item": "SUS_dishes", "chance": 100 },
       "2": { "item": "metal_workshop", "chance": 50, "repeat": [ 2, 4 ] },
       "7": { "item": "horse_gear", "chance": 30 },
       "^": { "item": "horse_gear", "chance": 50 },

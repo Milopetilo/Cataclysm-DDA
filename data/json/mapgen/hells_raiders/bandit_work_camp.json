@@ -127,9 +127,9 @@
         { "class": "bandit_quartermaster", "x": 17, "y": 11 }
       ],
       "items": {
-        "F": { "item": "kitchen_counters", "chance": 93 },
+        "F": { "item": "SUS_junk_drawer", "chance": 93 },
         "b": { "item": "bed", "chance": 100 },
-        "8": { "item": "kitchen_counters", "chance": 93, "repeat": [ 2, 4 ] },
+        "8": { "item": "SUS_utensils", "chance": 93, "repeat": [ 2, 4 ] },
         "*": { "item": "tools_earthworking", "chance": 80, "repeat": [ 4, 7 ] }
       },
       "place_zones": [
