@@ -1,20 +1,46 @@
-#include "cata_catch.h"
-#include "map.h"
-
+#include <cstddef>
+#include <functional>
 #include <memory>
+#include <optional>
+#include <ostream>
+#include <set>
+#include <string>
 #include <vector>
 
+#include "active_item_cache.h"
 #include "avatar.h"
-#include "coordinate_constants.h"
+#include "calendar.h"
+#include "cata_catch.h"
+#include "cata_scope_helpers.h"
 #include "coordinates.h"
+#include "cuboid_rectangle.h"
 #include "enums.h"
-#include "itype.h"
 #include "game.h"
-#include "game_constants.h"
+#include "item.h"
+#include "item_contents.h"
+#include "item_location.h"
+#include "itype.h"
+#include "map.h"
 #include "map_helpers.h"
+#include "map_helpers_tests.h"
+#include "map_iterator.h"
+#include "map_scale_constants.h"
+#include "map_selector.h"
+#include "monster.h"
+#include "pocket_type.h"
 #include "point.h"
+#include "ret_val.h"
 #include "submap.h"
 #include "type_id.h"
+#include "units.h"
+#include "value_ptr.h"
+#include "weather.h"
+
+static const itype_id itype_almond_milk( "almond_milk" );
+static const itype_id itype_bag_plastic( "bag_plastic" );
+static const itype_id itype_bottle_plastic( "bottle_plastic" );
+static const itype_id itype_cookies( "cookies" );
+static const itype_id itype_disinfectant( "disinfectant" );
 
 TEST_CASE( "map_coordinate_conversion_functions" )
 {
@@ -24,17 +50,18 @@ TEST_CASE( "map_coordinate_conversion_functions" )
         here.vertical_shift( 0 );
     } );
 
-    tripoint test_point =
-        GENERATE( tripoint_zero, tripoint_south, tripoint_east, tripoint_above, tripoint_below );
-    tripoint_bub_ms test_bub( test_point );
+    tripoint_bub_ms test_point = tripoint_bub_ms::zero +
+                                 GENERATE( tripoint_rel_ms::zero, tripoint_rel_ms::south,
+                                           tripoint_rel_ms::east, tripoint_rel_ms::above,
+                                           tripoint_rel_ms::below );
     int z = GENERATE( 0, 1, -1, OVERMAP_HEIGHT, -OVERMAP_DEPTH );
 
     // Make sure we're not in the 'easy' case where abs_sub is zero
     if( here.get_abs_sub().x() == 0 ) {
-        here.shift( point_rel_sm_east );
+        here.shift( point_rel_sm::east );
     }
     if( here.get_abs_sub().y() == 0 ) {
-        here.shift( point_rel_sm_south );
+        here.shift( point_rel_sm::south );
     }
     here.vertical_shift( z );
 
@@ -46,37 +73,37 @@ TEST_CASE( "map_coordinate_conversion_functions" )
 
     point_abs_ms map_origin_ms = project_to<coords::ms>( here.get_abs_sub().xy() );
 
-    tripoint_abs_ms test_abs = map_origin_ms + test_point;
+    tripoint_abs_ms test_abs = map_origin_ms + rebase_rel( test_point );
 
     if( test_abs.z() > OVERMAP_HEIGHT || test_abs.z() < -OVERMAP_DEPTH ) {
         return;
     }
 
-    CAPTURE( test_bub );
+    CAPTURE( test_point );
     CAPTURE( test_abs );
 
     // Verify round-tripping
-    CHECK( here.getglobal( here.bub_from_abs( test_abs ) ) == test_abs );
-    CHECK( here.bub_from_abs( here.getglobal( test_point ) ).raw() == test_point );
+    CHECK( here.get_abs( here.get_bub( test_abs ) ) == test_abs );
+    CHECK( here.get_bub( here.get_abs( test_point ) ) == test_point );
 }
 
 TEST_CASE( "destroy_grabbed_furniture" )
 {
-    clear_map();
+    clear_map_without_vision();
     avatar &player_character = get_avatar();
     GIVEN( "Furniture grabbed by the player" ) {
         const tripoint_bub_ms test_origin( 60, 60, 0 );
         map &here = get_map();
-        player_character.setpos( test_origin );
-        const tripoint_bub_ms grab_point = test_origin + tripoint_east;
+        player_character.setpos( here, test_origin );
+        const tripoint_bub_ms grab_point = test_origin + tripoint::east;
         here.furn_set( grab_point, furn_id( "f_chair" ) );
-        player_character.grab( object_type::FURNITURE, tripoint_rel_ms_east );
+        player_character.grab( object_type::FURNITURE, tripoint_rel_ms::east );
         REQUIRE( player_character.get_grab_type() == object_type::FURNITURE );
         WHEN( "The furniture grabbed by the player is destroyed" ) {
             here.destroy( grab_point );
             THEN( "The player's grab is released" ) {
                 CHECK( player_character.get_grab_type() == object_type::NONE );
-                CHECK( player_character.grab_point == tripoint_rel_ms_zero );
+                CHECK( player_character.grab_point == tripoint_rel_ms::zero );
             }
         }
     }
@@ -88,7 +115,7 @@ TEST_CASE( "map_bounds_checking" )
     // vehicles are stored in the global MAPBUFFER which all maps refer to.  To
     // work around the problem we clear the map of vehicles, but this is an
     // inelegant solution.
-    clear_map();
+    clear_map_without_vision();
     map m;
     tripoint_abs_sm point_away_from_real_map( get_map().get_abs_sub() + point( MAPSIZE_X, 0 ) );
     m.load( point_away_from_real_map, false );
@@ -108,16 +135,62 @@ TEST_CASE( "map_bounds_checking" )
     }
 }
 
+static std::vector<tripoint_bub_ms> points_in_radius_of( const map &here,
+        const tripoint_bub_ms &center, const int radius )
+{
+    std::vector<tripoint_bub_ms> visited;
+    for( const tripoint_bub_ms &p : here.points_in_radius( center, radius ) ) {
+        visited.push_back( p );
+    }
+    return visited;
+}
+
+TEST_CASE( "map_points_in_radius_with_center_outside_map", "[map]" )
+{
+    const map &here = get_map();
+    const int radius = 6;
+
+    SECTION( "center past the low x and y edges by more than the radius" ) {
+        const std::vector<tripoint_bub_ms> visited =
+            points_in_radius_of( here, tripoint_bub_ms( -100, -50, 0 ), radius );
+        CAPTURE( visited );
+        CHECK( visited.empty() );
+    }
+    SECTION( "center past the low x edge by more than the radius" ) {
+        const std::vector<tripoint_bub_ms> visited =
+            points_in_radius_of( here, tripoint_bub_ms( -100, 20, 0 ), radius );
+        CAPTURE( visited );
+        CHECK( visited.empty() );
+    }
+    SECTION( "center past the high x edge by more than the radius" ) {
+        const std::vector<tripoint_bub_ms> visited =
+            points_in_radius_of( here, tripoint_bub_ms( MAPSIZE_X + 100, 20, 0 ), radius );
+        CAPTURE( visited );
+        CHECK( visited.empty() );
+    }
+    SECTION( "center past the low x edge by less than the radius" ) {
+        const tripoint_bub_ms center( -2, 20, 0 );
+        const std::vector<tripoint_bub_ms> visited = points_in_radius_of( here, center, radius );
+        // x in [0, 4], y in [14, 26]
+        CHECK( visited.size() == 5 * 13 );
+        for( const tripoint_bub_ms &p : visited ) {
+            CAPTURE( p );
+            CHECK( here.inbounds( p ) );
+            CHECK( square_dist( center, p ) <= radius );
+        }
+    }
+}
+
 TEST_CASE( "tinymap_bounds_checking" )
 {
     // FIXME: There are issues with vehicle caching between maps, because
     // vehicles are stored in the global MAPBUFFER which all maps refer to.  To
     // work around the problem we clear the map of vehicles, but this is an
     // inelegant solution.
-    clear_map();
+    clear_map_without_vision();
     tinymap m;
     tripoint_abs_sm point_away_from_real_map( get_map().get_abs_sub() + point( MAPSIZE_X, 0 ) );
-    m.load( project_to<coords::omt>( point_away_from_real_map + point_east ),
+    m.load( project_to<coords::omt>( point_away_from_real_map + point::east ),
             false ); // Add submap to ensure to OMT lies beyond the reality bubble
     for( int x = -1; x <= SEEX * 2; ++x ) {
         for( int y = -1; y <= SEEY * 2; ++y ) {
@@ -164,8 +237,35 @@ TEST_CASE( "place_player_can_safely_move_multiple_submaps" )
     // Regression test for the situation where game::place_player would misuse
     // map::shift if the resulting shift exceeded a single submap, leading to a
     // broken active item cache.
-    g->place_player( tripoint_zero );
+    g->place_player( tripoint_bub_ms::zero );
     get_map().check_submap_active_item_consistency();
+}
+
+TEST_CASE( "active_item_cache_does_not_duplicate_items_after_index_invalidation",
+           "[active_item][cache]" )
+{
+    active_item_cache cache;
+    item survivor( itype_disinfectant );
+    REQUIRE( survivor.needs_processing() );
+    REQUIRE( cache.add( survivor, point_rel_ms::zero ) );
+
+    // Removing an expired item invalidates the lookup index.
+    // The surviving item is still in the cache, so adding it again must rebuild the index instead of creating a duplicate.
+    // Repeat for more than one processing interval so duplicates would also be visible in get_for_processing().
+    const int invalidations = survivor.processing_speed() + 1;
+    for( int i = 0; i < invalidations; ++i ) {
+        auto temporary = std::make_unique<item>( itype_disinfectant );
+        cache.add( *temporary, point_rel_ms::zero );
+        temporary.reset();
+        cache.get();
+        cache.add( survivor, point_rel_ms::zero );
+    }
+
+    const std::vector<item_reference> cached = cache.get();
+    CHECK( cached.size() == 1 );
+
+    const std::vector<item_reference> to_process = cache.get_for_processing();
+    CHECK( to_process.size() == 1 );
 }
 
 TEST_CASE( "inactive_container_with_active_contents", "[active_item][map]" )
@@ -176,11 +276,11 @@ TEST_CASE( "inactive_container_with_active_contents", "[active_item][map]" )
     REQUIRE( here.get_submaps_with_active_items().empty() );
     here.check_submap_active_item_consistency();
     tripoint_bub_ms const test_loc;
-    tripoint_abs_sm const test_loc_sm = project_to<coords::sm>( here.getglobal( test_loc ) );
+    tripoint_abs_sm const test_loc_sm = project_to<coords::sm>( here.get_abs( test_loc ) );
 
-    item bottle_plastic( "bottle_plastic" );
+    item bottle_plastic( itype_bottle_plastic );
     REQUIRE( !bottle_plastic.needs_processing() );
-    item disinfectant( "disinfectant" );
+    item disinfectant( itype_disinfectant );
     REQUIRE( disinfectant.needs_processing() );
 
     ret_val<void> const ret =
@@ -216,14 +316,14 @@ TEST_CASE( "milk_rotting", "[active_item][map]" )
     here.check_submap_active_item_consistency();
     REQUIRE( here.get_submaps_with_active_items().empty() );
     tripoint_bub_ms const test_loc;
-    tripoint_abs_sm const test_loc_sm = project_to<coords::sm>( here.getglobal( test_loc ) );
+    tripoint_abs_sm const test_loc_sm = project_to<coords::sm>( here.get_abs( test_loc ) );
 
-    restore_on_out_of_scope<std::optional<units::temperature>> restore_temp(
-                get_weather().forced_temperature );
+    restore_on_out_of_scope restore_temp(
+        get_weather().forced_temperature );
     get_weather().forced_temperature = units::from_celsius( 21 );
-    REQUIRE( units::to_celsius( get_weather().get_temperature( test_loc.raw() ) ) == 21 );
+    REQUIRE( units::to_celsius( get_weather().get_temperature( test_loc ) ) == 21 );
 
-    item almond_milk( "almond_milk" );
+    item almond_milk( itype_almond_milk );
     item *bp = nullptr;
 
     bool const in_container = GENERATE( true, false );
@@ -232,7 +332,7 @@ TEST_CASE( "milk_rotting", "[active_item][map]" )
 
     if( in_container ) {
         sealed = GENERATE( true, false );
-        item bottle_plastic( "bottle_plastic" );
+        item bottle_plastic( itype_bottle_plastic );
         ret_val<void> const ret = bottle_plastic.put_in( almond_milk, pocket_type::CONTAINER );
         REQUIRE( ret.success() );
 
@@ -265,19 +365,19 @@ TEST_CASE( "milk_rotting", "[active_item][map]" )
 
 TEST_CASE( "active_monster_drops", "[active_item][map]" )
 {
-    clear_map();
-    get_avatar().setpos( tripoint_zero );
-    tripoint_bub_ms start_loc = get_avatar().pos_bub() + tripoint_east;
     map &here = get_map();
-    restore_on_out_of_scope<std::optional<units::temperature>> restore_temp(
-                get_weather().forced_temperature );
+    clear_map_without_vision();
+    get_avatar().setpos( here, tripoint_bub_ms::zero );
+    tripoint_bub_ms start_loc = get_avatar().pos_bub( here ) + tripoint::east;
+    restore_on_out_of_scope restore_temp(
+        get_weather().forced_temperature );
     get_weather().forced_temperature = units::from_celsius( 21 );
 
     bool const cookie_rotten_before_death = GENERATE( true, false );
     CAPTURE( cookie_rotten_before_death );
 
-    item bag_plastic( "bag_plastic" );
-    item cookie( "cookies" );
+    item bag_plastic( itype_bag_plastic );
+    item cookie( itype_cookies );
     REQUIRE( cookie.needs_processing() );
     if( cookie_rotten_before_death ) {
         cookie.set_relative_rot( 10 );
@@ -289,7 +389,7 @@ TEST_CASE( "active_monster_drops", "[active_item][map]" )
     zombo.no_extra_death_drops = true;
     zombo.inv.emplace_back( bag_plastic );
     calendar::turn += time_duration::from_seconds( cookie.processing_speed() + 1 );
-    zombo.die( nullptr );
+    zombo.die( &here, nullptr );
     REQUIRE( here.i_at( start_loc ).size() == 1 );
     item &dropped_bag = here.i_at( start_loc ).begin()->only_item();
 

@@ -21,7 +21,7 @@
     "activity_level": "MODERATE_EXERCISE",
     "time": "5 m",
     "qualities": [ { "id": "HAMMER", "level": 2 }, { "id": "SAW_M", "level": 2 } ],
-    "components": [ [ [ "steel_chunk", 1 ] ], [ [ "scrap", 1 ] ] ]
+    "components": [ [ [ "lc_steel_chunk", 1 ] ], [ [ "scrap", 1 ] ] ]
   },
   {
     "result": "claw_bar",
@@ -29,7 +29,7 @@
     "activity_level": "MODERATE_EXERCISE",
     "time": "5 m",
     "qualities": [ { "id": "HAMMER", "level": 2 }, { "id": "SAW_M", "level": 2 } ],
-    "components": [ [ [ "steel_chunk", 1 ] ], [ [ "scrap", 1 ] ] ]
+    "components": [ [ [ "ch_steel_chunk", 1 ] ], [ [ "scrap", 1 ] ] ]
   },
   {
     "result": "jack",
@@ -37,7 +37,7 @@
     "activity_level": "MODERATE_EXERCISE",
     "time": "20 m",
     "qualities": [ { "id": "HAMMER", "level": 2 }, { "id": "SAW_M", "level": 2 } ],
-    "components": [ [ [ "steel_lump", 5 ] ] ]
+    "components": [ [ [ "ch_steel_chunk", 5 ] ] ]
   },
   {
     "result": "jack_makeshift",
@@ -63,6 +63,23 @@
     "difficulty": 1,
     "time": "20 m",
     "qualities": [ { "id": "CUT", "level": 2 }, { "id": "SCREW", "level": 1 } ],
-    "components": [ [ [ "e_scrap", 3 ] ], [ [ "copper", 1 ] ], [ [ "scrap", 2 ] ], [ [ "cable", 10 ] ] ]
+    "components": [ [ [ "e_scrap", 3 ] ], [ [ "copper", 1 ] ], [ [ "scrap", 2 ] ], [ [ "cable", 4 ] ] ]
+  },
+  {
+    "result": "dremel",
+    "type": "uncraft",
+    "activity_level": "MODERATE_EXERCISE",
+    "skill_used": "electronics",
+    "difficulty": 1,
+    "time": "20 m",
+    "qualities": [ { "id": "CUT", "level": 2 }, { "id": "SCREW", "level": 1 } ],
+    "components": [
+      [ [ "e_scrap", 3 ] ],
+      [ [ "copper", 1 ] ],
+      [ [ "scrap", 4 ] ],
+      [ [ "cable", 4 ] ],
+      [ [ "plastic_chunk", 3 ] ],
+      [ [ "motor_micro", 1 ] ]
+    ]
   }
 ]

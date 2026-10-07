@@ -4,12 +4,13 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <iosfwd>
 #include <iterator>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "active_item_cache.h"
@@ -20,22 +21,24 @@
 #include "compatibility.h"
 #include "computer.h"
 #include "construction.h"
-#include "coordinate_constants.h"
+#include "coordinates.h"
 #include "field.h"
-#include "game_constants.h"
 #include "item.h"
-#include "mapgen.h"
+#include "map_scale_constants.h"
+#include "mapdata.h"
+#include "mapgen_primitives.h"
 #include "mdarray.h"
 #include "point.h"
 #include "trap.h"
 #include "type_id.h"
+#include "units.h"
 #include "vehicle.h"
 
+// IWYU pragma: no_forward_declare vehicle // behind unique_ptr
+// IWYU pragma: no_forward_declare basecamp // behind unique_ptr
 class JsonOut;
+class JsonValue;
 class map;
-class vehicle;
-struct furn_t;
-struct ter_t;
 
 struct spawn_point {
     point_sm_ms pos;
@@ -47,7 +50,7 @@ struct spawn_point {
     std::optional<std::string> name;
     spawn_data data;
     explicit spawn_point( const mtype_id &T = mtype_id::NULL_ID(), int C = 0,
-                          point_sm_ms P = point_sm_ms_zero,
+                          point_sm_ms P = point_sm_ms::zero,
                           int FAC = -1, int MIS = -1, bool F = false,
                           const std::optional<std::string> &N = std::nullopt, const spawn_data &SD = spawn_data() ) :
         pos( P ), count( C ), type( T ), faction_id( FAC ),
@@ -307,6 +310,9 @@ class submap
         int field_count = 0;
         time_point last_touched = calendar::turn_zero;
         bool reverted = false; // NOLINT(cata-serialize)
+        // This tracks that a submap was edited outside of mapgen, and that it should be
+        // considered for having its data hoisted to the overmap.
+        bool player_adjusted_map = false;
         std::vector<spawn_point> spawns;
         /**
          * Vehicles on this submap (their (0,0) point is on this submap).
@@ -327,6 +333,14 @@ class submap
         std::unique_ptr<maptile_soa> m;
         ter_id uniform_ter = t_null;
         int temperature_mod = 0; // delta in F
+        // Tracks original terrain for tiles transformed by phase logic
+        std::map<point_sm_ms, ter_id> original_terrain;
+
+    public:
+        bool has_original_ter( const point_sm_ms &p ) const;
+        ter_id get_original_ter( const point_sm_ms &p ) const;
+        void set_original_ter( const point_sm_ms &p, const ter_id &t );
+        void clear_original_ter( const point_sm_ms &p );
 
         static constexpr size_t elements = SEEX * SEEY;
 };

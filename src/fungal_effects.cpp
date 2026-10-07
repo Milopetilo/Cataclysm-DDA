@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <memory>
 #include <ostream>
+#include <string>
 
+#include "bodypart.h"
 #include "calendar.h"
 #include "character.h"
 #include "coordinates.h"
@@ -14,7 +16,6 @@
 #include "field_type.h"
 #include "game.h"
 #include "item.h"
-#include "item_stack.h"
 #include "map.h"
 #include "map_iterator.h"
 #include "mapdata.h"
@@ -23,7 +24,6 @@
 #include "mtype.h"
 #include "point.h"
 #include "rng.h"
-#include "string_formatter.h"
 #include "translations.h"
 #include "type_id.h"
 
@@ -33,6 +33,8 @@ static const efftype_id effect_stunned( "stunned" );
 static const furn_str_id furn_f_flower_fungal( "f_flower_fungal" );
 static const furn_str_id furn_f_fungal_clump( "f_fungal_clump" );
 static const furn_str_id furn_f_fungal_mass( "f_fungal_mass" );
+
+static const itype_id itype_fungal_seeds( "fungal_seeds" );
 
 static const mtype_id mon_fungal_blossom( "mon_fungal_blossom" );
 static const mtype_id mon_spore( "mon_spore" );
@@ -74,7 +76,7 @@ void fungal_effects::fungalize( const tripoint_bub_ms &p, Creature *origin, doub
         ///\EFFECT_DEX increases chance of knocking fungal spores away with your TAIL_CATTLE
         ///\EFFECT_MELEE increases chance of knocking fungal sports away with your TAIL_CATTLE
         if( player_character.has_trait( trait_TAIL_CATTLE ) &&
-            one_in( 20 - player_character.dex_cur - player_character.get_skill_level( skill_melee ) ) ) {
+            one_in( 20 - player_character.get_dex() - player_character.get_skill_level( skill_melee ) ) ) {
             add_msg( _( "The spores land on you, but you quickly swat them off with your tail!" ) );
             return;
         }
@@ -242,7 +244,7 @@ void fungal_effects::spread_fungus_one_tile( const tripoint_bub_ms &p, const int
                 DebugLog( D_ERROR, DC_ALL ) << "No seed item in the PLANT terrain at position " <<
                                             p.to_string_writable();
             } else {
-                *seed = item( "fungal_seeds", calendar::turn );
+                *seed = item( itype_fungal_seeds, calendar::turn );
             }
         }
     }

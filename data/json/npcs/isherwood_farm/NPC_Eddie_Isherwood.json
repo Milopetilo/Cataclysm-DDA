@@ -8,7 +8,7 @@
     "gender": "male",
     "class": "NC_ISHERWOOD_EDDIE",
     "attitude": 0,
-    "mission": 7,
+    "mission": "GUARD",
     "age": 41,
     "height": 179,
     "str": 9,
@@ -151,12 +151,12 @@
       {
         "text": "<color_green>[Social 3]</color> I swear, I'm not here to cause trouble.  I just volunteer with those guys to help travelers, things like that.  I don't speak for them.",
         "topic": "TALK_ISHERWOOD_EDDIE_MarshalOff_Convince",
-        "condition": { "and": [ { "not": { "u_is_wearing": "badge_marshal" } }, { "math": [ "u_skill('speech')", ">=", "3" ] } ] }
+        "condition": { "and": [ { "not": { "u_is_wearing": "badge_marshal" } }, { "math": [ "u_skill('speech') >= 3" ] } ] }
       },
       {
         "text": "<color_yellow>[Social <3]</color> I took it off man, what more do you want from me?",
         "topic": "TALK_ISHERWOOD_EDDIE_MarshalOff_GoAway",
-        "condition": { "and": [ { "not": { "u_is_wearing": "badge_marshal" } }, { "math": [ "u_skill('speech')", "<", "3" ] } ] }
+        "condition": { "and": [ { "not": { "u_is_wearing": "badge_marshal" } }, { "math": [ "u_skill('speech') < 3" ] } ] }
       },
       { "text": "Fine, I'm gone.", "topic": "TALK_DONE" }
     ]
@@ -233,7 +233,7 @@
   {
     "type": "talk_topic",
     "id": "TALK_ISHERWOOD_EDDIE_RESTOCK",
-    "dynamic_line": "If the cows don't get anything nasty it should be around <interval>.",
+    "dynamic_line": "If the cows don't get anything nasty it should be around <restock_time_point>.",
     "responses": [ { "text": "Cheers, bye.", "topic": "TALK_DONE" } ]
   },
   {

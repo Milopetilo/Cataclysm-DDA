@@ -2,48 +2,64 @@
 #include <array>
 #include <cstdlib>
 #include <functional>
+#include <iterator>
+#include <list>
+#include <map>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "activity_handlers.h"
-#include "activity_type.h"
 #include "avatar.h"
 #include "bodypart.h"
 #include "calendar.h"
 #include "character.h"
+#include "coordinates.h"
+#include "creature.h"
 #include "creature_tracker.h"
 #include "damage.h"
 #include "effect.h"
+#include "effect_source.h"
 #include "enums.h"
 #include "event.h"
 #include "event_bus.h"
 #include "field_type.h"
 #include "fungal_effects.h"
 #include "game.h"
+#include "game_constants.h"
 #include "input.h"
-#include "make_static.h"
+#include "item.h"
+#include "item_location.h"
+#include "magic_enchantment.h"
 #include "map.h"
 #include "map_iterator.h"
 #include "mapdata.h"
 #include "martialarts.h"
 #include "messages.h"
 #include "mongroup.h"
-#include "monster.h"
 #include "player_activity.h"
+#include "point.h"
+#include "ret_val.h"
 #include "rng.h"
 #include "sounds.h"
 #include "stomach.h"
 #include "string_formatter.h"
 #include "teleport.h"
+#include "translation.h"
 #include "translations.h"
+#include "type_id.h"
 #include "uistate.h"
 #include "units.h"
 #include "vitamin.h"
 #include "weather.h"
+#include "weighted_list.h"
 
 static const activity_id ACT_FIRSTAID( "ACT_FIRSTAID" );
 
 static const bionic_id bio_sleep_shutdown( "bio_sleep_shutdown" );
+
+static const damage_type_id damage_heat( "heat" );
 
 static const efftype_id effect_adrenaline( "adrenaline" );
 static const efftype_id effect_alarm_clock( "alarm_clock" );
@@ -99,13 +115,17 @@ static const efftype_id effect_visuals( "visuals" );
 static const efftype_id effect_weak_antibiotic( "weak_antibiotic" );
 static const efftype_id effect_winded( "winded" );
 
+static const flag_id json_flag_TOURNIQUET( "TOURNIQUET" );
+
 static const furn_str_id furn_f_rubble_rock( "f_rubble_rock" );
 
 static const json_character_flag json_flag_ALARMCLOCK( "ALARMCLOCK" );
 static const json_character_flag json_flag_BIONIC_LIMB( "BIONIC_LIMB" );
-static const json_character_flag json_flag_BLEEDSLOW( "BLEEDSLOW" );
-static const json_character_flag json_flag_BLEEDSLOW2( "BLEEDSLOW2" );
+static const json_character_flag json_flag_CANNOT_TAKE_DAMAGE( "CANNOT_TAKE_DAMAGE" );
+static const json_character_flag json_flag_INFECTION_RECOVERY( "INFECTION_RECOVERY" );
 static const json_character_flag json_flag_PAIN_IMMUNE( "PAIN_IMMUNE" );
+static const json_character_flag json_flag_PAUSE_BODYPART_INFECTION( "PAUSE_BODYPART_INFECTION" );
+static const json_character_flag json_flag_PAUSE_INFECTIONS( "PAUSE_INFECTIONS" );
 static const json_character_flag json_flag_SEESLEEP( "SEESLEEP" );
 
 static const mongroup_id GROUP_NETHER( "GROUP_NETHER" );
@@ -137,8 +157,13 @@ static const vitamin_id vitamin_redcells( "redcells" );
 static void eff_fun_onfire( Character &u, effect &it )
 {
     const int intense = it.get_intensity();
-    u.deal_damage( nullptr, it.get_bp(), damage_instance( STATIC( damage_type_id( "heat" ) ),
+    u.deal_damage( it.get_source().resolve_creature(), it.get_bp(), damage_instance( damage_heat,
                    rng( intense, intense * 2 ) ) );
+    if( u.is_limb_broken( it.get_bp() ) ) {
+        // Set effect to be cleaned up during effect processing instead of endlessly burning broken limb.
+        // TODO: Transfer damage towards core instead? (e.g. broken feet --> try legs, if broken --> try torso etc)
+        it.set_duration( 0_turns );
+    }
 }
 static void eff_fun_spores( Character &u, effect &it )
 {
@@ -171,7 +196,7 @@ static void eff_fun_fake_common_cold( Character &u, effect & )
     }
 
     avatar &you = get_avatar(); // No NPCs for now.
-    if( rl_dist( u.pos(), you.pos() ) <= 1 ) {
+    if( rl_dist( u.pos_bub(), you.pos_bub() ) <= 1 ) {
         you.get_sick( false );
     }
 }
@@ -182,7 +207,7 @@ static void eff_fun_fake_flu( Character &u, effect & )
     }
 
     avatar &you = get_avatar(); // No NPCs for now.
-    if( rl_dist( u.pos(), you.pos() ) <= 1 ) {
+    if( rl_dist( u.pos_bub(), you.pos_bub() ) <= 1 ) {
         you.get_sick( true );
     }
 }
@@ -229,7 +254,7 @@ static void eff_fun_fungus( Character &u, effect &it )
                 u.mod_hunger( awfulness );
                 u.mod_thirst( awfulness );
                 ///\EFFECT_STR decreases damage taken by fungus effect
-                u.apply_damage( nullptr, bodypart_id( "torso" ), awfulness / std::max( u.str_cur,
+                u.apply_damage( nullptr, bodypart_id( "torso" ), awfulness / std::max( u.get_str(),
                                 1 ) ); // can't be healthy
             }
             break;
@@ -252,7 +277,7 @@ static void eff_fun_fungus( Character &u, effect &it )
             } else if( one_in( 36000 + bonus * 240 ) ) {
                 // determine if we have arms to channel the fungal stalks out of
                 bool has_arms_outlet = true;
-                for( const bodypart_id &part : u.get_all_body_parts_of_type( body_part_type::type::arm ) ) {
+                for( const bodypart_id &part : u.get_all_body_parts_of_type( bp_type::arm ) ) {
                     if( part->has_flag( json_flag_BIONIC_LIMB ) ) {
                         has_arms_outlet = false;
                     }
@@ -310,29 +335,29 @@ static void eff_fun_rat( Character &u, effect &it )
 }
 static void eff_fun_bleed( Character &u, effect &it )
 {
+    map &here = get_map();
+
+    if( u.has_flag( json_flag_CANNOT_TAKE_DAMAGE ) ) {
+        return;
+    }
+
     // Presuming that during the first-aid process you're putting pressure
     // on the wound or otherwise suppressing the flow. (Kits contain either
     // QuikClot or bandages per the recipe.)
     const int intense = it.get_intensity();
     // tourniquet reduces effective bleeding by 2/3 but doesn't modify the effect's intensity
     // proficiency improves that factor to 3/4 and 4/5 respectively
-    bool tourniquet = u.worn_with_flag( STATIC( flag_id( "TOURNIQUET" ) ),  it.get_bp() );
+    bool tourniquet = u.worn_with_flag( json_flag_TOURNIQUET, it.get_bp() );
     int prof_bonus = 3;
     prof_bonus = u.has_proficiency( proficiency_prof_wound_care ) ? prof_bonus + 1 : prof_bonus;
     prof_bonus = u.has_proficiency( proficiency_prof_wound_care_expert ) ? prof_bonus + 1 : prof_bonus;
 
     if( ( !tourniquet || one_in( prof_bonus ) ) && u.activity.id() != ACT_FIRSTAID ) {
         // Prolonged hemorrhage is a significant risk for developing anemia
-        if( u.has_flag( json_flag_BLEEDSLOW2 ) ) {
-            u.vitamin_mod( vitamin_redcells, -( intense / 3 ) );
-            u.vitamin_mod( vitamin_blood, -( intense / 3 ) );
-        } else if( u.has_flag( json_flag_BLEEDSLOW ) ) {
-            u.vitamin_mod( vitamin_redcells, -( intense / 1.5 ) );
-            u.vitamin_mod( vitamin_blood, -( intense / 1.5 ) );
-        } else {
-            u.vitamin_mod( vitamin_redcells, -intense );
-            u.vitamin_mod( vitamin_blood, -intense );
-        }
+        // The BLEEDING_RATE enchant only reduces the amount of actual blood you lose, not the pain or severity of the wound
+        int bleeding_mod = u.calculate_by_enchantment( intense, enchant_vals::mod::BLEEDING_RATE );
+        u.vitamin_mod( vitamin_redcells, -bleeding_mod );
+        u.vitamin_mod( vitamin_blood, -bleeding_mod );
         if( one_in( 400 / intense ) ) {
             u.mod_pain( 1 );
         }
@@ -356,13 +381,13 @@ static void eff_fun_bleed( Character &u, effect &it )
                 }
                 suffer_string = iter->second;
             }
-            u.bleed();
+            u.bleed( here );
             bodypart_id bp = it.get_bp();
             // piece together the final displayed message here instead of inline, for readability's sake
             // format the chosen string with the relevant variables to make it human-readable, then translate everything we have so far
             // we maintain a generic part-less fallback just in case the effect is added without a target body part, in order to avoid crashes
             const std::string final_message = bp != bodypart_str_id::NULL_ID() ? string_format(
-                                                  suffer_string,
+                                                  suffer_string.translated(),
                                                   blood_str, body_part_name( bp ) ) : _( "You lose some blood." );
             // display the final message
             u.add_msg_player_or_npc( m_bad,
@@ -428,10 +453,10 @@ static void eff_fun_hallu( Character &u, effect &it )
             ///\EFFECT_STR_NPC increases volume of hallucination sounds (NEGATIVE)
 
             ///\EFFECT_INT_NPC decreases volume of hallucination sounds
-            int loudness = 20 + u.str_cur - u.int_cur;
+            int loudness = 20 + u.get_str() - u.get_int();
             loudness = ( loudness > 5 ? loudness : 5 );
             loudness = ( loudness < 30 ? loudness : 30 );
-            sounds::sound( u.pos(), loudness, sounds::sound_t::speech, _( random_entry_ref( npc_hallu ) ),
+            sounds::sound( u.pos_bub(), loudness, sounds::sound_t::speech, _( random_entry_ref( npc_hallu ) ),
                            false, "speech",
                            loudness < 15 ? ( u.male ? "NPC_m" : "NPC_f" ) : ( u.male ? "NPC_m_loud" : "NPC_f_loud" ) );
         }
@@ -447,7 +472,7 @@ static void eff_fun_hallu( Character &u, effect &it )
         u.add_miss_reason( _( "Dancing fractals distract you." ), 2 );
         u.mod_str_bonus( -1 );
         if( u.is_avatar() && one_in( 50 ) ) {
-            g->spawn_hallucination( u.pos() + tripoint( rng( -10, 10 ), rng( -10, 10 ), 0 ) );
+            g->spawn_hallucination( u.pos_bub() + tripoint( rng( -10, 10 ), rng( -10, 10 ), 0 ) );
         }
     } else if( dur == comedownTime ) {
         if( one_in( 42 ) ) {
@@ -458,6 +483,8 @@ static void eff_fun_hallu( Character &u, effect &it )
     }
 }
 
+namespace
+{
 struct temperature_effect {
     int str_pen;
     int dex_pen;
@@ -492,6 +519,7 @@ struct temperature_effect {
         }
     }
 };
+} // namespace
 
 static void eff_fun_cold( Character &u, effect &it )
 {
@@ -591,6 +619,9 @@ static void eff_fun_frostbite( Character &u, effect &it )
 
 static void eff_fun_teleglow( Character &u, effect &it )
 {
+    map &here = get_map();
+    const tripoint_bub_ms pos = u.pos_bub( here );
+
     // Default we get around 300 duration points per teleport (possibly more
     // depending on the source).
     // TODO: Include a chance to teleport to the nether realm.
@@ -601,14 +632,13 @@ static void eff_fun_teleglow( Character &u, effect &it )
     }
     const time_duration dur = it.get_duration();
     Character &player_character = get_player_character();
-    map &here = get_map();
     if( dur > 10_hours ) {
         // 20 teleports (no decay; in practice at least 21)
         if( one_in( 6000 - ( ( dur - 600_minutes ) / 1_minutes ) ) ) {
             if( !u.is_npc() ) {
                 add_msg( _( "Glowing lights surround you, and you teleport." ) );
             }
-            teleport::teleport( u );
+            teleport::teleport_creature( u );
             get_event_bus().send<event_type::teleglow_teleports>( u.getID() );
             if( one_in( 10 ) ) {
                 // Set ourselves up for removal
@@ -637,13 +667,13 @@ static void eff_fun_teleglow( Character &u, effect &it )
         // 12 teleports
         if( one_in( 24000 - ( dur - 360_minutes ) / 4_turns ) ) {
             creature_tracker &creatures = get_creature_tracker();
-            tripoint_bub_ms dest( 0, 0, u.posz() );
+            tripoint_bub_ms dest( 0, 0, pos.z() );
             int &x = dest.x();
             int &y = dest.y();
             int tries = 0;
             do {
-                x = u.posx() + rng( -4, 4 );
-                y = u.posy() + rng( -4, 4 );
+                x = pos.x() + rng( -4, 4 );
+                y = pos.y() + rng( -4, 4 );
                 tries++;
                 if( tries >= 10 ) {
                     break;
@@ -656,9 +686,9 @@ static void eff_fun_teleglow( Character &u, effect &it )
                 std::vector<MonsterGroupResult> spawn_details =
                     MonsterGroupManager::GetResultFromGroup( GROUP_NETHER );
                 for( const MonsterGroupResult &mgr : spawn_details ) {
-                    g->place_critter_at( mgr.name, dest );
+                    g->place_critter_at( mgr.id, dest );
                 }
-                if( uistate.distraction_hostile_spotted && player_character.sees( dest ) ) {
+                if( uistate.distraction_hostile_spotted && player_character.sees( here, dest ) ) {
                     g->cancel_activity_or_ignore_query( distraction_type::hostile_spotted_far,
                                                         _( "A monster appears nearby!" ) );
                     add_msg( m_warning, _( "A portal opens nearby, and a monster crawls through!" ) );
@@ -1226,6 +1256,9 @@ static void eff_fun_sleep( Character &u, effect &it )
 
 void Character::hardcoded_effects( effect &it )
 {
+    map &here = get_map();
+    const tripoint_bub_ms pos = pos_bub( here );
+
     if( const ma_buff *buff = ma_buff::from_effect( it ) ) {
         if( buff->is_valid_character( *this ) ) {
             buff->apply_character( *this );
@@ -1266,7 +1299,6 @@ void Character::hardcoded_effects( effect &it )
     int intense = it.get_intensity();
     const bodypart_id &bp = it.get_bp();
     bool sleeping = has_effect( effect_sleep );
-    map &here = get_map();
     Character &player_character = get_player_character();
     creature_tracker &creatures = get_creature_tracker();
     if( id == effect_formication ) {
@@ -1278,7 +1310,7 @@ void Character::hardcoded_effects( effect &it )
                          body_part_name_accusative( bp ) );
             } else {
                 //~ 1$s is NPC name, 2$s is bodypart in accusative.
-                add_msg_if_player_sees( pos(), _( "%1$s starts scratching their %2$s!" ), get_name(),
+                add_msg_if_player_sees( pos, _( "%1$s starts scratching their %2$s!" ), get_name(),
                                         body_part_name_accusative( bp ) );
             }
             mod_moves( -to_moves<int>( 1_seconds ) * 1.5 );
@@ -1296,11 +1328,11 @@ void Character::hardcoded_effects( effect &it )
     } else if( id == effect_attention ) {
         if( to_turns<int>( dur ) != 0 && one_in( 100000 / to_turns<int>( dur ) ) &&
             one_in( 100000 / to_turns<int>( dur ) ) && one_in( 250 ) ) {
-            tripoint_bub_ms dest( 0, 0, posz() );
+            tripoint_bub_ms dest( 0, 0, pos.z() );
             int tries = 0;
             do {
-                dest.x() = posx() + rng( -4, 4 );
-                dest.y() = posy() + rng( -4, 4 );
+                dest.x() = pos.x() + rng( -4, 4 );
+                dest.y() = pos.y() + rng( -4, 4 );
                 tries++;
             } while( creatures.creature_at( dest ) && tries < 10 );
             if( tries < 10 ) {
@@ -1310,9 +1342,9 @@ void Character::hardcoded_effects( effect &it )
                 std::vector<MonsterGroupResult> spawn_details =
                     MonsterGroupManager::GetResultFromGroup( GROUP_NETHER );
                 for( const MonsterGroupResult &mgr : spawn_details ) {
-                    g->place_critter_at( mgr.name, dest );
+                    g->place_critter_at( mgr.id, dest );
                 }
-                if( uistate.distraction_hostile_spotted && player_character.sees( dest ) ) {
+                if( uistate.distraction_hostile_spotted && player_character.sees( here, dest ) ) {
                     g->cancel_activity_or_ignore_query( distraction_type::hostile_spotted_far,
                                                         _( "A monster appears nearby!" ) );
                     add_msg_if_player( m_warning, _( "A portal opens nearby, and a monster crawls through!" ) );
@@ -1345,7 +1377,7 @@ void Character::hardcoded_effects( effect &it )
         }
     } else if( id == effect_tindrift ) {
         add_msg_if_player( m_bad, _( "You are beset with a vision of a prowling beast." ) );
-        for( const tripoint_bub_ms &dest : here.points_in_radius( pos_bub(), 6 ) ) {
+        for( const tripoint_bub_ms &dest : here.points_in_radius( pos, 6 ) ) {
             if( here.is_cornerfloor( dest ) ) {
                 here.add_field( dest, fd_tindalos_rift, 3 );
                 add_msg_if_player( m_info, _( "Your surroundings are permeated with a foul scent." ) );
@@ -1506,6 +1538,9 @@ void Character::hardcoded_effects( effect &it )
             if( has_trait( trait_INFRESIST ) ) {
                 recover_factor += 200;
             }
+            if( has_flag( json_flag_INFECTION_RECOVERY ) ) {
+                recover_factor += 200;
+            }
             if( has_effect( effect_panacea ) ) {
                 recover_factor = 5184000;
             } else if( has_effect( effect_strong_antibiotic ) ) {
@@ -1528,8 +1563,25 @@ void Character::hardcoded_effects( effect &it )
             }
         }
         if( !recovered ) {
-            // Death happens
-            if( dur > 1_days ) {
+            // PAUSE_INFECTIONS means you cannot die and you have plenty of time when it wears off
+            // PAUSE_BODYPART_INFECTION is the same but only if it's on the same bodypart as the infection
+            bool paused_infections = has_flag( json_flag_PAUSE_INFECTIONS );
+            if( !paused_infections ) {
+                if( bp != bodypart_str_id::NULL_ID() ) {
+                    for( const effect &eff : get_effects_from_bp( bp ) ) {
+                        if( eff.has_flag( json_flag_PAUSE_BODYPART_INFECTION ) ) {
+                            paused_infections = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if( paused_infections ) {
+                if( dur > 6_hours ) {
+                    it.mod_duration( -1_turns );
+                }
+            } else if( dur > 1_days ) {
+                // Death happens
                 add_msg_if_player( m_bad, _( "You succumb to the infection." ) );
                 get_event_bus().send<event_type::dies_of_infection>( getID() );
                 set_all_parts_hp_cur( 0 );
@@ -1603,14 +1655,14 @@ void Character::hardcoded_effects( effect &it )
                     it.mod_duration( 10_minutes );
                 } else if( dur == 2_turns ) {
                     // let the sound code handle the wake-up part
-                    sounds::sound( pos(), 16, sounds::sound_t::alarm, _( "beep-beep-beep!" ), false, "tool",
+                    sounds::sound( pos, 16, sounds::sound_t::alarm, _( "beep-beep-beep!" ), false, "tool",
                                    "alarm_clock" );
                 }
             }
         } else {
-            if( dur == 1_turns ) {
+            if( dur == 2_turns ) {
                 if( player_character.has_alarm_clock() ) {
-                    sounds::sound( player_character.pos(), 16, sounds::sound_t::alarm,
+                    sounds::sound( player_character.pos_bub( here ), 16, sounds::sound_t::alarm,
                                    _( "beep-beep-beep!" ), false, "tool", "alarm_clock" );
                     const std::string alarm = _( "Your alarm is going off." );
                     g->cancel_activity_or_ignore_query( distraction_type::noise, alarm );

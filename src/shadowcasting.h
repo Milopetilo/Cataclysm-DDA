@@ -6,15 +6,15 @@
 #include <array>
 #include <cmath>
 #include <functional>
-#include <iosfwd>
+#include <string>
+#include <type_traits>
 
 #include "coords_fwd.h"
-#include "game_constants.h"
 #include "lightmap.h"
+#include "map_scale_constants.h"
 #include "mdarray.h"
 
-struct point;
-struct tripoint;
+struct fragment_cloud;
 
 // For light we store four values, depending on the direction that the light
 // comes from.  This allows us to determine whether the side of the wall the
@@ -87,6 +87,7 @@ struct four_quadrants {
         return result;
     }
 };
+static_assert( std::is_trivially_copyable_v<four_quadrants> );
 
 // Hoisted to header and inlined so the test in tests/shadowcasting_test.cpp can use it.
 // Beer-Lambert law says attenuation is going to be equal to

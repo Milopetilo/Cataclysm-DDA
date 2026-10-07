@@ -1,113 +1,20 @@
 [
   {
-    "id": "mon_zombie_crawler_pupa_decoy",
-    "copy-from": "mon_zombie_crawler_pupa_decoy",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -5 ] ]
-  },
-  {
-    "id": "mon_zombie_crawler_pupa",
-    "copy-from": "mon_zombie_crawler_pupa",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -5 ] ]
-  },
-  {
-    "id": "mon_zombie_pupa_decoy",
-    "copy-from": "mon_zombie_pupa_decoy",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -5 ] ]
-  },
-  {
-    "id": "mon_zombie_pupa",
-    "copy-from": "mon_zombie_pupa",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -5 ] ]
-  },
-  {
-    "id": "mon_brute_pupa_decoy",
-    "copy-from": "mon_brute_pupa_decoy",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -5 ] ]
-  },
-  {
-    "id": "mon_brute_pupa",
-    "copy-from": "mon_brute_pupa",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -5 ] ]
-  },
-  {
-    "id": "mon_hulk_pupa_decoy",
-    "copy-from": "mon_hulk_pupa_decoy",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -5 ] ]
-  },
-  {
-    "id": "mon_hulk_pupa",
-    "copy-from": "mon_hulk_pupa",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -5 ] ]
-  },
-  {
-    "id": "mon_zombie_pupa_decoy_shady",
-    "copy-from": "mon_zombie_pupa_decoy_shady",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -2 ] ]
-  },
-  {
-    "id": "mon_zombie_pupa_shady",
-    "copy-from": "mon_zombie_pupa_shady",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -2 ] ]
-  },
-  {
-    "id": "mon_zombie_medical_pupa",
-    "copy-from": "mon_zombie_medical_pupa",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -5 ] ]
-  },
-  {
-    "id": "mon_zombie_pupa_medical_decoy",
-    "copy-from": "mon_zombie_pupa_medical_decoy",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -5 ] ]
-  },
-  {
-    "id": "mon_mutant_evolved",
-    "copy-from": "mon_mutant_evolved",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -1 ] ]
-  },
-  {
-    "id": "mon_devourer_lab_sec",
-    "copy-from": "mon_devourer_lab_sec",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -1 ] ]
-  },
-  {
-    "id": "mon_sludge_crawler",
-    "copy-from": "mon_sludge_crawler",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -25 ] ]
-  },
-  {
     "id": "mon_strange_megafrog",
     "copy-from": "mon_strange_megafrog",
     "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -2 ] ],
     "extend": { "flags": [ "CANPLAY", "PET_MOUNTABLE" ] }
   },
   {
     "id": "mon_odd_megafrog",
     "copy-from": "mon_odd_megafrog",
     "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -2 ] ],
     "extend": { "flags": [ "CANPLAY", "PET_MOUNTABLE" ] }
   },
   {
     "id": "mon_foul_megafrog",
     "copy-from": "mon_foul_megafrog",
     "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -1 ] ],
     "extend": { "flags": [ "CANPLAY", "PET_MOUNTABLE" ] }
   },
   {
@@ -117,24 +24,12 @@
     "extend": { "flags": [ "CANPLAY" ] }
   },
   {
-    "id": "mon_zombie_regenerating",
-    "copy-from": "mon_zombie_regenerating",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -6 ] ]
-  },
-  {
-    "id": "mon_zombie_medical_regenerating",
-    "copy-from": "mon_zombie_medical_regenerating",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -6 ] ]
-  },
-  {
     "type": "MONSTER",
     "id": "mon_zombie_nemesis",
     "copy-from": "mon_zombie_nemesis",
     "name": { "str": "mindhunter" },
     "description": "A hulking zombie swollen to the size of six men.  Its inky black eyes are locked on you, gleaming with malign intent.  No matter how far you run, it always seems to find you.",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -7 ], [ "effect_feral_regeneration", 10 ] ],
+    "regeneration_modifiers": [ [ "effect_feral_regeneration", 10 ] ],
     "extend": {
       "special_attacks": [
         {
@@ -145,7 +40,7 @@
           "condition": {
             "and": [
               { "not": { "u_has_effect": "effect_psi_null" } },
-              { "math": [ "Nemesis_iteration", ">=", "2" ] },
+              { "math": [ "Nemesis_iteration >= 2" ] },
               { "not": { "u_has_effect": "effect_monster_hardened_skin" } }
             ]
           },
@@ -156,7 +51,7 @@
           "type": "spell",
           "spell_data": { "id": "electrokinetic_shock_touch_monster", "min_level": 3 },
           "cooldown": 10,
-          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration", ">=", "4" ] } ] },
+          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration >= 4" ] } ] },
           "monster_message": "%1$s's touches %3$s with a jolt!"
         },
         {
@@ -168,7 +63,7 @@
             "and": [
               { "not": { "u_has_effect": "effect_psi_null" } },
               { "not": { "npc_has_flag": "TELEKIN_SHIELD" } },
-              { "math": [ "Nemesis_iteration", ">=", "6" ] }
+              { "math": [ "Nemesis_iteration >= 6" ] }
             ]
           },
           "monster_message": "%1$s stares at %3$s and %3$s is lifted up and pulled towards them!"
@@ -178,7 +73,7 @@
           "type": "spell",
           "spell_data": { "id": "telepathic_confusion_monster", "min_level": 5 },
           "cooldown": 25,
-          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration", ">=", "8" ] } ] },
+          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration >= 8" ] } ] },
           "monster_message": "A roar fills %3$s's mind and the world is blotted out!"
         },
         {
@@ -189,7 +84,7 @@
           "condition": {
             "and": [
               { "not": { "u_has_effect": "effect_psi_null" } },
-              { "math": [ "Nemesis_iteration", ">=", "10" ] },
+              { "math": [ "Nemesis_iteration >= 10" ] },
               { "not": { "u_has_effect": "effect_monster_momentum_alteration" } }
             ]
           },
@@ -204,8 +99,8 @@
           "condition": {
             "and": [
               { "not": { "u_has_effect": "effect_psi_null" } },
-              { "math": [ "Nemesis_iteration", ">=", "12" ] },
-              { "math": [ "u_hp('ALL')", "<", "480" ] }
+              { "math": [ "Nemesis_iteration >= 12" ] },
+              { "math": [ "u_hp('ALL') < 480" ] }
             ]
           },
           "monster_message": "%1$s's wounds begin healing at a rapid pace!"
@@ -216,7 +111,7 @@
           "move_cost": 50,
           "allow_no_target": true,
           "max_range": 8,
-          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration", ">=", "14" ] } ] },
+          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration >= 14" ] } ] },
           "message": "%1$s moves so quickly your eyes can barely follow it!"
         },
         {
@@ -224,7 +119,7 @@
           "type": "spell",
           "spell_data": { "id": "null_break_concentration_spell" },
           "cooldown": 30,
-          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration", ">=", "16" ] } ] },
+          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration >= 16" ] } ] },
           "monster_message": "%1$s looks at %3$s and the static on the edge of your vision flickers."
         },
         {
@@ -232,7 +127,7 @@
           "type": "spell",
           "spell_data": { "id": "teleport_slow_monster", "min_level": 6 },
           "cooldown": 40,
-          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration", ">=", "18" ] } ] },
+          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration >= 18" ] } ] },
           "monster_message": "%1$s glances at %3$s and the world lurches."
         },
         {
@@ -240,7 +135,7 @@
           "type": "spell",
           "spell_data": { "id": "telepathic_blast_monster", "min_level": 2 },
           "cooldown": 25,
-          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration", ">=", "20" ] } ] },
+          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration >= 20" ] } ] },
           "monster_message": "%1$s stares at %3$s!"
         },
         {
@@ -251,7 +146,7 @@
           "condition": {
             "and": [
               { "not": { "u_has_effect": "effect_psi_null" } },
-              { "math": [ "Nemesis_iteration", ">=", "22" ] },
+              { "math": [ "Nemesis_iteration >= 22" ] },
               { "not": { "u_has_effect": "effect_monster_inertial_barrier" } }
             ]
           },
@@ -262,7 +157,7 @@
           "type": "spell",
           "spell_data": { "id": "telepathic_primal_fear_monster", "min_level": 5 },
           "cooldown": 35,
-          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration", ">=", "24" ] } ] },
+          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration >= 24" ] } ] },
           "monster_message": "%1$s stares at %3$s and they freeze like a frightened rabbit!"
         },
         {
@@ -280,7 +175,7 @@
           "blockable": false,
           "condition": {
             "and": [
-              { "math": [ "Nemesis_iteration", ">=", "26" ] },
+              { "math": [ "Nemesis_iteration >= 26" ] },
               { "not": { "u_has_effect": "effect_psi_null" } },
               { "not": { "npc_has_flag": "TELEKIN_SHIELD" } }
             ]
@@ -300,7 +195,7 @@
           "dodgeable": true,
           "blockable": true,
           "effects": [ { "id": "effect_vitakinetic_healing_down", "duration": [ 920000, 2120000 ] } ],
-          "condition": { "and": [ { "math": [ "Nemesis_iteration", ">=", "28" ] }, { "not": { "u_has_effect": "effect_psi_null" } } ] },
+          "condition": { "and": [ { "math": [ "Nemesis_iteration >= 28" ] }, { "not": { "u_has_effect": "effect_psi_null" } } ] },
           "hit_dmg_u": "%1$s touches you and you feel weaker!",
           "hit_dmg_npc": "%1$s touches <npcname> and they flinch!",
           "miss_msg_u": "%1$s tries to touch you, but you dodge!",
@@ -314,23 +209,16 @@
           "spell_data": { "id": "electrokinetic_revive_monster", "min_level": 5 },
           "cooldown": 35,
           "allow_no_target": true,
-          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration", ">=", "30" ] } ] },
+          "condition": { "and": [ { "not": { "u_has_effect": "effect_psi_null" } }, { "math": [ "Nemesis_iteration >= 30" ] } ] },
           "monster_message": "Lightning crackles around %1$s!"
         }
       ]
     }
   },
   {
-    "id": "mon_frog_mother",
-    "copy-from": "mon_frog_mother",
-    "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -20 ] ]
-  },
-  {
     "id": "mon_shoggoth",
     "copy-from": "mon_shoggoth",
     "type": "MONSTER",
-    "regeneration_modifiers": [ [ "effect_vitakin_hurt", -25 ] ],
     "extend": { "flags": [ "TEEP_IMMUNE" ], "armor": { "psi_telekinetic_damage": 20 } }
   },
   {
@@ -403,22 +291,182 @@
     "id": "mon_hound_tindalos",
     "copy-from": "mon_hound_tindalos",
     "type": "MONSTER",
-    "extend": { "flags": [ "TEEP_IMMUNE", "TELEPORT_IMMUNE" ], "armor": { "psi_telekinetic_damage": 50 } },
+    "extend": {
+      "flags": [ "TEEP_IMMUNE", "TELEPORT_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ],
+      "armor": { "psi_telekinetic_damage": 50 },
+      "special_attacks": [
+        {
+          "type": "monster_attack",
+          "attack_type": "melee",
+          "id": "hound_tindalos_maintain_speed",
+          "cooldown": 1,
+          "move_cost": 1,
+          "range": 60,
+          "damage_max_instance": [ { "damage_type": "biological", "amount": 0 } ],
+          "dodgeable": false,
+          "blockable": false,
+          "condition": {
+            "and": [ { "npc_has_effect": "effect_teleport_stride" }, { "not": { "u_has_effect": "effect_hound_extended_speed_bonus" } } ]
+          },
+          "eoc": [ "EOC_MOM_HOUND_SPEED_ADJUSTMENT" ],
+          "hit_dmg_u": "",
+          "hit_dmg_npc": "",
+          "miss_msg_u": "",
+          "miss_msg_npc": "",
+          "no_dmg_msg_u": "",
+          "no_dmg_msg_npc": ""
+        },
+        {
+          "type": "monster_attack",
+          "attack_type": "melee",
+          "id": "hound_tindalos_lose_speed",
+          "cooldown": 1,
+          "move_cost": 1,
+          "range": 60,
+          "damage_max_instance": [ { "damage_type": "biological", "amount": 0 } ],
+          "dodgeable": false,
+          "blockable": false,
+          "condition": {
+            "and": [ { "not": { "npc_has_effect": "effect_teleport_stride" } }, { "u_has_effect": "effect_hound_extended_speed_bonus" } ]
+          },
+          "eoc": [ "EOC_MOM_HOUND_SPEED_ADJUSTMENT" ],
+          "hit_dmg_u": "",
+          "hit_dmg_npc": "",
+          "miss_msg_u": "",
+          "miss_msg_npc": "",
+          "no_dmg_msg_u": "",
+          "no_dmg_msg_npc": ""
+        }
+      ]
+    },
     "attack_effs": [ { "id": "effect_teleporting_lock", "duration": [ 5, 60 ], "chance": 50 } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "EOC_MOM_HOUND_SPEED_ADJUSTMENT",
+    "condition": { "not": { "u_has_effect": "effect_hound_extended_speed_bonus" } },
+    "effect": [
+      { "u_add_effect": "effect_hound_extended_speed_bonus", "duration": "5 minutes" },
+      { "npc_add_effect": "effect_mom_tindalos_hounds_corrupted_stride", "duration": "5 minutes" }
+    ],
+    "false_effect": [
+      { "u_lose_effect": "effect_hound_extended_speed_bonus" },
+      { "npc_lose_effect": "effect_mom_tindalos_hounds_corrupted_stride" }
+    ]
   },
   {
     "id": "mon_hound_tindalos_afterimage",
     "copy-from": "mon_hound_tindalos_afterimage",
     "type": "MONSTER",
-    "extend": { "flags": [ "TEEP_IMMUNE", "TELEPORT_IMMUNE" ], "armor": { "psi_telekinetic_damage": 50 } },
+    "extend": {
+      "flags": [ "TEEP_IMMUNE", "TELEPORT_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ],
+      "armor": { "psi_telekinetic_damage": 50 },
+      "special_attacks": [
+        {
+          "type": "monster_attack",
+          "attack_type": "melee",
+          "id": "hound_tindalos_maintain_speed",
+          "cooldown": 1,
+          "move_cost": 1,
+          "range": 60,
+          "damage_max_instance": [ { "damage_type": "biological", "amount": 0 } ],
+          "dodgeable": false,
+          "blockable": false,
+          "condition": {
+            "and": [ { "npc_has_effect": "effect_teleport_stride" }, { "not": { "u_has_effect": "effect_hound_extended_speed_bonus" } } ]
+          },
+          "eoc": [ "EOC_MOM_HOUND_SPEED_ADJUSTMENT" ],
+          "hit_dmg_u": "",
+          "hit_dmg_npc": "",
+          "miss_msg_u": "",
+          "miss_msg_npc": "",
+          "no_dmg_msg_u": "",
+          "no_dmg_msg_npc": ""
+        },
+        {
+          "type": "monster_attack",
+          "attack_type": "melee",
+          "id": "hound_tindalos_lose_speed",
+          "cooldown": 1,
+          "move_cost": 1,
+          "range": 60,
+          "damage_max_instance": [ { "damage_type": "biological", "amount": 0 } ],
+          "dodgeable": false,
+          "blockable": false,
+          "condition": {
+            "and": [ { "not": { "npc_has_effect": "effect_teleport_stride" } }, { "u_has_effect": "effect_hound_extended_speed_bonus" } ]
+          },
+          "eoc": [ "EOC_MOM_HOUND_SPEED_ADJUSTMENT" ],
+          "hit_dmg_u": "",
+          "hit_dmg_npc": "",
+          "miss_msg_u": "",
+          "miss_msg_npc": "",
+          "no_dmg_msg_u": "",
+          "no_dmg_msg_npc": ""
+        }
+      ]
+    },
     "attack_effs": [ { "id": "effect_teleporting_lock", "duration": [ 5, 60 ], "chance": 50 } ]
   },
   {
     "id": "mon_tindalos",
     "copy-from": "mon_tindalos",
     "type": "MONSTER",
-    "extend": { "flags": [ "TEEP_IMMUNE", "TELEPORT_IMMUNE" ], "armor": { "psi_telekinetic_damage": 50 } },
+    "extend": {
+      "flags": [ "TEEP_IMMUNE", "TELEPORT_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ],
+      "armor": { "psi_telekinetic_damage": 50 },
+      "special_attacks": [
+        {
+          "type": "monster_attack",
+          "attack_type": "melee",
+          "id": "hound_tindalos_maintain_speed",
+          "cooldown": 1,
+          "move_cost": 1,
+          "range": 60,
+          "damage_max_instance": [ { "damage_type": "biological", "amount": 0 } ],
+          "dodgeable": false,
+          "blockable": false,
+          "condition": {
+            "and": [ { "npc_has_effect": "effect_teleport_stride" }, { "not": { "u_has_effect": "effect_hound_extended_speed_bonus" } } ]
+          },
+          "eoc": [ "EOC_MOM_HOUND_SPEED_ADJUSTMENT" ],
+          "hit_dmg_u": "",
+          "hit_dmg_npc": "",
+          "miss_msg_u": "",
+          "miss_msg_npc": "",
+          "no_dmg_msg_u": "",
+          "no_dmg_msg_npc": ""
+        },
+        {
+          "type": "monster_attack",
+          "attack_type": "melee",
+          "id": "hound_tindalos_lose_speed",
+          "cooldown": 1,
+          "move_cost": 1,
+          "range": 60,
+          "damage_max_instance": [ { "damage_type": "biological", "amount": 0 } ],
+          "dodgeable": false,
+          "blockable": false,
+          "condition": {
+            "and": [ { "not": { "npc_has_effect": "effect_teleport_stride" } }, { "u_has_effect": "effect_hound_extended_speed_bonus" } ]
+          },
+          "eoc": [ "EOC_MOM_HOUND_SPEED_ADJUSTMENT" ],
+          "hit_dmg_u": "",
+          "hit_dmg_npc": "",
+          "miss_msg_u": "",
+          "miss_msg_npc": "",
+          "no_dmg_msg_u": "",
+          "no_dmg_msg_npc": ""
+        }
+      ]
+    },
     "attack_effs": [ { "id": "effect_teleporting_lock", "duration": [ 5, 60 ], "chance": 50 } ]
+  },
+  {
+    "id": "mon_hallucinator",
+    "copy-from": "mon_hallucinator",
+    "type": "MONSTER",
+    "species": [ "NETHER_EMANATION", "PSI_NULL" ]
   },
   {
     "id": "mon_hunting_horror",
@@ -430,13 +478,34 @@
     "id": "mon_shadow",
     "copy-from": "mon_shadow",
     "type": "MONSTER",
-    "extend": { "flags": [ "TEEP_IMMUNE", "TELEKIN_IMMUNE" ] }
+    "extend": {
+      "flags": [ "TEEP_IMMUNE", "TELEKIN_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ],
+      "armor": { "psi_photokinetic_damage": -40 }
+    }
   },
   {
     "id": "mon_shadow_snake",
     "copy-from": "mon_shadow_snake",
     "type": "MONSTER",
-    "extend": { "flags": [ "TEEP_IMMUNE", "TELEKIN_IMMUNE" ] }
+    "extend": {
+      "flags": [ "TEEP_IMMUNE", "TELEKIN_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ],
+      "armor": { "psi_photokinetic_damage": -40 }
+    }
+  },
+  {
+    "id": "mon_darkman",
+    "copy-from": "mon_darkman",
+    "type": "MONSTER",
+    "extend": {
+      "flags": [ "TEEP_IMMUNE", "TELEKIN_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ],
+      "armor": { "psi_photokinetic_damage": -80 }
+    }
+  },
+  {
+    "id": "mon_lieutenant_shadow",
+    "copy-from": "mon_lieutenant_shadow",
+    "type": "MONSTER",
+    "extend": { "armor": { "psi_photokinetic_damage": -80 } }
   },
   {
     "id": "mon_thing",
@@ -491,12 +560,6 @@
     "copy-from": "mon_nether_fish",
     "type": "MONSTER",
     "extend": { "flags": [ "TEEP_IMMUNE" ] }
-  },
-  {
-    "id": "mon_teke_mouse",
-    "copy-from": "mon_teke_mouse",
-    "type": "MONSTER",
-    "extend": { "armor": { "psi_telekinetic_damage": 25 } }
   },
   {
     "id": "mon_fungaloid_tower",
@@ -703,39 +766,123 @@
     "extend": { "armor": { "psi_telepathic_damage": 120 } }
   },
   {
-    "id": "mon_yrax_delta",
-    "copy-from": "mon_yrax_delta",
-    "type": "MONSTER",
-    "species": [ "ROBOT", "YRAX_CONSTRUCT" ]
-  },
-  {
-    "id": "mon_yrax_trifacet",
-    "copy-from": "mon_yrax_trifacet",
-    "type": "MONSTER",
-    "species": [ "ROBOT", "YRAX_CONSTRUCT" ]
-  },
-  {
-    "id": "mon_yrax_apeirogon",
-    "copy-from": "mon_yrax_apeirogon",
-    "type": "MONSTER",
-    "species": [ "ROBOT", "YRAX_CONSTRUCT" ]
-  },
-  {
-    "id": "mon_yrax_sphenocorona",
-    "copy-from": "mon_yrax_sphenocorona",
-    "type": "MONSTER",
-    "species": [ "ROBOT", "YRAX_CONSTRUCT" ]
-  },
-  {
-    "id": "mon_yrax_triakis",
-    "copy-from": "mon_yrax_triakis",
-    "type": "MONSTER",
-    "species": [ "ROBOT", "YRAX_CONSTRUCT" ]
-  },
-  {
     "id": "mon_cow",
     "copy-from": "mon_cow",
     "type": "MONSTER",
     "reproduction": { "baby_type": { "baby_monster_group": "GROUP_REPRODUCTION_COW_MUTANT_BABIES" }, "baby_count": 1, "baby_timer": 343 }
+  },
+  {
+    "id": "mon_eigenspectre_1",
+    "copy-from": "mon_eigenspectre_1",
+    "type": "MONSTER",
+    "species": [ "NETHER_EMANATION" ],
+    "extend": { "flags": [ "TELEKIN_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ] }
+  },
+  {
+    "id": "mon_eigenspectre_2",
+    "copy-from": "mon_eigenspectre_2",
+    "type": "MONSTER",
+    "species": [ "NETHER_EMANATION" ],
+    "extend": { "flags": [ "PHOTOKIN_MONSTER_IMMUNE", "TELEKIN_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ] }
+  },
+  {
+    "id": "mon_eigenspectre_3",
+    "copy-from": "mon_eigenspectre_3",
+    "type": "MONSTER",
+    "species": [ "NETHER_EMANATION" ],
+    "extend": { "flags": [ "TELEKIN_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ] }
+  },
+  {
+    "id": "mon_eigenspectre_3_echo",
+    "copy-from": "mon_eigenspectre_3_echo",
+    "type": "MONSTER",
+    "species": [ "NETHER_EMANATION" ],
+    "extend": { "flags": [ "TELEKIN_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ] }
+  },
+  {
+    "id": "mon_eigenspectre_4",
+    "copy-from": "mon_eigenspectre_4",
+    "type": "MONSTER",
+    "species": [ "NETHER_EMANATION" ],
+    "extend": { "flags": [ "TELEKIN_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ] }
+  },
+  {
+    "id": "mon_living_vector",
+    "copy-from": "mon_living_vector",
+    "type": "MONSTER",
+    "species": [ "NETHER_EMANATION" ],
+    "extend": { "flags": [ "TELEKIN_IMMUNE", "TELEKIN_PUSH_PULL_IMMUNE" ] }
+  },
+  {
+    "id": "mon_feral_human_crowbar",
+    "copy-from": "mon_feral_human_crowbar",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_human_pipe",
+    "copy-from": "mon_feral_human_pipe",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_human_axe",
+    "copy-from": "mon_feral_human_axe",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_human_tool",
+    "copy-from": "mon_feral_human_tool",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_cop",
+    "copy-from": "mon_feral_cop",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_survivalist",
+    "copy-from": "mon_feral_survivalist",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_militia",
+    "copy-from": "mon_feral_militia",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_prepper_knife",
+    "copy-from": "mon_feral_prepper_knife",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_prepper_mace",
+    "copy-from": "mon_feral_prepper_mace",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_jackboot",
+    "copy-from": "mon_feral_jackboot",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_soldier",
+    "copy-from": "mon_feral_soldier",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE" }
+  },
+  {
+    "id": "mon_feral_sapien_spear",
+    "copy-from": "mon_feral_sapien_spear",
+    "type": "MONSTER",
+    "upgrades": { "half_life": 360, "into_group": "GROUP_MOM_FERAL_ZOMBIE_UPGRADE_HIGHER_ODDS" }
   }
 ]

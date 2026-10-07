@@ -5,9 +5,10 @@
     "name_unique": "Aleesha Seward",
     "gender": "female",
     "name_suffix": "Refugee",
+    "portrait_filename": "Named_NPC_aleesha_seward",
     "class": "NC_REFUGEE_Aleesha",
     "attitude": 0,
-    "mission": 7,
+    "mission": "GUARD",
     "chat": "TALK_REFUGEE_Aleesha_1",
     "faction": "free_merchants"
   },
@@ -46,7 +47,7 @@
     "type": "item_group",
     "id": "REFUGEE_Aleesha_carried",
     "subtype": "collection",
-    "entries": [ { "item": "novel_coa" }, { "item": "smart_phone", "ammo-item": "battery", "charges": 120 } ]
+    "entries": [ { "item": "novel_coa" }, { "group": "civilian_phones", "ammo-item": "battery", "charges": 120 } ]
   },
   {
     "type": "item_group",

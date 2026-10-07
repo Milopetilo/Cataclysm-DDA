@@ -153,7 +153,7 @@
     "harvest": "zombie_amalgamation",
     "//": "TODO: When effects/spells can mess with path settings + flags move smartness to the effect of dedicated coordinatiors",
     "path_settings": { "avoid_sharp": true, "avoid_traps": true, "avoid_dangerous_fields": true, "max_dist": 400 },
-    "flags": [ "SEES", "SMELLS", "HEARS", "PATH_AVOID_DANGER", "REVIVES", "NO_BREATHE" ],
+    "flags": [ "SEES", "SMELLS", "HEARS", "PATH_AVOID_DANGER", "REVIVES", "NO_BREATHE", "VENOM_IMMUNE" ],
     "armor": { "bash": 8, "cut": 4, "stab": 4, "acid": 5, "bullet": 12, "electric": 5 }
   },
   {
@@ -174,13 +174,14 @@
     "type": "MONSTER",
     "id": "mon_amalgamation_swarmer",
     "copy-from": "mon_amalgamation_abstract_small",
-    "//": "Small, nasty glass cannon spawning in groups  WP: mandible, leg",
+    "//": "Small, nasty glass cannon spawning in groups.  WP: mandible, leg",
     "name": { "str": "swarming amalgamation" },
-    "description": "An small, flat creature dashing around erratically on seven short legs.  Its form is dominated by an oversized set of black mandibles on an almost comically small head, featureless apart from a single, black eye.  The rest of the body is covered with sickly white skin crisscrossed by black veins.",
+    "description": "A small, flat creature dashing around erratically on seven short legs.  Its form is dominated by an oversized set of black mandibles on an almost comically small head, featureless apart from a single black eye.  The rest of the body is covered with sickly white skin crisscrossed by black veins.",
     "volume": "20 L",
     "weight": "20 kg",
     "hp": 35,
     "speed": 120,
+    "move_skills": { "climb": 6 },
     "attack_cost": 120,
     "melee_dice": 2,
     "melee_damage": [ { "damage_type": "cut", "amount": 3 } ],
@@ -199,7 +200,7 @@
       }
     ],
     "vision_day": 18,
-    "extend": { "flags": [ "SWARMS", "CLIMBS", "HARDTOSHOOT", "HIT_AND_RUN" ], "weakpoint_sets": [ "wps_amalgamation_mandible" ] }
+    "extend": { "flags": [ "SWARMS", "HARDTOSHOOT", "HIT_AND_RUN" ], "weakpoint_sets": [ "wps_amalgamation_mandible" ] }
   },
   {
     "type": "MONSTER",
@@ -316,11 +317,7 @@
     "special_when_hit": [ "ZAPBACK", 100 ],
     "death_function": { "effect": { "id": "death_shock_blast", "hit_self": true } },
     "harvest": "zombie_amalgamation_electric",
-    "extend": {
-      "flags": [ "ELECTRIC" ],
-      "families": [ "prof_electromagnetics" ],
-      "weakpoint_sets": [ "wps_amalgamation_armor", "wps_amalgamation_electric" ]
-    }
+    "extend": { "flags": [ "ELECTRIC", "PULP_PRYING" ], "weakpoint_sets": [ "wps_amalgamation_armor", "wps_amalgamation_electric" ] }
   },
   {
     "type": "MONSTER",
@@ -365,7 +362,7 @@
     "extend": {
       "weakpoint_sets": [ "wps_amalgamation_armor", "wps_amalgamation_mandible", "wps_amalgamation_tail" ],
       "families": [ "prof_wp_nat_armored" ],
-      "flags": [ "GRABS" ]
+      "flags": [ "GRABS", "PULP_PRYING" ]
     },
     "armor": { "bash": 20, "cut": 25, "stab": 30, "acid": 12, "bullet": 40, "electric": 12 }
   }

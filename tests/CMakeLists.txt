@@ -7,6 +7,13 @@ if (BUILD_TESTING)
     # Enabling benchmarks
     add_definitions(-DCATCH_CONFIG_ENABLE_BENCHMARKING)
 
+    # Workaround clang>=22 flagging __COUNTER__ as c2y-extension
+    # (llvm/llvm-project#189645). Mirrors tests/Makefile.
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang"
+            AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 22)
+        add_definitions(-DCATCH_CONFIG_NO_COUNTER)
+    endif ()
+
     if(LOCALIZE)
         # Need to build the test .mo file for the tests to pass.
         # Unfortunately we currently need to put this in the source dir, not the
@@ -37,10 +44,12 @@ if (BUILD_TESTING)
         foreach(n args IN ZIP_LISTS _n _args)
             add_test(NAME cata.tiles.gha-${n}
                     COMMAND cata_test-tiles --min-duration 20 --use-colour yes --rng-seed time
-                    --user-dir=test_user_dir_${n} ${args}
+                    --order lex --user-dir=test_user_dir_${n} ${args}
                     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
             set_tests_properties(cata.tiles.gha-${n} PROPERTIES LABELS "gha")
         endforeach()
+        catch_discover_tests(cata_test-tiles
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     endif ()
 
     if (CURSES)
@@ -49,8 +58,15 @@ if (BUILD_TESTING)
             add_dependencies(cata_test test_mo)
         endif()
         target_link_libraries(cata_test PRIVATE cataclysm-common)
-        add_test(NAME test
-                COMMAND cata_test --rng-seed time
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+        # Match CI's split to keep global test state from leaking between batches.
+        list(APPEND _n 1 2)
+        list(APPEND _args "[slow] ~starting_items" "~[slow] ~[.],starting_items")
+        foreach(n args IN ZIP_LISTS _n _args)
+            add_test(NAME cata.test-${n}
+                    COMMAND cata_test --min-duration 20 --rng-seed time
+                    --order lex
+                    --user-dir=${CMAKE_CURRENT_BINARY_DIR}/test_user_dir_${n} ${args}
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+        endforeach()
     endif ()
 endif ()

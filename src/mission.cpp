@@ -6,43 +6,40 @@
 #include <iterator>
 #include <list>
 #include <memory>
-#include <new>
 #include <numeric>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include "avatar.h"
-#include "colony.h"
+#include "character.h"
 #include "creature.h"
 #include "debug.h"
 #include "dialogue.h"
 #include "dialogue_chatbin.h"
 #include "enum_conversions.h"
 #include "game.h"
-#include "inventory.h"
 #include "item.h"
 #include "item_group.h"
-#include "item_stack.h"
+#include "item_location.h"
 #include "kill_tracker.h"
 #include "map.h"
-#include "map_iterator.h"
 #include "monster.h"
 #include "npc.h"
-#include "overmap.h"
+#include "omdata.h"
 #include "overmapbuffer.h"
+#include "player_activity.h"
 #include "point.h"
 #include "requirements.h"
-#include "string_formatter.h"
-#include "translations.h"
-#include "vehicle.h"
-#include "vpart_position.h"
+#include "talker.h"
+#include "temp_crafting_inventory.h"
+#include "visitable.h"
 
 #define dbg(x) DebugLog((x),D_GAME) << __FILE__ << ":" << __LINE__ << ": "
 
 static const efftype_id effect_pet( "pet" );
 static const efftype_id effect_run( "run" );
-static const itype_id itype_null( "null" );
 
 static const mission_type_id mission_NULL( "NULL" );
 
@@ -51,6 +48,7 @@ mission mission_type::create( const character_id &npc_id ) const
     mission ret;
     ret.uid = g->assign_mission_id();
     ret.type = this;
+    ret.dimension = g->get_dimension_prefix();
     ret.npc_id = npc_id;
     ret.item_id = item_id;
     ret.item_count = item_count;
@@ -126,10 +124,95 @@ void mission::add_existing( const mission &m )
     world_missions[ m.uid ] = m;
 }
 
+namespace
+{
+
+std::unordered_set<itype_id> find_item_mission_targets()
+{
+    std::unordered_set<itype_id> result;
+    for( const auto &e : world_missions ) {
+        const mission &miss = e.second;
+        if( miss.in_progress() && !miss.get_npc_id().is_valid() &&
+            miss.get_type().goal == MGOAL_FIND_ITEM ) {
+            result.insert( miss.get_item_id() );
+        }
+    }
+    return result;
+}
+
+std::unordered_set<itype_id> present_mission_items( const std::unordered_set<itype_id> &targets )
+{
+    std::unordered_set<itype_id> result;
+    std::unordered_set<itype_id> software_targets;
+    for( const itype_id &target : targets ) {
+        if( item( target ).is_software() ) {
+            software_targets.insert( target );
+        }
+    }
+
+    avatar &player_character = get_avatar();
+    player_character.visit_items( [&]( item_location it ) {
+        if( targets.count( it->typeId() ) != 0 ) {
+            result.insert( it->typeId() );
+        }
+        return VisitResponse::NEXT;
+    } );
+    for( const itype_id &target : software_targets ) {
+        if( player_character.count_softwares( target ) > 0 ) {
+            result.insert( target );
+        }
+    }
+
+    if( result.size() == targets.size() ) {
+        return result;
+    }
+
+    get_map().for_each_visible_item( player_character.pos_bub(), 5, &player_character,
+    [&]( const item & it ) {
+        it.visit_items( [&]( item * child, item * ) {
+            if( targets.count( child->typeId() ) != 0 ) {
+                result.insert( child->typeId() );
+            }
+            return VisitResponse::NEXT;
+        } );
+        for( const item *soft : it.softwares() ) {
+            if( software_targets.count( soft->typeId() ) != 0 ) {
+                result.insert( soft->typeId() );
+            }
+        }
+    } );
+    return result;
+}
+
+} // namespace
+
 void mission::process_all()
 {
+    avatar &player_character = get_avatar();
+    const std::unordered_set<itype_id> targets = find_item_mission_targets();
+
+    // Activity blocks MGOAL_FIND_ITEM before it searches any items.
+    const bool use_item_filter = !targets.empty() && !player_character.activity;
+    const std::unordered_set<itype_id> present = use_item_filter ? present_mission_items( targets ) :
+            std::unordered_set<itype_id>();
+    bool item_filter_valid = use_item_filter;
+
     for( auto &e : world_missions ) {
-        e.second.process();
+        mission &miss = e.second;
+        const bool was_in_progress = miss.in_progress();
+        const bool can_skip_item_check = item_filter_valid && was_in_progress &&
+                                         !miss.get_npc_id().is_valid() &&
+                                         miss.get_type().goal == MGOAL_FIND_ITEM &&
+                                         ( !miss.has_deadline() || calendar::turn <= miss.get_deadline() ) &&
+                                         present.count( miss.get_item_id() ) == 0;
+        if( !can_skip_item_check ) {
+            miss.process();
+        }
+
+        // Mission end effects can change the inventory used by later checks.
+        if( was_in_progress && !miss.in_progress() ) {
+            item_filter_valid = false;
+        }
     }
 }
 
@@ -259,6 +342,7 @@ bool mission::on_creature_fusion( Creature &fuser, Creature &fused )
         return false;
     }
     bool mission_transfered = false;
+    std::vector<int> mission_ids_to_remove;
     for( const int mission_id : mon_fused->mission_ids ) {
         const mission *const found_mission = mission::find( mission_id );
         if( !found_mission ) {
@@ -269,9 +353,12 @@ bool mission::on_creature_fusion( Creature &fuser, Creature &fused )
         if( type->goal == MGOAL_KILL_MONSTER || type->goal == MGOAL_KILL_MONSTERS ) {
             // the fuser has to be killed now!
             mon_fuser->mission_ids.emplace( mission_id );
-            mon_fused->mission_ids.erase( mission_id );
+            mission_ids_to_remove.push_back( mission_id );
             mission_transfered = true;
         }
+    }
+    for( const int mission_id : mission_ids_to_remove ) {
+        mon_fused->mission_ids.erase( mission_id );
     }
     return mission_transfered;
 }
@@ -350,9 +437,9 @@ void mission::set_target_to_mission_giver()
 {
     const npc *giver = g->find_npc( npc_id );
     if( giver != nullptr ) {
-        target = giver->global_omt_location();
+        target = giver->pos_abs_omt();
     } else {
-        target = overmap::invalid_tripoint;
+        target = tripoint_abs_omt::invalid;
     }
 }
 
@@ -392,7 +479,7 @@ void mission::wrap_up()
     std::vector<item_comp> comps;
     switch( type->goal ) {
         case MGOAL_FIND_ITEM_GROUP: {
-            inventory tmp_inv = player_character.crafting_inventory();
+            temp_crafting_inventory tmp_inv = player_character.crafting_inventory();
             std::vector<item *> items = std::vector<item *>();
             tmp_inv.dump( items );
             item_group_id grp_type = type->group_id;
@@ -404,7 +491,7 @@ void mission::wrap_up()
             std::map<itype_id, int> matches = std::map<itype_id, int>();
             get_all_item_group_matches(
                 items, grp_type, matches,
-                container, itype_null, specific_container_required );
+                container, itype_id::NULL_ID(), specific_container_required );
 
             comps.reserve( matches.size() );
             for( std::pair<const itype_id, int> &cnt : matches ) {
@@ -485,17 +572,17 @@ bool mission::is_complete( const character_id &_npc_id ) const
     avatar &player_character = get_avatar();
     switch( type->goal ) {
         case MGOAL_GO_TO: {
-            const tripoint_abs_omt cur_pos = player_character.global_omt_location();
+            const tripoint_abs_omt cur_pos = player_character.pos_abs_omt();
             return rl_dist( cur_pos, target ) <= 1;
         }
 
         case MGOAL_GO_TO_TYPE: {
-            const oter_id cur_ter = overmap_buffer.ter( player_character.global_omt_location() );
+            const oter_id cur_ter = overmap_buffer.ter( player_character.pos_abs_omt() );
             return ( cur_ter->get_type_id() == oter_type_str_id( type->target_id.str() ) );
         }
 
         case MGOAL_FIND_ITEM_GROUP: {
-            inventory tmp_inv = player_character.crafting_inventory();
+            temp_crafting_inventory tmp_inv = player_character.crafting_inventory();
             std::vector<item *> items = std::vector<item *>();
             tmp_inv.dump( items );
             item_group_id grp_type = type->group_id;
@@ -505,7 +592,7 @@ bool mission::is_complete( const character_id &_npc_id ) const
             std::map<itype_id, int> matches = std::map<itype_id, int>();
             get_all_item_group_matches(
                 items, grp_type, matches,
-                container, itype_null, specific_container_required );
+                container, itype_id::NULL_ID(), specific_container_required );
 
             int total_match = std::accumulate( matches.begin(), matches.end(), 0,
             []( const std::size_t previous, const std::pair<const itype_id, std::size_t> &p ) {
@@ -531,39 +618,26 @@ bool mission::is_complete( const character_id &_npc_id ) const
             int found_quantity = 0;
             bool charges = item_sought.count_by_charges();
             bool software = item_sought.is_software();
-            auto count_items = [this, &found_quantity, &player_character, charges, software]( item_stack &&
-            items ) {
-                for( const item &i : items ) {
-                    if( !i.is_owned_by( player_character, true ) ) {
-                        continue;
-                    }
-                    if( software ) {
-                        for( const item *soft : i.softwares() ) {
-                            if( soft->typeId() == type->item_id ) {
-                                found_quantity ++;
-                            }
+            auto count_items = [this, &found_quantity, charges, software]( const item & i ) {
+                if( software ) {
+                    for( const item *soft : i.softwares() ) {
+                        if( soft->typeId() == type->item_id ) {
+                            found_quantity ++;
                         }
                     }
-                    if( charges ) {
-                        found_quantity += i.charges_of( type->item_id, item_count - found_quantity );
-                    } else {
-                        found_quantity += i.amount_of( type->item_id, false, item_count - found_quantity );
-                    }
+                }
+                if( charges ) {
+                    found_quantity += i.charges_of( type->item_id, item_count - found_quantity );
+                } else {
+                    found_quantity += i.amount_of( type->item_id, false, item_count - found_quantity );
                 }
             };
-            for( const tripoint_bub_ms &p : here.points_in_radius( player_character.pos_bub(), 5 ) ) {
-                if( player_character.sees( p ) ) {
-                    if( here.has_items( p ) && here.accessible_items( p ) ) {
-                        count_items( here.i_at( p ) );
-                    }
-                    if( const std::optional<vpart_reference> ovp = here.veh_at( p ).cargo() ) {
-                        count_items( ovp->items() );
-                    }
-                    if( found_quantity >= item_count ) {
-                        break;
-                    }
+            here.for_each_visible_item( player_character.pos_bub(), 5, &player_character,
+            [&]( const item & it ) {
+                if( found_quantity < item_count ) {
+                    count_items( it );
                 }
-            }
+            } );
             if( software ) {
                 found_quantity += player_character.count_softwares( type->item_id );
             }
@@ -713,9 +787,14 @@ std::string mission::get_description() const
     return type->description.translated();
 }
 
+dimension_id mission::get_dimension() const
+{
+    return dimension;
+}
+
 bool mission::has_target() const
 {
-    return target != overmap::invalid_tripoint;
+    return !target.is_invalid();
 }
 
 const tripoint_abs_omt &mission::get_target() const
@@ -799,6 +878,11 @@ bool mission::has_generic_rewards() const
 void mission::set_deadline( time_point new_deadline )
 {
     deadline = new_deadline;
+}
+
+void mission::set_dimension( dimension_id dimension_prefix )
+{
+    dimension = dimension_prefix;
 }
 
 void mission::set_target( const tripoint_abs_omt &p )
@@ -891,7 +975,7 @@ mission::mission()
     status = mission_status::yet_to_start;
     value = 0;
     uid = -1;
-    target = tripoint_abs_omt( tripoint_min );
+    target = tripoint_abs_omt::invalid;
     item_id = itype_id::NULL_ID();
     item_count = 1;
     target_id = string_id<oter_type_t>::NULL_ID();

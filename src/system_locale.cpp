@@ -12,7 +12,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #elif defined(__ANDROID__)
 #include <jni.h>
-#include "sdl_wrappers.h" // for SDL_AndroidGetJNIEnv()
+#include "sdl_wrappers.h" // for GetAndroidJNIEnv()
 #include "debug.h" // for DebugLog/D_INFO/D_MAIN
 #elif defined(__linux__)
 #include <langinfo.h>
@@ -28,7 +28,7 @@ namespace
 // Try to match language code to a supported game language by prefix
 // For example, "fr_CA.UTF-8" -> "fr"
 // Returns std::nullopt if the language is not supported by the game
-std::optional<std::string> matchGameLanguage( const std::string_view lang )
+std::optional<std::string> matchGameLanguage( std::string_view lang )
 {
     const std::vector<options_manager::id_and_option> available_languages =
         get_options().get_option( "USE_LANG" ).getItems();
@@ -128,8 +128,8 @@ std::optional<std::string> Language()
 
     return matchGameLanguage( lang_code );
 #elif defined(__ANDROID__)
-    JNIEnv *env = ( JNIEnv * )SDL_AndroidGetJNIEnv();
-    jobject activity = ( jobject )SDL_AndroidGetActivity();
+    JNIEnv *env = ( JNIEnv * )GetAndroidJNIEnv();
+    jobject activity = ( jobject )GetAndroidActivity();
     jclass clazz( env->GetObjectClass( activity ) );
     jmethodID method_id = env->GetMethodID( clazz, "getSystemLang", "()Ljava/lang/String;" );
     jstring ans = ( jstring )env->CallObjectMethod( activity, method_id, 0 );

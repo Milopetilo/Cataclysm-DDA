@@ -2,20 +2,21 @@
 #ifndef CATA_SRC_TEXT_SNIPPETS_H
 #define CATA_SRC_TEXT_SNIPPETS_H
 
-#include <iosfwd>
+#include <cstdint>
 #include <map>
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
-#include "translations.h"
 #include "dialogue.h"
+#include "translation.h"
 #include "type_id.h"
 
-class cata_path;
 class JsonArray;
 class JsonObject;
+class cata_path;
 
 class snippet_library
 {
@@ -150,5 +151,7 @@ class snippet_library
 };
 
 extern snippet_library SNIPPET;
+
+std::string get_hint();
 
 #endif // CATA_SRC_TEXT_SNIPPETS_H

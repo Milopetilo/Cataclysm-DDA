@@ -1,10 +1,14 @@
 #include "game_inventory.h"
 
+#include <imgui/imgui.h>
 #include <algorithm>
-#include <bitset>
+#include <climits>
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <iterator>
+#include <list>
 #include <map>
 #include <memory>
 #include <optional>
@@ -12,38 +16,50 @@
 #include <string>
 #include <vector>
 
-#include "activity_type.h"
 #include "activity_actor_definitions.h"
 #include "avatar.h"
+#include "basecamp.h"
 #include "bionics.h"
 #include "bodypart.h"
 #include "calendar.h"
 #include "cata_utility.h"
 #include "character.h"
+#include "character_id.h"
 #include "color.h"
-#include "cursesdef.h"
 #include "damage.h"
 #include "debug.h"
 #include "display.h"
 #include "enums.h"
+#include "faction.h"
 #include "flag.h"
+#include "flexbuffer_json.h"
 #include "game.h"
+#include "game_constants.h"
 #include "input.h"
 #include "input_context.h"
 #include "inventory.h"
 #include "inventory_ui.h"
 #include "item.h"
+#include "item_contents.h"
 #include "item_location.h"
 #include "item_pocket.h"
 #include "itype.h"
 #include "iuse.h"
 #include "iuse_actor.h"
+#include "json.h"
+#include "map.h"
+#include "mapdata.h"
 #include "messages.h"
+#include "npc.h"
 #include "npctrade.h"
 #include "options.h"
 #include "output.h"
-#include "pimpl.h"
+#include "overmapbuffer.h"
+#include "pickup.h"
+#include "player_activity.h"
+#include "pocket_type.h"
 #include "point.h"
+#include "proficiency.h"
 #include "recipe.h"
 #include "recipe_dictionary.h"
 #include "requirements.h"
@@ -51,26 +67,25 @@
 #include "skill.h"
 #include "stomach.h"
 #include "string_formatter.h"
+#include "temp_crafting_inventory.h"
+#include "text.h"
+#include "translation.h"
 #include "translations.h"
 #include "type_id.h"
 #include "ui_manager.h"
+#include "uilist.h"
+#include "uistate.h"
 #include "units.h"
 #include "units_utility.h"
 #include "value_ptr.h"
-#include "veh_type.h"
 #include "vitamin.h"
 
-static const activity_id ACT_CONSUME_DRINK_MENU( "ACT_CONSUME_DRINK_MENU" );
-static const activity_id ACT_CONSUME_FOOD_MENU( "ACT_CONSUME_FOOD_MENU" );
-static const activity_id ACT_CONSUME_MEDS_MENU( "ACT_CONSUME_MEDS_MENU" );
-static const activity_id ACT_EAT_MENU( "ACT_EAT_MENU" );
-
-static const bionic_id bio_fitnessband( "bio_fitnessband" );
 static const bionic_id bio_painkiller( "bio_painkiller" );
 
 static const flag_id json_flag_CALORIES_INTAKE( "CALORIES_INTAKE" );
+static const flag_id json_flag_CALORIE_BURN( "CALORIE_BURN" );
 
-static const itype_id itype_fitness_band( "fitness_band" );
+static const itype_id itype_water_clean( "water_clean" );
 
 static const json_character_flag json_flag_MANUAL_CBM_INSTALLATION( "MANUAL_CBM_INSTALLATION" );
 static const json_character_flag json_flag_PAIN_IMMUNE( "PAIN_IMMUNE" );
@@ -78,6 +93,8 @@ static const json_character_flag json_flag_PAIN_IMMUNE( "PAIN_IMMUNE" );
 static const quality_id qual_ANESTHESIA( "ANESTHESIA" );
 
 static const requirement_id requirement_data_anesthetic( "anesthetic" );
+
+static const skill_id skill_computer( "computer" );
 
 static const trait_id trait_DEBUG_BIONICS( "DEBUG_BIONICS" );
 static const trait_id trait_SAPROPHAGE( "SAPROPHAGE" );
@@ -132,7 +149,9 @@ static item_location inv_internal( Character &u, const inventory_selector_preset
                                    const std::string &none_message,
                                    const std::string &hint = std::string(),
                                    item_location container = item_location(),
-                                   bool add_ebooks = false )
+                                   bool add_ebooks = false,
+                                   bool using_consume_menu = false
+                                 )
 {
     inventory_pick_selector inv_s( u, preset );
 
@@ -140,13 +159,7 @@ static item_location inv_internal( Character &u, const inventory_selector_preset
     inv_s.set_hint( hint );
     inv_s.set_display_stats( false );
 
-    const std::vector<activity_id> consuming {
-        ACT_EAT_MENU,
-        ACT_CONSUME_FOOD_MENU,
-        ACT_CONSUME_DRINK_MENU,
-        ACT_CONSUME_MEDS_MENU };
-
-    u.inv->restack( u );
+    const consume_menu_uistate &cm_uistate = uistate.consume_uistate;
 
     inv_s.clear_items();
 
@@ -155,28 +168,32 @@ static item_location inv_internal( Character &u, const inventory_selector_preset
         inv_s.add_contained_items( container );
     } else {
         // Default behavior.
-        inv_s.add_character_items( u );
-        inv_s.add_nearby_items( radius );
-        if( add_ebooks ) {
-            inv_s.add_character_ebooks( u );
+        inv_s.add_character_items( u, add_ebooks );
+        inv_s.add_nearby_items( radius, add_ebooks );
+        if( using_consume_menu ) {
+            inv_s.add_vehicle_tank_items();
         }
     }
 
-    if( u.has_activity( consuming ) ) {
-        if( !u.activity.str_values.empty() ) {
-            inv_s.set_filter( u.activity.str_values[0] );
+    //input from global consume menu UI state
+    if( using_consume_menu ) {
+        const std::string consume_menu_filter = cm_uistate.consume_menu_filter;
+        if( !consume_menu_filter.empty() ) {
+            inv_s.set_filter( consume_menu_filter );
         }
         // Set position after filter to keep cursor at the right position
+        const std::vector<item_location> &locs = cm_uistate.consume_menu_selected_items;
+        const std::vector<uint64_t> &selections = cm_uistate.consume_menu_selections;
         bool position_set = false;
-        if( !u.activity.targets.empty() ) {
-            bool const hidden = u.activity.values.size() >= 3 && static_cast<bool>( u.activity.values[2] );
-            position_set = inv_s.highlight_one_of( u.activity.targets, hidden );
+        if( !locs.empty() ) {
+            bool const hidden = cm_uistate.collated;
+            position_set = inv_s.highlight_one_of( locs, hidden );
             if( !position_set && hidden ) {
-                position_set = inv_s.highlight_one_of( u.activity.targets );
+                position_set = inv_s.highlight_one_of( locs );
             }
         }
-        if( !position_set && u.activity.values.size() >= 2 ) {
-            inv_s.highlight_position( std::make_pair( u.activity.values[0], u.activity.values[1] ) );
+        if( !position_set && selections.size() == 2 ) {
+            inv_s.highlight_position( { selections[0], selections[1] } );
         }
     }
 
@@ -190,19 +207,21 @@ static item_location inv_internal( Character &u, const inventory_selector_preset
 
     item_location location = inv_s.execute();
 
-    if( u.has_activity( consuming ) ) {
+    // If something was chosen output to global consume menu UI state
+    if( using_consume_menu && location != item_location::nowhere ) {
+
         inventory_entry const &e = inv_s.get_highlighted();
         bool const collated = e.is_collation_entry();
         u.activity.values.clear();
-        const auto init_pair = inv_s.get_highlighted_position();
-        u.activity.values.push_back( init_pair.first );
-        u.activity.values.push_back( init_pair.second );
-        u.activity.values.push_back( collated );
-        u.activity.str_values.clear();
-        u.activity.str_values.emplace_back( inv_s.get_filter() );
-        u.activity.targets = collated ? std::vector<item_location> { location, inv_s.get_collation_next() }
-                             :
-                             inv_s.get_highlighted().locations;
+        const std::pair<size_t, size_t> &init_pair = inv_s.get_highlighted_position();
+        consume_menu_uistate new_state{
+            { init_pair.first, init_pair.second },
+            collated ? std::vector<item_location> { location, inv_s.get_collation_next() }
+:
+            inv_s.get_highlighted().locations,
+            inv_s.get_filter(), collated, cm_uistate.consume_menu_comestype
+        };
+        uistate.consume_uistate = new_state;
     }
 
     return location;
@@ -219,8 +238,6 @@ static drop_locations inv_internal_multi( Character &u, const inventory_selector
     inv_s.set_title( title );
     inv_s.set_hint( hint );
     inv_s.set_display_stats( false );
-
-    u.inv->restack( u );
 
     inv_s.clear_items();
 
@@ -264,7 +281,6 @@ void game_menus::inv::common()
     item_location location;
     std::string filter;
     do {
-        you.inv->restack( you );
         inv_s.drag_enabled = true;
         inv_s.clear_items();
         inv_s.add_character_items( you );
@@ -346,6 +362,8 @@ item_location game_menus::inv::titled_menu( Character &you, const std::string &t
     return inv_internal( you, inventory_selector_preset(), title, -1, msg );
 }
 
+namespace
+{
 class armor_inventory_preset: public inventory_selector_preset
 {
     public:
@@ -379,7 +397,9 @@ class armor_inventory_preset: public inventory_selector_preset
 
             // Show total storage capacity in user's preferred volume units, to 2 decimal places
             append_cell( [ this ]( const item_location & loc ) {
-                const int storage_ml = to_milliliter( loc->get_total_capacity() );
+                const int storage_ml = to_milliliter(
+                                           loc->get_volume_capacity( item_pocket::ok_default_containers )
+                                       );
                 return get_decimal_string( round_up( convert_volume( storage_ml ), 2 ) );
             }, string_format( _( "STORAGE (%s)" ), volume_units_abbr() ) );
         }
@@ -396,7 +416,10 @@ class armor_inventory_preset: public inventory_selector_preset
 
         const std::string color;
 };
+} // namespace
 
+namespace
+{
 class wear_inventory_preset: public armor_inventory_preset
 {
     public:
@@ -408,7 +431,7 @@ class wear_inventory_preset: public armor_inventory_preset
             return loc->is_armor() &&
                    ( !loc.has_parent() || !is_worn_ablative( loc.parent_item(), loc ) ) &&
                    !you.is_worn( *loc ) &&
-                   ( bp != bodypart_id( "bp_null" ) ? loc->covers( bp ) : true );
+                   ( bp != bodypart_str_id::NULL_ID() ? loc->covers( bp ) : true );
         }
 
         std::string get_denial( const item_location &loc ) const override {
@@ -425,6 +448,7 @@ class wear_inventory_preset: public armor_inventory_preset
         const bodypart_id &bp;
 
 };
+} // namespace
 
 item_location game_menus::inv::wear( Character &you, const bodypart_id &bp )
 {
@@ -432,6 +456,8 @@ item_location game_menus::inv::wear( Character &you, const bodypart_id &bp )
                          _( "You have nothing to wear." ) );
 }
 
+namespace
+{
 class take_off_inventory_preset: public armor_inventory_preset
 {
     public:
@@ -453,6 +479,7 @@ class take_off_inventory_preset: public armor_inventory_preset
             return std::string();
         }
 };
+} // namespace
 
 item_location game_menus::inv::take_off()
 {
@@ -467,6 +494,13 @@ item_location game::inv_map_splice( const item_filter &filter, const std::string
                          title, radius, none_message );
 }
 
+item_location game::inv_map_splice( const inventory_selector_preset &preset,
+                                    const std::string &title,
+                                    int radius, const std::string &none_message )
+{
+    return inv_internal( u, preset, title, radius, none_message );
+}
+
 item_location game::inv_map_splice( const item_location_filter &filter, const std::string &title,
                                     int radius, const std::string &none_message )
 {
@@ -474,6 +508,8 @@ item_location game::inv_map_splice( const item_location_filter &filter, const st
                          title, radius, none_message );
 }
 
+namespace
+{
 class liquid_inventory_selector_preset : public inventory_selector_preset
 {
     public:
@@ -505,6 +541,7 @@ class liquid_inventory_selector_preset : public inventory_selector_preset
         const item &liquid;
         const item *const avoid;
 };
+} // namespace
 
 item_location game_menus::inv::container_for( Character &you, const item &liquid, int radius,
         const item *const avoid )
@@ -516,6 +553,8 @@ item_location game_menus::inv::container_for( Character &you, const item &liquid
                                         liquid.tname() ) );
 }
 
+namespace
+{
 class pickup_inventory_preset : public inventory_selector_preset
 {
     public:
@@ -523,7 +562,7 @@ class pickup_inventory_preset : public inventory_selector_preset
                                           bool skip_wield_check = false, bool ignore_liquidcont = false ) : you( you ),
             skip_wield_check( skip_wield_check ), ignore_liquidcont( ignore_liquidcont ) {
             save_state = &pickup_sel_default_state;
-            _pk_type = pocket_type::LAST;
+            _pk_type = { pocket_type::LAST };
         }
 
         std::string get_denial( const item_location &loc ) const override {
@@ -554,10 +593,11 @@ class pickup_inventory_preset : public inventory_selector_preset
                                     item_copy, nullptr, false );
 
                         item_pocket *ip = pocke.second;
-                        if( ip == nullptr || ( ip &&
-                                               ( !ip->can_contain( item_copy ).success() ||
-                                                 !ip->front().can_combine( item_copy ) ||
-                                                 item_copy.typeId() != ip->front().typeId() ) ) ) {
+                        if( ip == nullptr ||
+                            !ip->can_contain( item_copy ).success() ||
+                            ( !ip->empty() &&
+                              ( !ip->front().can_combine( item_copy ) ||
+                                item_copy.typeId() != ip->front().typeId() ) ) ) {
                             return _( "Does not have any pocket for frozen liquids!" );
                         } else {
                             return std::string();
@@ -566,7 +606,7 @@ class pickup_inventory_preset : public inventory_selector_preset
                 } else if( !you.can_pickVolume_partial( *loc, false, nullptr, false, true ) &&
                            ( skip_wield_check || you.has_wield_conflicts( *loc ) ) ) {
                     return _( "Does not fit in any pocket!" );
-                } else if( !you.can_pickWeight_partial( *loc, !get_option<bool>( "DANGEROUS_PICKUPS" ) ) ) {
+                } else if( !you.can_pickWeight_partial( *loc, false ) ) {
                     return _( "Too heavy to pick up!" );
                 }
             }
@@ -578,7 +618,7 @@ class pickup_inventory_preset : public inventory_selector_preset
             if( ignore_liquidcont && loc.where() == item_location::type::map &&
                 !loc->made_of( phase_id::SOLID ) ) {
                 map &here = get_map();
-                if( here.has_flag( ter_furn_flag::TFLAG_LIQUIDCONT, loc.pos_bub() ) ) {
+                if( here.has_flag( ter_furn_flag::TFLAG_LIQUIDCONT, loc.pos_bub( here ) ) ) {
                     return false;
                 }
             }
@@ -594,7 +634,8 @@ class pickup_inventory_preset : public inventory_selector_preset
 class disassemble_inventory_preset : public inventory_selector_preset
 {
     public:
-        disassemble_inventory_preset( const Character &you, const inventory &inv ) : you( you ),
+        disassemble_inventory_preset( const Character &you,
+                                      const temp_crafting_inventory &inv ) : you( you ),
             inv( inv ) {
 
             check_components = true;
@@ -620,7 +661,7 @@ class disassemble_inventory_preset : public inventory_selector_preset
 
             append_cell( [ this ]( const item_location & loc ) {
                 return to_string_clipped( get_recipe( loc ).time_to_craft( get_player_character(),
-                                          recipe_time_flag::ignore_proficiencies ) );
+                                          {}, recipe_time_flag::ignore_proficiencies ) );
             }, _( "TIME" ) );
         }
 
@@ -643,16 +684,19 @@ class disassemble_inventory_preset : public inventory_selector_preset
 
     private:
         const Character &you;
-        const inventory &inv;
+        const temp_crafting_inventory &inv;
 };
+} // namespace
 
 item_location game_menus::inv::disassemble( Character &you )
 {
     return inv_internal( you, disassemble_inventory_preset( you, you.crafting_inventory() ),
-                         _( "Disassemble item" ), 1,
+                         _( "Disassemble item" ), PICKUP_RANGE,
                          _( "You don't have any items you could disassemble." ) );
 }
 
+namespace
+{
 class comestible_inventory_preset : public inventory_selector_preset
 {
     public:
@@ -775,17 +819,18 @@ class comestible_inventory_preset : public inventory_selector_preset
         }
 
         bool is_shown( const item_location &loc ) const override {
-            return ( loc->is_comestible() && you.can_consume_as_is( *loc ) ) ||
-                   loc->is_medical_tool();
+            return ( loc->is_comestible() && you.can_consume_as_is( *loc ) ) || loc->is_medical_tool();
         }
 
         std::string get_denial( const item_location &loc ) const override {
+            map &here = get_map();
+
             const item &med = *loc;
 
             if(
                 ( loc->made_of_from_type( phase_id::LIQUID ) &&
                   loc.where() != item_location::type::container ) &&
-                !get_map().has_flag_furn( ter_furn_flag::TFLAG_LIQUIDCONT, loc.pos_bub() ) ) {
+                !here.has_flag_furn( ter_furn_flag::TFLAG_LIQUIDCONT, loc.pos_bub( here ) ) ) {
                 return _( "Can't drink spilt liquids." );
             }
             if(
@@ -823,7 +868,9 @@ class comestible_inventory_preset : public inventory_selector_preset
 
     protected:
         int get_order( const item_location &loc, const time_duration &time ) const {
-            if( loc->rotten() ) {
+            if( loc->typeId() == itype_water_clean ) {
+                return 0;
+            } else if( loc->rotten() ) {
                 if( you.has_trait( trait_SAPROPHAGE ) || you.has_trait( trait_SAPROVORE ) ) {
                     return 1;
                 } else {
@@ -900,6 +947,7 @@ class comestible_inventory_preset : public inventory_selector_preset
     private:
         const Character &you;
 };
+} // namespace
 
 static std::string get_consume_needs_hint( Character &you )
 {
@@ -924,8 +972,10 @@ static std::string get_consume_needs_hint( Character &you )
     int kcal_ingested_yesterday = you.as_avatar()->get_daily_ingested_kcal( true );
     int kcal_spent_today = you.as_avatar()->get_daily_spent_kcal( false );
     int kcal_spent_yesterday = you.as_avatar()->get_daily_spent_kcal( true );
-    bool has_fitness_band =  you.is_wearing( itype_fitness_band ) || you.has_bionic( bio_fitnessband );
-    bool has_tracker = has_fitness_band || you.cache_has_item_with( json_flag_CALORIES_INTAKE );
+    bool has_fitness_band =  you.cache_has_item_with( json_flag_CALORIE_BURN ) ||
+                             you.has_flag( json_flag_CALORIE_BURN );
+    bool has_tracker = has_fitness_band || you.cache_has_item_with( json_flag_CALORIES_INTAKE ) ||
+                       you.has_flag( json_flag_CALORIES_INTAKE );
 
     std::string kcal_estimated_intake;
     if( kcal_ingested_today == 0 ) {
@@ -1001,94 +1051,76 @@ static std::string get_consume_needs_hint( Character &you )
     return hint;
 }
 
-item_location game_menus::inv::consume( const item_location &loc )
+namespace
 {
-    avatar &you = get_avatar();
-    static item_location container_location;
-    if( !you.has_activity( ACT_EAT_MENU ) ) {
-        you.assign_activity( ACT_EAT_MENU );
-        container_location = loc;
-    }
-    std::string none_message = you.activity.str_values.size() == 2 ?
-                               _( "You have nothing else to consume." ) : _( "You have nothing to consume." );
-    return inv_internal( you, comestible_inventory_preset( you ),
-                         _( "Consume item" ), 1,
-                         none_message,
-                         get_consume_needs_hint( you ),
-                         container_location );
-}
-
 class comestible_filtered_inventory_preset : public comestible_inventory_preset
 {
     public:
-        comestible_filtered_inventory_preset( const Character &you, bool( *predicate )( const item &it ) ) :
+        explicit comestible_filtered_inventory_preset( const Character &you,
+                const std::function<bool( const item &it )> &predicate ) :
             comestible_inventory_preset( you ), predicate( predicate ) {}
 
         bool is_shown( const item_location &loc ) const override {
             return comestible_inventory_preset::is_shown( loc ) &&
                    predicate( *loc );
         }
-
+        void set_predicate( const std::function<bool( const item &it )> &new_predicate ) {
+            predicate = new_predicate;
+        }
     private:
-        bool( *predicate )( const item &it );
+        std::function<bool( const item &it )> predicate;
 };
+} // namespace
 
-item_location game_menus::inv::consume_food()
+
+item_location game_menus::inv::consume( const std::string &comestible_type_filter,
+                                        const item_location &loc )
 {
     avatar &you = get_avatar();
-    if( !you.has_activity( ACT_CONSUME_FOOD_MENU ) ) {
-        you.assign_activity( ACT_CONSUME_FOOD_MENU );
+    comestible_filtered_inventory_preset preset( you, []( const item & ) {
+        return true;
+    } );
+
+    uistate.consume_uistate.consume_menu_comestype = comestible_type_filter;
+    const std::string comestible_type = uistate.consume_uistate.consume_menu_comestype;
+    if( comestible_type == "FOOD" ) {
+        preset.set_predicate( []( const item & it ) {
+            return ( it.is_comestible() && it.get_comestible()->comesttype == "FOOD" ) ||
+                   it.has_flag( flag_USE_EAT_VERB );
+        } );
+    } else if( comestible_type == "DRINK" ) {
+        preset.set_predicate( []( const item & it ) {
+            return it.is_comestible() && it.get_comestible()->comesttype == "DRINK" &&
+                   !it.has_flag( flag_USE_EAT_VERB );
+        } );
+    } else if( comestible_type == "MED" ) {
+        preset.set_predicate( []( const item & it ) {
+            return it.is_medication() || it.is_medical_tool();
+        } );
     }
+
     std::string none_message = you.activity.str_values.size() == 2 ?
-                               _( "You have nothing else to eat." ) : _( "You have nothing to eat." );
-    return inv_internal( you, comestible_filtered_inventory_preset( you, []( const item & it ) {
-        return ( it.is_comestible() && it.get_comestible()->comesttype == "FOOD" ) ||
-               it.has_flag( flag_USE_EAT_VERB );
-    } ),
-    _( "Consume food" ), 1,
-    none_message,
-    get_consume_needs_hint( you ) );
+                               _( "You have nothing else to consume." ) : _( "You have nothing to consume." );
+    item_location returned_location = inv_internal( you, preset,
+                                      _( "Consume item" ), 1,
+                                      none_message,
+                                      get_consume_needs_hint( you ),
+                                      loc, false, true );
+    if( returned_location == item_location::nowhere ) {
+        uistate.consume_uistate.clear();
+    }
+    return returned_location;
 }
 
-item_location game_menus::inv::consume_drink()
+namespace
 {
-    avatar &you = get_avatar();
-    if( !you.has_activity( ACT_CONSUME_DRINK_MENU ) ) {
-        you.assign_activity( ACT_CONSUME_DRINK_MENU );
-    }
-    std::string none_message = you.activity.str_values.size() == 2 ?
-                               _( "You have nothing else to drink." ) : _( "You have nothing to drink." );
-    return inv_internal( you, comestible_filtered_inventory_preset( you, []( const item & it ) {
-        return it.is_comestible() && it.get_comestible()->comesttype == "DRINK" &&
-               !it.has_flag( flag_USE_EAT_VERB );
-    } ),
-    _( "Consume drink" ), 1,
-    none_message,
-    get_consume_needs_hint( you ) );
-}
-
-item_location game_menus::inv::consume_meds()
-{
-    avatar &you = get_avatar();
-    if( !you.has_activity( ACT_CONSUME_MEDS_MENU ) ) {
-        you.assign_activity( ACT_CONSUME_MEDS_MENU );
-    }
-    std::string none_message = you.activity.str_values.size() == 2 ?
-                               _( "You have no more medication to consume." ) : _( "You have no medication to consume." );
-    return inv_internal( you, comestible_filtered_inventory_preset( you, []( const item & it ) {
-        return it.is_medication() || it.is_medical_tool();
-    } ),
-    _( "Consume medication" ), 1,
-    none_message,
-    get_consume_needs_hint( you ) );
-}
-
 class activatable_inventory_preset : public pickup_inventory_preset
 {
     public:
         explicit activatable_inventory_preset() : pickup_inventory_preset( get_avatar() ),
             you( get_avatar() ) {
             _collate_entries = true;
+            _pk_type = { pocket_type::CONTAINER, pocket_type::MOD };
             if( get_option<bool>( "INV_USE_ACTION_NAMES" ) ) {
                 append_cell( [ this ]( const item_location & loc ) {
                     return string_format( "<color_light_green>%s</color>", get_action_name( *loc ) );
@@ -1097,12 +1129,18 @@ class activatable_inventory_preset : public pickup_inventory_preset
         }
 
         bool is_shown( const item_location &loc ) const override {
-            return loc->type->has_use() || loc->has_relic_activation();
+            return ( loc->is_craft() || ( ( loc->type->has_use() || loc->has_relic_activation() ) &&
+                                          ( !loc->is_comestible() || loc->type->can_use( "PETFOOD" ) ) ) ) &&
+                   !loc.is_invisible_installed_gunmod();
         }
 
         std::string get_denial( const item_location &loc ) const override {
             const item &it = *loc;
             const auto &uses = it.type->use_methods;
+
+            if( it.has_relic_activation() && !it.can_use_relic( you ) ) {
+                return string_format( _( "The %s can't be used like that." ), it.tname() );
+            }
 
             const auto &comest = it.get_comestible();
             if( comest && !comest->tool.is_null() ) {
@@ -1136,7 +1174,7 @@ class activatable_inventory_preset : public pickup_inventory_preset
             }
 
             if( uses.size() == 1 ) {
-                const auto ret = uses.begin()->second.can_call( you, it, you.pos() );
+                const auto ret = uses.begin()->second.can_call( you, it, you.pos_bub() );
                 if( !ret.success() ) {
                     return trim_trailing_punctuations( ret.str() );
                 }
@@ -1152,9 +1190,13 @@ class activatable_inventory_preset : public pickup_inventory_preset
 
             if( uses.size() == 1 &&
                 !it.ammo_sufficient( &you, uses.begin()->first ) ) {
+                if( it.uses_firing_requirements() ) {
+                    return string_format( _( "Needs at least: %s." ),
+                                          it.format_consumption_requirements( uses.begin()->first ) );
+                }
                 return string_format(
-                           n_gettext( "Needs at least %d charge",
-                                      "Needs at least %d charges", loc->ammo_required() ),
+                           n_gettext( "Needs at least %d charge.",
+                                      "Needs at least %d charges.", loc->ammo_required() ),
                            loc->ammo_required() );
             }
 
@@ -1188,6 +1230,7 @@ class activatable_inventory_preset : public pickup_inventory_preset
     private:
         const Character &you;
 };
+} // namespace
 
 item_location game_menus::inv::use()
 {
@@ -1196,6 +1239,8 @@ item_location game_menus::inv::use()
                          _( "You don't have any items you can use." ) );
 }
 
+namespace
+{
 class gunmod_inventory_preset : public inventory_selector_preset
 {
     public:
@@ -1259,6 +1304,7 @@ class gunmod_inventory_preset : public inventory_selector_preset
         const Character &you;
         const item &gunmod;
 };
+} // namespace
 
 item_location game_menus::inv::gun_to_modify( Character &you, const item &gunmod )
 {
@@ -1267,6 +1313,8 @@ item_location game_menus::inv::gun_to_modify( Character &you, const item &gunmod
                          _( "You don't have any guns to modify." ) );
 }
 
+namespace
+{
 class gunmod_remove_inventory_preset : public inventory_selector_preset
 {
     public:
@@ -1295,7 +1343,7 @@ class gunmod_remove_inventory_preset : public inventory_selector_preset
                   mod.type->gunmod->location.name() == "mechanism" ||
                   mod.type->gunmod->location.name() == "loading port" ||
                   mod.type->gunmod->location.name() == "bore" ) &&
-                ( gun.ammo_remaining() > 0 || gun.magazine_current() ) ) {
+                ( gun.ammo_remaining( ) > 0 || gun.magazine_current() ) ) {
                 return _( "must be unloaded before removing this mod" );
             }
 
@@ -1316,6 +1364,7 @@ class gunmod_remove_inventory_preset : public inventory_selector_preset
         const Character &you;
         const item &gun;
 };
+} // namespace
 
 item_location game_menus::inv::gunmod_to_remove( Character &you, item &gun )
 {
@@ -1340,6 +1389,8 @@ item_location game_menus::inv::gunmod_to_remove( Character &you, item &gun )
     return location;
 }
 
+namespace
+{
 class ereader_inventory_preset : public pickup_inventory_preset
 {
     public:
@@ -1354,7 +1405,7 @@ class ereader_inventory_preset : public pickup_inventory_preset
         }
 
         bool is_shown( const item_location &loc ) const override {
-            return loc->is_ebook_storage();
+            return loc->is_estorage();
         }
 
         std::string get_denial( const item_location &loc ) const override {
@@ -1365,6 +1416,10 @@ class ereader_inventory_preset : public pickup_inventory_preset
             }
 
             if( !it.ammo_sufficient( &you, "EBOOKREAD" ) ) {
+                if( it.uses_firing_requirements() ) {
+                    return string_format( _( "Needs at least: %s." ),
+                                          it.format_consumption_requirements( "EBOOKREAD" ) );
+                }
                 return string_format(
                            n_gettext( "Needs at least %d charge.",
                                       "Needs at least %d charges.", loc->ammo_required() ),
@@ -1385,6 +1440,7 @@ class ereader_inventory_preset : public pickup_inventory_preset
     private:
         const Character &you;
 };
+} // namespace
 
 item_location game_menus::inv::ereader_to_use( Character &you )
 {
@@ -1392,6 +1448,8 @@ item_location game_menus::inv::ereader_to_use( Character &you )
     return inv_internal( you, ereader_inventory_preset( you ), _( "Select e-reader." ), 1, msg );
 }
 
+namespace
+{
 class read_inventory_preset: public pickup_inventory_preset
 {
     public:
@@ -1459,16 +1517,19 @@ class read_inventory_preset: public pickup_inventory_preset
         }
 
         bool is_shown( const item_location &loc ) const override {
-            return loc->is_book() || loc->type->can_use( "learn_spell" );
+            const item_location p_loc = loc.parent_item();
+            return ( loc->is_book() || loc->type->can_use( "learn_spell" ) ) &&
+                   ( !p_loc || ( !p_loc->is_estorage() || p_loc->is_estorage_usable( you ) ) );
         }
 
         std::string get_denial( const item_location &loc ) const override {
             std::vector<std::string> denials;
-            if( you.get_book_reader( *loc, denials ) == nullptr && !denials.empty() &&
-                !loc->type->can_use( "learn_spell" ) ) {
+            if( ( you.get_book_reader( *loc, denials ) == nullptr &&
+                  !denials.empty() &&
+                  !loc->type->can_use( "learn_spell" ) ) ) {
                 return denials.front();
             }
-            return pickup_inventory_preset::get_denial( loc );
+            return pickup_inventory_preset::get_denial( loc.is_efile() ? loc.parent_item() : loc );
         }
 
         std::function<bool( const inventory_entry & )> get_filter( const std::string &filter ) const
@@ -1565,11 +1626,13 @@ class ebookread_inventory_preset : public read_inventory_preset
             return std::string();
         }
 };
+} // namespace
 
 item_location game_menus::inv::read( Character &you )
 {
-    const std::string msg = you.is_avatar() ? _( "You have nothing to read." ) :
-                            string_format( _( "%s has nothing to read." ), you.disp_name() );
+    const std::string msg = you.is_avatar() ?
+                            string_format( _( "%1$s have nothing to read." ), you.disp_name( false, true ) ) :
+                            string_format( _( "%1$s has nothing to read." ), you.disp_name( false, true ) );
     return inv_internal( you, read_inventory_preset( you ), _( "Read" ), 1, msg, "", item_location(),
                          true );
 }
@@ -1603,22 +1666,25 @@ item_location game_menus::inv::ebookread( Character &you, item_location &ereader
 drop_locations game_menus::inv::ebooksave( Character &who, item_location &ereader )
 {
     std::set<itype_id> already_saved;
-    for( const item *ebook : ereader->ebooks() ) {
-        if( !ebook->is_book() ) {
-            debugmsg( "ebook type pocket contains non-book item %s", ebook->typeId().str() );
-            continue;
+    for( const item *efile : ereader->efiles() ) {
+        if(
+            efile->is_estorable() &&
+            efile->is_ecopiable()
+            //already_saved.find(ebook->typeId()) == already_saved.end()
+        ) {
+            already_saved.insert( efile->typeId() );
         }
-
-        already_saved.insert( ebook->typeId() );
     }
+
     const inventory_filter_preset preset( [&who, &already_saved]( const item_location & loc ) {
-        return loc->is_book()
-               && loc->type->book->is_scannable
-               && !already_saved.count( loc->typeId() )
-               && loc->is_owned_by( who, true );
+
+        return ( loc->is_owned_by( who, true ) &&
+                 loc->is_estorable() &&
+                 loc->is_ecopiable() &&
+                 !already_saved.count( loc->typeId() ) );
     } );
 
-    const int available_charges = ereader->ammo_remaining();
+    const int available_charges = ereader->ammo_remaining( );
     auto make_raw_stats = [&available_charges, &ereader](
                               const std::vector<std::pair<item_location, int>> &locs
     ) {
@@ -1638,16 +1704,17 @@ drop_locations game_menus::inv::ebooksave( Character &who, item_location &ereade
         const std::string time = colorize( to_string( required_time, true ),
                                            c_light_gray );
         using stats = inventory_selector::stats;
-        return stats{{
+        return inventory_selector::convert_stats_to_header_stats( stats{{
                 {{ _( "Charges" ), charges }},
                 {{ _( "Estimated time" ), time }}
-            }};
+            }} );
     };
 
     inventory_multiselector inv_s( who, preset, _( "SELECT BOOKS TO SCAN" ),
                                    make_raw_stats, /*allow_select_contained=*/true );
     inv_s.add_character_items( who );
     inv_s.add_nearby_items( PICKUP_RANGE );
+    inv_s.remove_duplicate_itypes( true );
     inv_s.set_title( _( "Scan which books?" ) );
     if( inv_s.empty() ) {
         popup( std::string( _( "You have no books to scan." ) ), PF_GET_KEY );
@@ -1656,6 +1723,204 @@ drop_locations game_menus::inv::ebooksave( Character &who, item_location &ereade
     return inv_s.execute();
 }
 
+drop_locations game_menus::inv::edevice_select( Character &who, item_location &used_edevice,
+        bool browse_equals, bool auto_include_used_edevice, bool unusable_only, efile_action action )
+{
+    const map &here = get_map();
+
+    const inventory_filter_preset preset( [&]( const item_location & loc ) {
+        //make sure this is an edevice before we make edevice calls
+        if( loc->is_estorage() && loc->is_owned_by( who, true ) && who.sees( here, loc.pos_bub( here ) ) ) {
+            efile_activity_actor::edevice_compatible compat =
+                efile_activity_actor::edevices_compatible( used_edevice, loc );
+            bool is_tool_has_charge = !loc->is_tool() || loc->ammo_sufficient( &who );
+            bool used_edevice_check = auto_include_used_edevice || loc != used_edevice;
+            bool has_use_check = !unusable_only || !efile_activity_actor::edevice_has_use( loc.get_item() );
+            bool browsed_equal_check = browse_equals == loc->is_browsed();
+            bool fast_transfer = compat == efile_activity_actor::edevice_compatible::ECOMPAT_FAST;
+            bool no_files_check = !( action == EF_MOVE_ONTO_THIS || action == EF_COPY_ONTO_THIS )
+                                  || ( loc->is_browsed() && !loc->efiles().empty() );
+            bool compatible_check = ( action == EF_BROWSE && browse_equals ) ||
+                                    //if browsing, no compatibility check
+                                    ( action == EF_READ && fast_transfer ) || //if reading, only fast-compatible edevices
+                                    compat != efile_activity_actor::edevice_compatible::ECOMPAT_NONE; //otherwise, any compatible edevice
+            bool is_not_forbidden = true;
+            for( const pocket_data &pocket : loc->type->pockets ) {
+                if( pocket.type == pocket_type::E_FILE_STORAGE && pocket.forbidden ) {
+                    is_not_forbidden = false;
+                }
+            }
+
+            bool preset_bool = is_tool_has_charge &&
+                               used_edevice_check &&
+                               has_use_check &&
+                               browsed_equal_check &&
+                               compatible_check &&
+                               no_files_check &&
+                               is_not_forbidden;
+            if( preset_bool ) {
+                add_msg_debug( debugmode::DF_ACT_EBOOK, string_format( "found edevice %s", loc->display_name() ) );
+            }
+            return preset_bool;
+        }
+        return false;
+    } );
+
+    const std::string action_name = efile_activity_actor::efile_action_name( action, false, true );
+    const std::string used_device_name = efile_activity_actor::efile_action_exclude_used( action ) ?
+                                         string_format( _( " (using %s)?" ), used_edevice->display_name() ) :
+                                         "?";
+    const std::string inv_title = action_name + _( " which device" ) + used_device_name;
+
+    if( action == EF_READ || efile_activity_actor::efile_action_is_from( action ) ) {
+        inventory_pick_selector select_one_edevice( who, preset );
+        select_one_edevice.add_character_items( who );
+        select_one_edevice.add_nearby_items( PICKUP_RANGE );
+        select_one_edevice.set_title( inv_title );
+        if( select_one_edevice.empty() ) {
+            popup( string_format( _( "You have no eligible devices to %s." ), action_name ), PF_GET_KEY );
+            return drop_locations();
+        }
+        drop_locations returned_device;
+        item_location selected_device = select_one_edevice.execute();
+        if( selected_device ) {
+            returned_device.emplace_back( selected_device, 1 );
+        }
+        return returned_device;
+    } else {
+        inventory_multiselector inv_s( who, preset, string_format( _( "Select devices to %s" ),
+                                       action_name ) );
+        inv_s.add_character_items( who );
+        inv_s.add_nearby_items( PICKUP_RANGE );
+        inv_s.set_title( inv_title );
+        if( inv_s.empty() ) {
+            popup( string_format( _( "You have no eligible devices to %s." ), action_name ), PF_GET_KEY );
+            return drop_locations();
+        }
+        return inv_s.execute();
+    }
+}
+
+drop_locations game_menus::inv::efile_select( Character &who, item_location &used_edevice,
+        const std::vector<item_location> &target_edevices, efile_action action, bool from_used_edevice )
+{
+    item_location to_edevice = used_edevice;
+    std::vector<item_location> from_edevices = target_edevices;
+
+    if( from_used_edevice ) {
+        //swap targets if this is a "from" action
+        to_edevice = target_edevices.front();
+        from_edevices = { used_edevice };
+    }
+
+    item_location external_transfer_edevice;
+    bool copying = action == EF_COPY_FROM_THIS || action == EF_COPY_ONTO_THIS;
+    bool wiping = action == EF_WIPE;
+
+    const inventory_filter_preset preset( [&copying]( const item_location & loc ) {
+        return loc.is_efile() && ( !copying || loc->is_ecopiable() );
+    } );
+
+    const int available_charges = to_edevice->ammo_remaining( );
+    auto make_raw_stats = [&]( const std::vector<std::pair<item_location, int>> &locs ) {
+        std::vector<item_location> efiles;
+        efiles.reserve( locs.size() );
+        for( const auto &drop : locs ) {
+            for( int i = 0; i < drop.second; i++ ) {
+                efiles.emplace_back( drop.first );
+            }
+        }
+        time_duration required_time = efile_activity_actor::total_processing_time( used_edevice,
+                                      target_edevices, efiles,
+                                      action, who, who.get_skill_level( skill_computer ) < 1 );
+        units::ememory total_memory;
+        bool edevice_slow_transfer = false;
+        for( const item_location &efile : efiles ) {
+            item_location efile_parent_device = efile.parent_item();
+            if( !wiping ) {
+                if( efile_activity_actor::edevices_compatible( to_edevice, efile_parent_device ) !=
+                    efile_activity_actor::edevice_compatible::ECOMPAT_FAST ) {
+                    if( !efile_activity_actor::find_external_transfer_estorage( who, efile,
+                            to_edevice, efile_parent_device ) ) {
+                        edevice_slow_transfer = true;
+                    }
+                }
+            }
+            efile_transfer transfer( to_edevice, efile_parent_device );
+            required_time += efile_activity_actor::efile_processing_time( efile, transfer, action,
+                             who, who.get_skill_level( skill_computer ) < 1 );
+            total_memory += efile->ememory_size();
+        }
+        const int required_charges = required_time / efile_activity_actor::charge_per_transfer_time;
+
+        auto int_to_str = []( int val ) -> std::string {
+            return string_format( "%d", val );
+        };
+        const units::ememory memory_max = wiping ? to_edevice->total_ememory() :
+                                          to_edevice->remaining_ememory();
+        const bool over_memory_limit = total_memory > memory_max;
+        std::string total_memory_str = units::display( total_memory );
+        const std::string ememory = string_format( "%s / %s", over_memory_limit ?
+                                    colorize( total_memory_str, c_red ) : total_memory_str, units::display( memory_max ) );
+        const std::string charges = string_join( display_stat( "", required_charges,
+                                    available_charges,
+                                    int_to_str ), "" );
+        const std::string time_label = !edevice_slow_transfer ?
+                                       _( "Estimated time:" ) :
+                                       colorize( _( "Estimated time (slow!):" ), c_yellow );
+        const std::string time = colorize( to_string( required_time, true ),
+                                           c_light_gray );
+        return inventory_selector::convert_stats_to_header_stats( inventory_selector::stats{ {
+                {{ _( "Processed / Available Memory: " ), ememory }},
+                {{ _( "Charges" ), charges }},
+                {{ time_label, time}}
+            } } );
+    };
+
+    std::string action_name = efile_activity_actor::efile_action_name( action );
+
+    if( action == EF_READ ) {
+        inventory_pick_selector select_one_file( who, preset );
+        select_one_file.add_contained_efiles( used_edevice );
+        select_one_file.set_title( action_name + _( " which files?" ) );
+        if( select_one_file.empty() ) {
+            return drop_locations();
+        }
+        return { { select_one_file.execute(), 1 } };
+    }
+    inventory_multiselector select_multiple_efiles( who, preset, _( "Files selected:" ),
+            make_raw_stats, /*allow_select_contained=*/true );
+    if( !wiping ) {
+        select_multiple_efiles.set_hint(
+            _( "Using two devices without high-speed compatibility will result in longer transfer times.\nHaving an external storage device compatible with both devices can avoid this." ) );
+    }
+    for( item_location loc : from_edevices ) {
+        select_multiple_efiles.add_contained_efiles( loc );
+    }
+    if( select_multiple_efiles.empty() ) {
+        popup( string_format( _( "You have no files to %s." ), action_name ), PF_GET_KEY );
+        return drop_locations();
+    }
+    select_multiple_efiles.set_title( string_format( _( "Select files to %s" ), action_name ) );
+    bool done = false;
+    drop_locations selected_efiles;
+    while( !done ) {
+        selected_efiles = select_multiple_efiles.execute();
+        units::ememory total_ememory = 0_KB;
+        for( drop_location &d : selected_efiles ) {
+            total_ememory += d.first->ememory_size();
+        }
+        if( wiping || ( total_ememory < to_edevice->remaining_ememory() || selected_efiles.empty() ) ) {
+            done = true;
+        } else {
+            popup( std::string( _( "Selected file size exceeds available storage size." ) ), PF_GET_KEY );
+        }
+    }
+    return selected_efiles;
+}
+
+namespace
+{
 class steal_inventory_preset : public pickup_inventory_preset
 {
     public:
@@ -1669,6 +1934,7 @@ class steal_inventory_preset : public pickup_inventory_preset
     private:
         const Character &victim;
 };
+} // namespace
 
 item_location game_menus::inv::steal( Character &victim )
 {
@@ -1677,6 +1943,8 @@ item_location game_menus::inv::steal( Character &victim )
                          string_format( _( "%s's inventory is empty." ), victim.get_name() ) );
 }
 
+namespace
+{
 class weapon_inventory_preset: public inventory_selector_preset
 {
     public:
@@ -1701,7 +1969,13 @@ class weapon_inventory_preset: public inventory_selector_preset
                                                 );
                         }
                     }
-                    const int ammo_damage = damage.total_damage();
+
+                    int ammo_damage;
+                    if( loc->barrel_length().value() > 0 ) {
+                        ammo_damage = damage.di_considering_length( loc->barrel_length() ).total_damage();
+                    } else {
+                        ammo_damage = damage.total_damage();
+                    }
 
                     return string_format( "%s<color_light_gray>+</color>%s <color_light_gray>=</color> %s",
                                           get_damage_string( basic_damage, true ),
@@ -1725,7 +1999,7 @@ class weapon_inventory_preset: public inventory_selector_preset
 
             append_cell( [ this ]( const item_location & loc ) {
                 if( deals_melee_damage( *loc ) ) {
-                    return good_bad_none( loc->type->m_to_hit );
+                    return good_bad_none( loc->get_to_hit() );
                 }
                 return std::string();
             }, _( "MELEE" ) );
@@ -1775,6 +2049,7 @@ class weapon_inventory_preset: public inventory_selector_preset
 
         const Character &you;
 };
+} // namespace
 
 item_location game_menus::inv::wield()
 {
@@ -1867,6 +2142,8 @@ drop_locations game_menus::inv::unload_container()
     return dropped;
 }
 
+namespace
+{
 class saw_barrel_inventory_preset: public weapon_inventory_preset
 {
     public:
@@ -1922,6 +2199,23 @@ class saw_stock_inventory_preset : public weapon_inventory_preset
         const item &tool;
         const saw_stock_actor &actor;
 };
+} // namespace
+
+namespace
+{
+class target_practice_inventory_preset: public weapon_inventory_preset
+{
+    public:
+        explicit target_practice_inventory_preset( const Character &you ) :
+            weapon_inventory_preset( you ) {
+        }
+
+        bool is_shown( const item_location &loc ) const override {
+            return loc->is_gun();
+        }
+
+    private:
+};
 
 class attach_molle_inventory_preset : public inventory_selector_preset
 {
@@ -1973,7 +2267,10 @@ class attach_veh_tool_inventory_preset : public inventory_selector_preset
     private:
         const std::set<itype_id> allowed_types;
 };
+} // namespace
 
+namespace
+{
 class salvage_inventory_preset: public inventory_selector_preset
 {
     public:
@@ -1993,6 +2290,7 @@ class salvage_inventory_preset: public inventory_selector_preset
     private:
         const salvage_actor *actor;
 };
+} // namespace
 
 item_location game_menus::inv::salvage( Character &you, const salvage_actor *actor )
 {
@@ -2001,6 +2299,8 @@ item_location game_menus::inv::salvage( Character &you, const salvage_actor *act
                          _( "You have nothing to cut up." ) );
 }
 
+namespace
+{
 class repair_inventory_preset: public inventory_selector_preset
 {
     public:
@@ -2012,7 +2312,7 @@ class repair_inventory_preset: public inventory_selector_preset
             append_cell( [actor, &you]( const item_location & loc ) {
                 const int comp_needed = std::max<int>( 1,
                                                        std::ceil( loc->base_volume() * actor->cost_scaling / 250_ml ) );
-                const inventory &crafting_inv = you.crafting_inventory();
+                const temp_crafting_inventory &crafting_inv = you.crafting_inventory();
                 std::function<bool( const item & )> filter;
                 if( loc->is_filthy() ) {
                     filter = []( const item & component ) {
@@ -2079,6 +2379,7 @@ class repair_inventory_preset: public inventory_selector_preset
         const item *main_tool;
         Character &character;
 };
+} // namespace
 
 static std::string get_repair_hint( const Character &you, const repair_item_actor *actor,
                                     const item *main_tool )
@@ -2138,6 +2439,15 @@ item_location game_menus::inv::saw_stock( Character &you, item &tool )
                        );
 }
 
+item_location game_menus::inv::pick_target_practice_gun( Character &you )
+{
+    return inv_internal( you, target_practice_inventory_preset( you ),
+                         _( "Pick a gun to practice with" ), 1,
+                         _( "You don't have any gun to practice with." ),
+                         _( "Choose a weapon to practice with" )
+                       );
+}
+
 item_location game_menus::inv::molle_attach( Character &you, item &tool )
 {
     const molle_attach_actor *actor = dynamic_cast<const molle_attach_actor *>
@@ -2177,8 +2487,6 @@ item_location game_menus::inv::veh_tool_attach( Character &you, const std::strin
 
 drop_locations game_menus::inv::multidrop( Character &you )
 {
-    you.inv->restack( you );
-
     const inventory_filter_preset preset( [ &you ]( const item_location & location ) {
         return you.can_drop( *location ).success() &&
                ( !location.get_item()->is_frozen_liquid() || !location.has_parent() ||
@@ -2188,7 +2496,24 @@ drop_locations game_menus::inv::multidrop( Character &you )
     inventory_drop_selector inv_s( you, preset );
 
     inv_s.add_character_items( you );
-    inv_s.set_title( _( "Multidrop" ) );
+    std::string warning;
+    std::optional<basecamp *> bcp = overmap_buffer.find_camp( you.pos_abs_omt().xy() );
+    if( bcp ) {
+        if( basecamp *actual_camp = *bcp; actual_camp ) {
+            if( !actual_camp->allowed_access_by( you, true ) ) {
+                warning = string_format(
+                              _( "<color_red>WARNING:</color> You are in the territory of %s. Items dropped and not picked up within an hour will be claimed by them!" ),
+                              actual_camp->get_owner()->get_name() );
+                popup( warning );
+            }
+        }
+    }
+    if( warning.empty() ) {
+        inv_s.set_title( _( "Multidrop" ) );
+    } else {
+        //~The string substituted here is an entire sentence warning that dropped items will be forfeited.
+        inv_s.set_title( string_format( _( "Multidrop.  %s" ), warning ) );
+    }
     inv_s.set_hint( _( "To drop x items, type a number before selecting." ) );
 
     if( inv_s.empty() ) {
@@ -2199,26 +2524,41 @@ drop_locations game_menus::inv::multidrop( Character &you )
     return inv_s.execute();
 }
 
-drop_locations game_menus::inv::pickup( const std::optional<tripoint> &target,
+drop_locations game_menus::inv::pickup( const std::set<tripoint_bub_ms> &targets )
+{
+    return pickup( targets, {} );
+}
+
+drop_locations game_menus::inv::pickup( const std::set<tripoint_bub_ms> &targets,
                                         const std::vector<drop_location> &selection )
+{
+    Pickup::pick_info pickup_info = Pickup::pick_info();
+    return pickup( targets, selection, pickup_info );
+}
+
+drop_locations game_menus::inv::pickup( const std::set<tripoint_bub_ms> &targets,
+                                        const std::vector<drop_location> &selection,
+                                        Pickup::pick_info &info )
 {
     avatar &you = get_avatar();
     pickup_inventory_preset preset( you, /*skip_wield_check=*/true, /*ignore_liquidcont=*/true );
     preset.save_state = &pickup_ui_default_state;
 
-    pickup_selector pick_s( you, preset, _( "ITEMS TO PICK UP" ), target );
+    pickup_selector pick_s( you, preset, _( "ITEMS TO PICK UP" ), targets );
 
     // Add items from the selected tile, or from current and all surrounding tiles
-    if( target ) {
-        pick_s.add_vehicle_items( *target );
-        pick_s.add_map_items( *target );
+    if( !targets.empty() ) {
+        for( tripoint_bub_ms target : targets ) {
+            pick_s.add_vehicle_items( target );
+            pick_s.add_map_items( target );
+        }
     } else {
         pick_s.add_nearby_items();
     }
     pick_s.set_title( _( "Pickup" ) );
 
     if( pick_s.empty() ) {
-        if( target ) {
+        if( !targets.empty() ) {
             add_msg( _( "There is nothing to pick up." ) );
         } else {
             add_msg( _( "There is nothing to pick up nearby." ) );
@@ -2230,26 +2570,33 @@ drop_locations game_menus::inv::pickup( const std::optional<tripoint> &target,
         pick_s.apply_selection( selection );
     }
 
+    if( info.max_volume != -1_ml ) {
+        pick_s.overriden_volume = info.max_volume;
+    }
+    if( info.max_mass != -1_gram ) {
+        pick_s.overriden_mass = info.max_mass;
+    }
+
+    if( info.highlight ) {
+        // Use `highlight_one_of` instead of `highlight` because
+        // `highlight` doesn't `prepare_layout`, which causes items
+        // to change visual positions after the highlight.
+        pick_s.highlight_one_of( { info.highlight } );
+    }
+
     return pick_s.execute();
 }
 
-drop_locations game_menus::inv::pickup( const std::optional<tripoint_bub_ms> &target,
-                                        const std::vector<drop_location> &selection )
+namespace
 {
-    std::optional<tripoint> tmp;
-    if( target.has_value() ) {
-        tmp = target.value().raw();
-    }
-    return game_menus::inv::pickup( tmp, selection );
-}
-
 class smokable_selector_preset : public inventory_selector_preset
 {
     public:
         bool is_shown( const item_location &location ) const override {
-            return !location->rotten() && location->has_flag( flag_SMOKABLE );
+            return !location->rotten() && location->is_smokable();
         }
 };
+} // namespace
 
 drop_locations game_menus::inv::smoke_food( Character &you, units::volume total_capacity,
         units::volume used_capacity )
@@ -2263,7 +2610,7 @@ drop_locations game_menus::inv::smoke_food( Character &you, units::volume total_
             added_volume += loc.first->volume() * loc.second / loc.first->count();
         }
         std::string volume_caption = string_format( _( "Volume (%s):" ), volume_units_abbr() );
-        return inventory_selector::stats{
+        return inventory_selector::convert_stats_to_header_stats( inventory_selector::stats{
             {
                 display_stat( volume_caption,
                               units::to_milliliter( used_capacity + added_volume ),
@@ -2272,7 +2619,7 @@ drop_locations game_menus::inv::smoke_food( Character &you, units::volume total_
                     return format_volume( units::from_milliliter( v ) );
                 } )
             }
-        };
+        } );
     };
 
     inventory_multiselector smoke_s( you, preset, _( "FOOD TO SMOKE" ), make_raw_stats );
@@ -2281,7 +2628,7 @@ drop_locations game_menus::inv::smoke_food( Character &you, units::volume total_
     smoke_s.add_character_items( you );
 
     smoke_s.set_title( _( "Insert food into smoking rack" ) );
-    smoke_s.set_hint( _( "To select x items, type a number before selecting." ) );
+    smoke_s.set_hint( _( "To select items, type a number before selecting." ) );
     smoke_s.set_invlet_type( inventory_selector::selector_invlet_type::SELECTOR_INVLET_ALPHA );
 
     if( smoke_s.empty() ) {
@@ -2292,112 +2639,113 @@ drop_locations game_menus::inv::smoke_food( Character &you, units::volume total_
     return smoke_s.execute();
 }
 
-bool game_menus::inv::compare_items( const item &first, const item &second,
-                                     const std::string &confirm_message )
+game_menus::inv::compare_item_menu::compare_item_menu( const item &first, const item &second,
+        const std::string &confirm_message ) :
+    cataimgui::window( "compare", ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                       ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoNavInputs ),
+    first( first ),
+    second( second ),
+    confirm_message( confirm_message )
 {
-    std::string action;
-    input_context ctxt;
-    ui_adaptor ui;
-    item_info_data item_info_first;
-    item_info_data item_info_second;
-    int page_size = 0;
-    int scroll_pos_first = 0;
-    int scroll_pos_second = 0;
-    bool first_execution = true;
-    static int lang_version = detail::get_current_language_version();
-    do {
-        //lang check here is needed to redraw the menu when using "Toggle language to English" option
-        if( first_execution || lang_version != detail::get_current_language_version() ) {
-            std::vector<iteminfo> v_item_first;
-            std::vector<iteminfo> v_item_second;
+    ctxt.register_action( "HELP_KEYBINDINGS" );
+    if( !confirm_message.empty() ) {
+        ctxt.register_action( "CONFIRM" );
+    }
+    ctxt.register_action( "QUIT" );
+    ctxt.register_navigate_ui_list();
+    ctxt.set_timeout( 10 );
 
-            first.info( true, v_item_first );
-            second.info( true, v_item_second );
-
-            item_info_first = item_info_data( first.tname(), first.type_name(),
-                                              v_item_first, v_item_second, scroll_pos_first );
-
-            item_info_second = item_info_data( second.tname(), second.type_name(),
-                                               v_item_second, v_item_first, scroll_pos_second );
-
-            item_info_first.without_getch = true;
-            item_info_second.without_getch = true;
-
-            ctxt.register_action( "HELP_KEYBINDINGS" );
-            if( !confirm_message.empty() ) {
-                ctxt.register_action( "CONFIRM" );
-            }
-            ctxt.register_action( "QUIT" );
-            ctxt.register_action( "UP" );
-            ctxt.register_action( "DOWN" );
-            ctxt.register_action( "PAGE_UP" );
-            ctxt.register_action( "PAGE_DOWN" );
-
-            catacurses::window wnd_first;
-            catacurses::window wnd_second;
-            catacurses::window wnd_message;
-
-            ui.reset();
-            ui.on_screen_resize( [&]( ui_adaptor & ui ) {
-                const int half_width = TERMX / 2;
-                const int height = TERMY;
-                const int offset_y = confirm_message.empty() ? 0 : 3;
-                page_size = TERMY - offset_y - 2;
-                wnd_first = catacurses::newwin( height - offset_y, half_width, point_zero );
-                wnd_second = catacurses::newwin( height - offset_y, half_width, point( half_width, 0 ) );
-
-                if( !confirm_message.empty() ) {
-                    wnd_message = catacurses::newwin( offset_y, TERMX, point( 0, height - offset_y ) );
-                }
-
-                ui.position( point_zero, point( half_width * 2, height ) );
-            } );
-            ui.mark_resize();
-            ui.on_redraw( [&]( const ui_adaptor & ) {
-                if( !confirm_message.empty() ) {
-                    draw_border( wnd_message );
-                    nc_color col = c_white;
-                    print_colored_text(
-                        wnd_message, point( 3, 1 ), col, col,
-                        confirm_message + " " +
-                        ctxt.describe_key_and_name( "CONFIRM" ) + " " +
-                        ctxt.describe_key_and_name( "QUIT" ) );
-                    wnoutrefresh( wnd_message );
-                }
-
-                draw_item_info( wnd_first, item_info_first );
-                draw_item_info( wnd_second, item_info_second );
-            } );
-            lang_version = detail::get_current_language_version();
-            first_execution = false;
-        }
-
-        ui_manager::redraw();
-
-        action = ctxt.handle_input();
-
-        if( action == "UP" ) {
-            scroll_pos_first--;
-            scroll_pos_second--;
-        } else if( action == "DOWN" ) {
-            scroll_pos_first++;
-            scroll_pos_second++;
-        } else if( action == "PAGE_UP" ) {
-            scroll_pos_first  -= page_size;
-            scroll_pos_second -= page_size;
-        } else if( action == "PAGE_DOWN" ) {
-            scroll_pos_first += page_size;
-            scroll_pos_second += page_size;
-        }
-    } while( action != "QUIT" && action != "CONFIRM" );
-
-    return action == "CONFIRM";
+    // todo: regen info when toggling language?
+    first.info( true, first_info );
+    second.info( true, second_info );
 }
 
-void game_menus::inv::compare( const std::optional<tripoint> &offset )
+static void draw_column( const std::string &label, const ImVec2 &size, const item &it,
+                         std::vector<iteminfo> &first, std::vector<iteminfo> &second, cataimgui::scroll &s )
+{
+    if( ImGui::BeginChild( label.c_str(), size ) ) {
+        cataimgui::TextColoredParagraph( c_light_gray, it.tname() );
+        ImGui::NewLine();
+        if( it.tname().find( it.type_name() ) == std::string::npos ) {
+            cataimgui::TextColoredParagraph( c_light_gray, it.type_name() );
+            ImGui::NewLine();
+        }
+        ImGui::NewLine();
+        cataimgui::set_scroll( s );
+        display_item_info( first, second );
+    }
+    ImGui::EndChild();
+}
+
+void game_menus::inv::compare_item_menu::draw_controls()
+{
+    float half_width = ImGui::GetContentRegionAvail().x / 2;
+    float height = ImGui::GetContentRegionAvail().y;
+    ImGuiStyle &style = ImGui::GetStyle();
+    float spacing_x = style.ItemSpacing.x;
+    float top_y = ImGui::GetCursorPosY();
+    float confirm_height = confirm_message.empty() ? 0.f : ImGui::GetFrameHeightWithSpacing();
+
+    // cataimgui::set_scroll resets scroll, so we need a copy for parallel scrolling
+    // not ideal, but this is such a special use case it's probably not worth changing
+    // todo: also synchronize scrolling when using mouse wheel/dragging scroll bar?
+    cataimgui::scroll s_copy = s;
+
+    draw_column( "compare_left", ImVec2( half_width - spacing_x, height - confirm_height ), first,
+                 first_info, second_info, s );
+    ImGui::SetCursorPos( { half_width + spacing_x, top_y } );
+    draw_column( "compare_right", ImVec2( half_width - spacing_x, height - confirm_height ), second,
+                 second_info, first_info, s_copy );
+
+    if( !confirm_message.empty() ) {
+        ImGui::AlignTextToFramePadding();
+        cataimgui::TextColoredParagraph( c_white, confirm_message );
+        // todo: spacing should be part of paragraph so it behaves the same as other elements
+        ImGui::Spacing();
+        ImGui::SameLine();
+        action_button( "CONFIRM", ctxt.get_button_text( "CONFIRM" ) );
+        ImGui::SameLine();
+        action_button( "QUIT", ctxt.get_button_text( "QUIT" ) );
+    }
+}
+
+cataimgui::bounds game_menus::inv::compare_item_menu::get_bounds()
+{
+    return { 0.f, 0.f, ImGui::GetMainViewport()->Size.x, ImGui::GetMainViewport()->Size.y };
+}
+
+bool game_menus::inv::compare_item_menu::show()
+{
+    while( true ) {
+        ui_manager::redraw();
+
+        std::string action = has_button_action() ? get_button_action() : ctxt.handle_input();
+
+        if( action == "UP" ) {
+            s = cataimgui::scroll::line_up;
+        } else if( action == "DOWN" ) {
+            s = cataimgui::scroll::line_down;
+        } else if( action == "PAGE_UP" ) {
+            s = cataimgui::scroll::page_up;
+        } else if( action == "PAGE_DOWN" ) {
+            s = cataimgui::scroll::page_down;
+        } else if( action == "HOME" ) {
+            s = cataimgui::scroll::begin;
+        } else if( action == "END" ) {
+            s = cataimgui::scroll::end;
+        } else if( action == "CONFIRM" ) {
+            return true;
+        } else if( action == "QUIT" ) {
+            return false;
+        }
+    }
+
+    return false;
+}
+
+void game_menus::inv::compare( const std::optional<tripoint_rel_ms> &offset )
 {
     avatar &you = get_avatar();
-    you.inv->restack( you );
 
     inventory_compare_selector inv_s( you );
 
@@ -2406,8 +2754,8 @@ void game_menus::inv::compare( const std::optional<tripoint> &offset )
     inv_s.set_hint( _( "Select two items to compare them." ) );
 
     if( offset ) {
-        inv_s.add_map_items( you.pos() + *offset );
-        inv_s.add_vehicle_items( you.pos() + *offset );
+        inv_s.add_map_items( you.pos_bub() + *offset );
+        inv_s.add_vehicle_items( you.pos_bub() + *offset );
     } else {
         inv_s.add_nearby_items();
     }
@@ -2424,7 +2772,8 @@ void game_menus::inv::compare( const std::optional<tripoint> &offset )
             break;
         }
 
-        compare_items( *to_compare.first, *to_compare.second );
+        compare_item_menu menu( *to_compare.first, *to_compare.second );
+        menu.show();
     } while( true );
 }
 
@@ -2456,7 +2805,6 @@ void game_menus::inv::reassign_letter( item &it )
 void game_menus::inv::swap_letters()
 {
     avatar &you = get_avatar();
-    you.inv->restack( you );
 
     inventory_pick_selector inv_s( you );
 
@@ -2472,9 +2820,9 @@ void game_menus::inv::swap_letters()
     while( true ) {
         const std::string invlets = colorize_symbols( inv_chars.get_allowed_chars(),
         [ &you ]( const std::string::value_type & elem ) {
-            if( you.inv->assigned_invlet.count( elem ) ) {
+            if( you.invlet_is_assigned( elem ) ) {
                 return c_yellow;
-            } else if( you.invlet_to_item( elem ) != nullptr ) {
+            } else if( you.invlet_to_item( elem ).valid() ) {
                 return c_white;
             } else {
                 return c_dark_gray;
@@ -2506,13 +2854,13 @@ static item_location autodoc_internal( Character &you, Character &patient,
         } else if( patient.has_bionic( bio_painkiller ) ) {
             hint = _( "<color_yellow>Patient has Sensory Dulling CBM installed.  Anesthesia unneeded.</color>" );
         } else {
-            const inventory &crafting_inv = you.crafting_inventory();
+            const temp_crafting_inventory &crafting_inv = you.crafting_inventory();
             std::vector<const item *> a_filter = crafting_inv.items_with( []( const item & it ) {
-                return it.has_quality( qual_ANESTHESIA );
+                return it.get_quality( qual_ANESTHESIA ) > 0;
             } );
             for( const item *anesthesia_item : a_filter ) {
-                if( anesthesia_item->ammo_remaining() >= 1 ) {
-                    drug_count += anesthesia_item->ammo_remaining();
+                if( anesthesia_item->ammo_remaining( ) >= 1 ) {
+                    drug_count += anesthesia_item->ammo_remaining( );
                 }
             }
             hint = string_format( _( "<color_yellow>Available anesthetic: %i mL</color>" ), drug_count );
@@ -2533,8 +2881,6 @@ static item_location autodoc_internal( Character &you, Character &patient,
     inv_s.set_display_stats( false );
 
     do {
-        you.inv->restack( you );
-
         inv_s.clear_items();
         inv_s.add_character_items( you );
         if( you.getID() != patient.getID() ) {
@@ -2554,6 +2900,8 @@ static item_location autodoc_internal( Character &you, Character &patient,
     } while( true );
 }
 
+namespace
+{
 // Menu used by Autodoc when installing a bionic
 class bionic_install_preset: public inventory_selector_preset
 {
@@ -2672,7 +3020,9 @@ class bionic_install_surgeon_preset : public inventory_selector_preset
                 ret_val<void> const refusal =
                     you.as_npc()->wants_to_sell( loc, price );
                 if( !refusal.success() ) {
-                    return you.replace_with_npc_name( refusal.str() );
+                    std::string refused_text = refusal.str();
+                    parse_tags( refused_text, you, pa );
+                    return refused_text;
                 }
             }
             const ret_val<void> installable = pa.is_installable( loc.get_item(), false );
@@ -2712,6 +3062,7 @@ class bionic_install_surgeon_preset : public inventory_selector_preset
             return format_money( npc_trading::bionic_install_price( you, pa, loc ) );
         }
 };
+} // namespace
 
 item_location game_menus::inv::install_bionic( Character &installer, Character &patron,
         Character &patient, bool surgeon )
@@ -2725,6 +3076,8 @@ item_location game_menus::inv::install_bionic( Character &installer, Character &
 
 }
 
+namespace
+{
 class change_sprite_inventory_preset: public inventory_selector_preset
 {
     public:
@@ -2752,6 +3105,7 @@ class change_sprite_inventory_preset: public inventory_selector_preset
     protected:
         Character &you;
 };
+} // namespace
 
 item_location game_menus::inv::change_sprite( Character &you )
 {
@@ -2760,18 +3114,30 @@ item_location game_menus::inv::change_sprite( Character &you )
                          _( "You have nothing to wear." ) );
 }
 
+namespace
+{
+class unload_selector_preset : public inventory_selector_preset
+{
+    public:
+        explicit unload_selector_preset() : you( get_avatar() ) {
+            _pk_type = { pocket_type::CONTAINER, pocket_type::MOD };
+        }
+        bool is_shown( const item_location &location ) const override {
+            return !location.is_invisible_installed_gunmod( ) &&
+                   you.rate_action_unload( *location ) == hint_rating::good;
+        }
+    private:
+        const Character &you;
+};
+} // namespace
+
 std::pair<item_location, bool> game_menus::inv::unload( Character &you )
 {
-
-    const inventory_filter_preset preset( [&you]( const item_location & location ) {
-        return you.rate_action_unload( *location ) == hint_rating::good;
-    } );
+    const unload_selector_preset preset;
     unload_selector inv_s( you, preset );
 
     inv_s.set_title( _( "Unload item" ) );
     inv_s.set_display_stats( false );
-
-    you.inv->restack( you );
 
     inv_s.clear_items();
 
@@ -2786,6 +3152,8 @@ std::pair<item_location, bool> game_menus::inv::unload( Character &you )
     return inv_s.execute();
 }
 
+namespace
+{
 class select_ammo_inventory_preset : public inventory_selector_preset
 {
     public:
@@ -2808,15 +3176,16 @@ class select_ammo_inventory_preset : public inventory_selector_preset
             }, _( "LOCATION" ) );
 
             append_cell( [&you, target]( const item_location & loc ) {
-                for( const item_location &opt : get_possible_reload_targets( target ) ) {
-                    if( opt.can_reload_with( loc, true ) ) {
-                        if( opt == target ) {
-                            return std::string();
-                        }
-                        return string_format( _( "%s, %s" ), opt->type_name(), opt.describe( &you ) );
-                    }
+                const std::vector<reload_target> targets = get_possible_reload_targets( target );
+                const reload_target *match = find_matching_reload_target( targets, loc );
+                if( match == nullptr ) {
+                    return std::string();
                 }
-                return std::string();
+                if( match->target == target ) {
+                    return std::string();
+                }
+                return string_format( _( "%s, %s" ), match->target->type_name(),
+                                      match->target.describe( &you ) );
             }, _( "DESTINATION" ) );
 
             append_cell( []( const inventory_entry & entry ) {
@@ -2827,7 +3196,9 @@ class select_ammo_inventory_preset : public inventory_selector_preset
             }, _( "AMOUNT" ) );
 
             append_cell( [&you, &target]( const item_location & loc ) {
-                item::reload_option opt( &you, target, loc );
+                item::reload_option opt( &you, target, loc,
+                                         item::reload_option::POCKET_FALLBACK );
+                // propagate entry.chosen_count here somehow?
                 return std::to_string( opt.moves() );
             }, _( "MOVES" ) );
 
@@ -2854,13 +3225,14 @@ class select_ammo_inventory_preset : public inventory_selector_preset
 
         bool is_shown( const item_location &loc ) const override {
             // todo: allow to reload a magazine/magazine well from a container pocket on the same item
+            map &here = get_map();
+
             if( loc.parent_item() == target ) {
                 return false;
             }
 
             if( loc->made_of( phase_id::LIQUID ) && loc.where() == item_location::type::map ) {
-                map &here = get_map();
-                if( !here.has_flag_ter_or_furn( ter_furn_flag::TFLAG_LIQUIDCONT, loc.pos_bub() ) ) {
+                if( !here.has_flag_ter_or_furn( ter_furn_flag::TFLAG_LIQUIDCONT, loc.pos_bub( here ) ) ) {
                     return false;
                 }
             }
@@ -2869,41 +3241,38 @@ class select_ammo_inventory_preset : public inventory_selector_preset
                 return false;
             }
 
-            if( !empty && loc->is_magazine() && !loc->ammo_remaining() ) {
+            if( !empty && loc->is_magazine() && !loc->ammo_remaining( ) ) {
                 return false;
             }
 
-            std::vector<item_location> opts = get_possible_reload_targets( target );
-
-            for( item_location &p : opts ) {
-                if( ( loc->has_flag( flag_SPEEDLOADER ) && p->allows_speedloader( loc->typeId() ) &&
-                      loc->ammo_remaining() > 1 && p->ammo_remaining() < 1 ) && p.can_reload_with( loc, true ) ) {
-                    return true;
-                }
-
-                if( p.can_reload_with( loc, true ) ) {
+            const std::vector<reload_target> targets = get_possible_reload_targets( target );
+            for( const reload_target &rt : targets ) {
+                // Speedloader compatibility is queried on the owner gun, not
+                // on a specific well pocket.
+                if( loc->has_flag( flag_SPEEDLOADER ) && rt.target->allows_speedloader( loc->typeId() ) &&
+                    loc->ammo_remaining() > 1 && rt.target->ammo_remaining() < 1 &&
+                    rt.target.can_reload_with( loc, true ) ) {
                     return true;
                 }
             }
-
-            return false;
+            return find_matching_reload_target( targets, loc ) != nullptr;
         }
 
         // sort in order of move cost (ascending), then remaining ammo (descending) with empty magazines always last
         bool sort_compare( const inventory_entry &lhs, const inventory_entry &rhs ) const override {
-            item_location left = lhs.any_item();
-            item_location right = rhs.any_item();
+            const item_location &left = lhs.any_item();
+            const item_location &right = rhs.any_item();
 
-            if( left->ammo_remaining() == 0 || right->ammo_remaining() == 0 ) {
-                return ( left->ammo_remaining() != 0 ) > ( right->ammo_remaining() != 0 );
+            if( left->ammo_remaining( ) == 0 || right->ammo_remaining( ) == 0 ) {
+                return ( left->ammo_remaining( ) != 0 ) > ( right->ammo_remaining( ) != 0 );
             }
 
             if( left.obtain_cost( you ) != right.obtain_cost( you ) ) {
                 return left.obtain_cost( you ) < right.obtain_cost( you );
             }
 
-            if( left->ammo_remaining() != right->ammo_remaining() ) {
-                return left->ammo_remaining() > right->ammo_remaining();
+            if( left->ammo_remaining( ) != right->ammo_remaining( ) ) {
+                return left->ammo_remaining( ) > right->ammo_remaining( );
             }
 
             return inventory_selector_preset::sort_compare( lhs, rhs );
@@ -2914,6 +3283,7 @@ class select_ammo_inventory_preset : public inventory_selector_preset
         const item_location target;
         bool empty;
 };
+} // namespace
 
 item::reload_option game_menus::inv::select_ammo( Character &you, const item_location &loc,
         bool prompt, bool empty )
@@ -2948,16 +3318,136 @@ item::reload_option game_menus::inv::select_ammo( Character &you, const item_loc
         return item::reload_option();
     }
 
-    item_location target_loc;
-    for( const item_location &opt : get_possible_reload_targets( loc ) ) {
-        if( opt.can_reload_with( selected.first, true ) ) {
-            target_loc = opt;
-            break;
-        }
+    // The selector lists one entry per ammo source. When the picked source
+    // matches multiple reload targets (sibling wells, multiple loaded mags
+    // of the same type), disambiguate via a follow-up uilist instead of
+    // duplicating selector entries per (source, target) pair.
+    const std::vector<reload_target> targets = get_possible_reload_targets( loc );
+    const std::vector<const reload_target *> matches =
+        find_all_matching_reload_targets( targets, selected.first );
+    if( matches.empty() ) {
+        return item::reload_option();
     }
 
-    item::reload_option opt( &you, target_loc, selected.first );
-    opt.qty( selected.second );
+    const reload_target *match = matches.front();
+    bool disambiguated = false;
+    if( matches.size() > 1 ) {
+        // Disambiguate: prompt the player, suffixing labels with (well N) when
+        // labels would otherwise collide on the same owner.
+        std::map<const item *, int> wells_per_owner;
+        std::map<std::pair<const item *, itype_id>, int> mags_per_owner_type;
+        for( const reload_target *rt : matches ) {
+            if( rt->kind == reload_target::kind::well ) {
+                wells_per_owner[rt->owner.get_item()]++;
+            } else {
+                mags_per_owner_type[ {rt->owner.get_item(), rt->target->typeId()}]++;
+            }
+        }
+        std::map<const item *, int> well_counters;
+        std::map<std::pair<const item *, itype_id>, int> mag_counters;
+        uilist menu;
+        menu.text = string_format( _( "Reload which destination on %s?" ),
+                                   loc->display_name() );
+        for( size_t i = 0; i < matches.size(); ++i ) {
+            const reload_target &rt = *matches[i];
+            std::string label;
+            if( rt.kind == reload_target::kind::well ) {
+                int idx = 0;
+                std::string well_desc;
+                for( const item_pocket *p : rt.owner->get_pockets(
+                []( const item_pocket & ) {
+                return true;
+            } ) ) {
+                    if( idx == rt.pocket_index && p->is_type( pocket_type::MAGAZINE_WELL ) ) {
+                        const pocket_data *pd = p->get_pocket_data();
+                        const std::string display = pd ? pd->pocket_name.translated() : std::string();
+                        const itype_id default_mag = p->magazine_default();
+                        if( !display.empty() ) {
+                            well_desc = display;
+                        } else if( !default_mag.is_null() ) {
+                            well_desc = item::find_type( default_mag )->nname( 1 );
+                        } else {
+                            well_desc = string_format( _( "magazine well %d" ), rt.ui_well_index + 1 );
+                        }
+                        break;
+                    }
+                    ++idx;
+                }
+                label = string_format( _( "%s: %s" ), rt.owner->tname(), well_desc );
+                if( wells_per_owner[rt.owner.get_item()] > 1 ) {
+                    const int n = ++well_counters[rt.owner.get_item()];
+                    //~ %1$s is owner+well description, %2$d is 1-indexed well number on that owner
+                    label = string_format( _( "%1$s (well %2$d)" ), label, n );
+                }
+            } else if( rt.kind == reload_target::kind::integral_magazine ) {
+                int idx = 0;
+                std::string mag_desc;
+                for( const item_pocket *p : rt.owner->get_pockets(
+                []( const item_pocket & ) {
+                return true;
+            } ) ) {
+                    if( idx == rt.pocket_index && p->is_type( pocket_type::MAGAZINE ) ) {
+                        const pocket_data *pd = p->get_pocket_data();
+                        const std::string display = pd ? pd->pocket_name.translated() : std::string();
+                        if( !display.empty() ) {
+                            mag_desc = display;
+                        }
+                        break;
+                    }
+                    ++idx;
+                }
+                label = mag_desc.empty()
+                        ? string_format( _( "%s: integral magazine" ), rt.owner->tname() )
+                        : string_format( _( "%s: %s" ), rt.owner->tname(), mag_desc );
+            } else {
+                //~ %1$s is the gun or gunmod that holds the magazine, %2$s is the magazine's tname
+                label = string_format( _( "%1$s: top up %2$s" ), rt.owner->tname(),
+                                       rt.target->tname() );
+                const std::pair<const item *, itype_id> key { rt.owner.get_item(), rt.target->typeId() };
+                if( mags_per_owner_type[key] > 1 ) {
+                    const int n = ++mag_counters[key];
+                    //~ %1$s is "<owner>: top up <mag name>", %2$d is 1-indexed well number on that owner
+                    label = string_format( _( "%1$s (well %2$d)" ), label, n );
+                }
+            }
+            menu.addentry( static_cast<int>( i ), true, MENU_AUTOASSIGN, label );
+        }
+        menu.query();
+        if( menu.ret < 0 || menu.ret >= static_cast<int>( matches.size() ) ) {
+            return item::reload_option();
+        }
+        match = matches[menu.ret];
+        disambiguated = true;
+    }
+
+    item::reload_option opt( &you, match->target, selected.first, match->pocket_index );
+    if( disambiguated && !inv_s.last_choice_count_player_adjusted() ) {
+        // Refill to the chosen target's own capacity when the seeded count
+        // (from a sibling match) came back unmodified.
+        opt.qty( INT_MAX );
+    } else {
+        opt.qty( selected.second );
+    }
 
     return opt;
+}
+
+void consume_menu_uistate::serialize( JsonOut &json ) const
+{
+    json.start_object();
+    json.member( "consume_menu_selections", consume_menu_selections );
+    json.member( "consume_menu_selected_items", consume_menu_selected_items );
+    json.member( "consume_menu_filter", consume_menu_filter );
+    json.member( "collated", collated );
+    json.member( "consume_menu_comestype", consume_menu_comestype );
+    json.end_object();
+}
+
+void consume_menu_uistate::deserialize( const JsonObject &jo )
+{
+    jo.read( "consume_menu_selections", consume_menu_selections );
+    jo.read( "consume_menu_selected_items", consume_menu_selected_items );
+    jo.read( "consume_menu_filter", consume_menu_filter );
+    jo.read( "collated", collated );
+    jo.read( "consume_menu_comestype", consume_menu_comestype );
 }

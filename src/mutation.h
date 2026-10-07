@@ -2,38 +2,38 @@
 #ifndef CATA_SRC_MUTATION_H
 #define CATA_SRC_MUTATION_H
 
-#include <climits>
-#include <iosfwd>
+#include <cstdlib>
+#include <functional>
 #include <map>
-#include <new>
 #include <optional>
 #include <set>
 #include <string>
-#include <unordered_map>
+#include <string_view>
 #include <utility>
 #include <vector>
 
+#include "bodypart.h"
 #include "calendar.h"
-#include "character.h"
 #include "damage.h"
-#include "hash_utils.h"
-#include "magic.h"
+#include "enums.h"
 #include "memory_fast.h"
 #include "point.h"
 #include "sleep.h"
-#include "translations.h"
+#include "translation.h"
 #include "type_id.h"
+#include "units.h"
 #include "value_ptr.h"
 
+class Character;
 class JsonArray;
 class JsonObject;
+class JsonOut;
+class JsonValue;
 class Trait_group;
 class item;
 class nc_color;
+struct const_dialogue;
 struct dream;
-
-enum game_message_type : int;
-
 template <typename E> struct enum_traits;
 
 extern std::vector<dream> dreams;
@@ -198,8 +198,9 @@ struct mutation_branch {
         // Whether it has positive as well as negative effects.
         bool mixed_effect  = false;
         bool startingtrait = false;
-        // By default startingtrait = true traits can be randomly assigned, this allows that to be reversed.
-        bool random_at_chargen = true;
+        // If false, NPCs cannot receive this trait during chargen
+        bool chargen_allow_npc = true;
+        bool random_start_allowed = true;
         bool activated     = false;
         translation activation_msg;
         // Should it activate as soon as it is gained?
@@ -208,11 +209,12 @@ struct mutation_branch {
         bool destroys_gear = false;
         // Allow soft (fabric) gear on restricted body parts
         bool allow_soft_gear  = false;
-        // IF any of the four are true, it drains that as the "cost"
+        // If any of the five are true, it drains that as the "cost"
         bool sleepiness       = false;
         bool hunger        = false;
         bool thirst        = false;
         bool mana       = false;
+        bool stamina       = false;
         // How many points it costs in character creation
         int points     = 0;
         // How many mutagen vitamins are consumed to gain this trait
@@ -228,7 +230,7 @@ struct mutation_branch {
         // Additional bonuses
         std::optional<int> scent_intensity;
 
-        int butchering_quality = 0;
+        std::map<quality_id, int> provided_qualities;
 
         cata::value_ptr<mut_transform> transform;
 
@@ -257,10 +259,13 @@ struct mutation_branch {
         /**Species ignoring character with the mutation*/
         std::vector<species_id> ignored_by;
 
-        /**Map of angered species and there intensity*/
+        /**Map of angered species and their intensity*/
         std::map<species_id, int> anger_relations;
 
-        /**List of material required for food to be be edible*/
+        std::vector<species_id> empathize_with;
+        std::vector<species_id> no_empathize_with;
+
+        /**List of material required for food to be edible*/
         std::set<material_id> can_only_eat;
 
         /**List of healing items allowed*/
@@ -351,9 +356,6 @@ struct mutation_branch {
         std::set<sub_bodypart_str_id> remove_rigid_subparts;
         // item flags that allow wearing gear even if its body part is restricted
         std::set<flag_id> allowed_items;
-        // Mutation stat mods
-        /** Key pair is <active: bool, mod type: "STR"> */
-        std::unordered_map<std::pair<bool, std::string>, int, cata::tuple_hash> mods;
         std::map<bodypart_str_id, resistances> armor; // Modifiers to protection values
         std::vector<itype_id> integrated_armor; // Armor pseudo-items that are put on by this mutation
         std::vector<matype_id>
@@ -364,6 +366,7 @@ struct mutation_branch {
         translation raw_desc;
     public:
         std::string name( const std::string &variant = "" ) const;
+        // Stored description of mutation. Character::mutation_desc() should be prioritized over this, if possible, for parse_tags support
         std::string desc( const std::string &variant = "" ) const;
 
         /**
@@ -578,11 +581,17 @@ enum class mutagen_technique : int {
     num_mutagen_techniques // last
 };
 
+struct traits_sorter {
+    bool sort_by_points = false;
+    /** @related player */
+    bool operator()( const trait_id *a, const trait_id *b ) {
+        return std::abs( ( *a )->points ) > std::abs( ( *b )->points );
+    }
+};
+
 template<>
 struct enum_traits<mutagen_technique> {
     static constexpr mutagen_technique last = mutagen_technique::num_mutagen_techniques;
 };
-
-void test_crossing_threshold( Character &guy, const mutation_category_trait &m_category );
 
 #endif // CATA_SRC_MUTATION_H

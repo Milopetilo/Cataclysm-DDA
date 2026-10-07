@@ -1,7 +1,8 @@
 [
   {
     "id": "stunning_qr_trap",
-    "type": "TOOL",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": "stunning QR trap",
     "category": "traps",
     "properties": { "capture_species": "ROBOT" },
@@ -11,7 +12,7 @@
     "longest_side": "5 cm",
     "price": "250 USD",
     "price_postapoc": "5 USD",
-    "material": "plastic",
+    "material": [ "plastic" ],
     "symbol": "*",
     "color": "light_gray",
     "flags": [ "SINGLE_USE" ],
@@ -19,7 +20,8 @@
   },
   {
     "id": "stunning_arg_trap",
-    "type": "TOOL",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": "stunning arg trap",
     "category": "traps",
     "properties": { "capture_species": "CYBORG" },
@@ -29,7 +31,7 @@
     "longest_side": "5 cm",
     "price": "250 USD",
     "price_postapoc": "5 USD",
-    "material": "plastic",
+    "material": [ "plastic" ],
     "symbol": "*",
     "color": "light_gray",
     "flags": [ "SINGLE_USE" ],

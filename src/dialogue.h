@@ -12,7 +12,7 @@
 
 #include "cata_lazy.h"
 #include "dialogue_helpers.h"
-#include "dialogue_win.h"
+#include "global_vars.h"
 #include "npc_opinion.h"
 #include "talker.h"
 #include "type_id.h"
@@ -25,15 +25,17 @@
 *
 * dialogue::gen_responses() will call down to json_talk_response::gen_responses to fill dialogue::responses
 * dialogue::dynamic_line() will construct the current talk_topic dynamic line
-* dialogue::responses and dialogue::dynamic_line together are drawn in the dialogue window
-* dialogue::opt will load the data into a dialogue_window UI
+* dialogue_imgui class will assemble the history, dialogue, and other UI features
+* dialogue::opt_imgui() will capture keypresses and progress the topic(s) accordingly
 */
 
+class dialogue_imgui_impl;
 class JsonArray;
 class JsonObject;
 class martialart;
 class mission;
 class npc;
+class input_context;
 struct dialogue;
 struct input_event;
 
@@ -58,6 +60,17 @@ using talkfunction_ptr = std::add_pointer_t<void ( npc & )>;
 using dialogue_fun_ptr = std::add_pointer_t<void( npc & )>;
 
 using trial_mod = std::pair<std::string, int>;
+
+struct talk_data {
+    nc_color color;
+    std::string hotkey_desc;
+    std::string text;
+};
+
+namespace dialog_helper
+{
+std::string bye_message( const npc *npc_actor );
+} // namespace dialog_helper
 
 /**
  * If not TALK_TRIAL_NONE, it defines how to decide whether the responses succeeds (e.g. the
@@ -197,10 +210,10 @@ struct talk_response {
     bool ignore_conditionals = false;
 
     mission *mission_selected = nullptr;
-    skill_id skill = skill_id();
-    matype_id style = matype_id();
-    spell_id dialogue_spell = spell_id();
-    proficiency_id proficiency = proficiency_id();
+    skill_id skill;
+    matype_id style;
+    spell_id dialogue_spell;
+    proficiency_id proficiency;
 
     talk_effect_t success;
     talk_effect_t failure;
@@ -231,7 +244,7 @@ struct const_dialogue {
         const_dialogue(
             std::unique_ptr<const_talker> alpha_in, std::unique_ptr<const_talker> beta_in,
             const std::unordered_map<std::string, std::function<bool( const_dialogue const & )>> &cond = {},
-            const std::unordered_map<std::string, std::string> &ctx = {} );
+            global_variables::impl_t const &ctx = {} );
 
         bool has_beta{};
         bool has_alpha{};
@@ -244,17 +257,21 @@ struct const_dialogue {
         bool by_radio = false;
 
         // Methods for setting/getting misc key/value pairs.
-        void set_value( const std::string &key, const std::string &value );
+        void set_value( const std::string &key, diag_value value );
+        template <typename... Args>
+        void set_value( const std::string &key, Args... args ) {
+            set_value( key, diag_value{ std::forward<Args>( args )... } );
+        }
         void remove_value( const std::string &key );
 
         void set_conditional( const std::string &key,
                               const std::function<bool( const_dialogue const & )> &value );
-        std::string get_value( const std::string &key ) const;
-        std::optional<std::string> maybe_get_value( const std::string &key ) const;
+        diag_value const &get_value( const std::string &key ) const;
+        diag_value const *maybe_get_value( const std::string &key ) const;
 
         bool evaluate_conditional( const std::string &key, const_dialogue const &d ) const;
 
-        const std::unordered_map<std::string, std::string> &get_context() const;
+        global_variables::impl_t const &get_context() const;
         const std::unordered_map<std::string, std::function<bool( const_dialogue const & )>>
                 &get_conditionals() const;
         void amend_callstack( const std::string &value );
@@ -263,7 +280,7 @@ struct const_dialogue {
     private:
         std::unique_ptr<const_talker> alpha, beta;
 
-        lazy<std::unordered_map<std::string, std::string>> context;
+        lazy<global_variables::impl_t> context;
         mutable std::string callstack;
 
         lazy<std::unordered_map<std::string, std::function<bool( const_dialogue const & )>>> conditionals;
@@ -276,27 +293,41 @@ struct dialogue: public const_dialogue {
         bool done = false;
         std::vector<talk_topic> topic_stack;
 
-        talk_topic opt( dialogue_window &d_win, const talk_topic &topic );
+        talk_topic opt_imgui( dialogue_imgui_impl &d_img, const talk_topic &topic, input_context &ctxt );
         dialogue() = default;
         ~dialogue() = default;
         dialogue( const dialogue &d );
-        explicit dialogue( const_dialogue const &d );
         dialogue( dialogue && ) = default;
         dialogue &operator=( const dialogue & );
         dialogue &operator=( dialogue && ) = default;
         dialogue( std::unique_ptr<talker> alpha_in, std::unique_ptr<talker> beta_in,
                   const std::unordered_map<std::string, std::function<bool( const_dialogue const & )>> &cond = {},
-                  const std::unordered_map<std::string, std::string> &ctx = {} );
+                  global_variables::impl_t const &ctx = {} );
         talker *actor( bool is_beta ) const;
 
         std::string dynamic_line( const talk_topic &topic );
         void apply_speaker_effects( const talk_topic &the_topic );
+
+        // FIXME: Use real null IDs not std::optional juggling :(
+        std::optional<character_portrait_id> portrait_or_nullopt() const;
+        // Display name for the NPC in conversation history. Uses
+        // remote_name from dialogue_window when set (intercom etc.),
+        // falls back to NPC display name, empty if not a conversation.
+        std::string speaker_name( const dialogue_imgui_impl &d_img ) const;
 
         /**
          * Possible responses from the player character, filled in @ref gen_responses.
          */
         std::vector<talk_response> responses;
         void gen_responses( const talk_topic &topic );
+
+        // response conditional result cache
+        std::vector<bool> response_condition_exists;
+        std::vector<bool> response_condition_eval;
+
+        // add an already-generated response to this dialogue's responses
+        void add_gen_response( const talk_response &resp, bool insert_front, bool condition_exists = true,
+                               bool condition_result = true );
 
         void add_topic( const std::string &topic );
         void add_topic( const talk_topic &topic );
@@ -389,7 +420,7 @@ struct dialogue: public const_dialogue {
         * @param responses: true = responses, false = dynamic line
         * @param do_response: if > -1, which response to get data for
         */
-        std::vector<std::string> build_debug_info( const dialogue_window &d_win, const talk_topic &topic,
+        std::vector<std::string> build_debug_info( dialogue_imgui_impl &d_img, const talk_topic &topic,
                 int do_response = -1 );
 };
 
@@ -496,6 +527,8 @@ class json_talk_topic
         dynamic_line_t dynamic_line;
         std::vector<json_dynamic_line_effect> speaker_effects;
         std::vector<json_talk_repeat_response> repeat_responses;
+        // FIXME: Use real null IDs not std::optional juggling :(
+        std::optional<character_portrait_id> portrait_override;
 
     public:
         json_talk_topic() = default;
@@ -509,6 +542,7 @@ class json_talk_topic
 
         std::string get_dynamic_line( dialogue &d ) const;
         std::vector<json_dynamic_line_effect> get_speaker_effects() const;
+        std::optional<character_portrait_id> get_portrait_override() const;
 
         void check_consistency() const;
         /**

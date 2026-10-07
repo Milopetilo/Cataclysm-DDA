@@ -2,7 +2,7 @@
   {
     "type": "effect_on_condition",
     "id": "refund_power",
-    "effect": { "math": [ "u_val('power')", "+=", "_act_cost" ] }
+    "effect": { "math": [ "u_val('power') += _act_cost" ] }
   },
   {
     "type": "effect_on_condition",
@@ -22,17 +22,17 @@
     "false_effect": [
       { "u_message": "You activate your Time Dilation.", "type": "info" },
       { "turn_cost": { "math": [ "u_val('power') / -energy('100 kJ')" ] } },
-      { "math": [ "u_val('power')", "=", "0" ] },
+      { "math": [ "u_val('power') = 0" ] },
       { "u_message": "Your speed suddenly increases!", "type": "good" },
       {
         "if": { "one_in_chance": 3 },
         "then": [
           { "u_message": "Your muscles tear with the strain!", "type": "good" },
-          { "math": [ "u_hp('arm_l')", "-=", "rng(5, 10)" ] },
-          { "math": [ "u_hp('arm_r')", "-=", "rng(5, 10)" ] },
-          { "math": [ "u_hp('leg_l')", "-=", "rng(7, 12)" ] },
-          { "math": [ "u_hp('leg_r')", "-=", "rng(7, 12)" ] },
-          { "math": [ "u_hp('torso')", "-=", "rng(5, 15)" ] }
+          { "math": [ "u_hp('arm_l') -= rng(5, 10)" ] },
+          { "math": [ "u_hp('arm_r') -= rng(5, 10)" ] },
+          { "math": [ "u_hp('leg_l') -= rng(7, 12)" ] },
+          { "math": [ "u_hp('leg_r') -= rng(7, 12)" ] },
+          { "math": [ "u_hp('torso') -= rng(5, 15)" ] }
         ]
       },
       {
@@ -63,6 +63,19 @@
   },
   {
     "type": "effect_on_condition",
+    "id": "EOC_bio_hydraulics_activated",
+    "effect": [
+      { "math": [ "u_bio_hydraulics_strength_adjustment = u_val('strength')" ] },
+      { "u_add_effect": "effect_bio_hydraulics_active", "duration": "PERMANENT" }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "EOC_bio_hydraulics_deactivated",
+    "effect": [ { "u_lose_effect": "effect_bio_hydraulics_active" } ]
+  },
+  {
+    "type": "effect_on_condition",
     "id": "EOC_bio_blood_filter",
     "//": "todo: make EoC able to assing length to effects, and read int_dur_factor, to replicate now removed force_comedown() instead of this if-then",
     "//2": "or just force_comedown boolean for u_lose_effect, i failed to do any",
@@ -76,9 +89,7 @@
         "then": [ { "u_lose_effect": "meth" }, { "u_add_effect": "meth", "duration": "200 s" } ]
       },
       {
-        "foreach": "array",
-        "var": { "context_val": "effect_id" },
-        "target": [
+        "u_lose_effect": [
           "fungus",
           "dermatik",
           "bloodworms",
@@ -107,12 +118,25 @@
           "venom_weaken",
           "venom_dmg",
           "paralyzepoison"
-        ],
-        "effect": { "u_lose_effect": { "context_val": "effect_id" } }
+        ]
       },
-      { "math": [ "u_val('pkill')", "=", "0" ] },
-      { "math": [ "u_val('stim')", "=", "0" ] },
-      { "turn_cost": 1 }
+      { "math": [ "u_val('pkill') = 0" ] },
+      { "math": [ "u_val('stim') = 0" ] },
+      { "turn_cost": { "math": [ "1" ] } }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "EOC_bio_nl_blood_factory",
+    "effect": [
+      {
+        "if": { "math": [ "u_vitamin('redcells') < -1" ] },
+        "then": [ { "math": [ "u_vitamin('redcells') += 2" ] }, { "math": [ "u_calories() -= 2" ] } ]
+      },
+      {
+        "if": { "math": [ "u_vitamin('blood') < -1" ] },
+        "then": [ { "math": [ "u_vitamin('blood') += 2" ] }, { "math": [ "u_calories() -= 2" ] } ]
+      }
     ]
   }
 ]

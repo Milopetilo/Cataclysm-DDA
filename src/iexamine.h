@@ -2,30 +2,34 @@
 #ifndef CATA_SRC_IEXAMINE_H
 #define CATA_SRC_IEXAMINE_H
 
-#include <iosfwd>
+#include <algorithm>
 #include <list>
 #include <memory>
 #include <optional>
-#include <set>
+#include <string>
 #include <tuple>
 #include <vector>
 
 #include "coords_fwd.h"
 #include "ret_val.h"
+#include "translation.h"
 #include "type_id.h"
 
-class item;
-class JsonObject;
 class Character;
+class JsonObject;
+class item;
+class item_location;
+class map;
+class npc;
 class time_point;
 class vpart_reference;
 struct itype;
-struct tripoint;
 
 using seed_tuple = std::tuple<itype_id, std::string, int>;
 
 struct iexamine_actor {
     const std::string type;
+    translation name;
 
     explicit iexamine_actor( const std::string &type ) : type( type ) {}
 
@@ -36,6 +40,10 @@ struct iexamine_actor {
     virtual std::unique_ptr<iexamine_actor> clone() const = 0;
 
     virtual ~iexamine_actor() = default;
+
+    std::string get_name() const {
+        return name.translated();
+    }
 };
 
 enum fuel_station_fuel_type {
@@ -51,7 +59,7 @@ bool can_hack( Character &you );
 
 bool try_start_hacking( Character &you, const tripoint_bub_ms &examp );
 
-void egg_sack_generic( Character &you, const tripoint &examp, const mtype_id &montype );
+void egg_sack_generic( Character &you, const tripoint_bub_ms &examp, const mtype_id &montype );
 
 void none( Character &you, const tripoint_bub_ms &examp );
 
@@ -63,14 +71,16 @@ bool harvestable_now( const tripoint_bub_ms &examp );
 void gaspump( Character &you, const tripoint_bub_ms &examp );
 void atm( Character &you, const tripoint_bub_ms &examp );
 void vending( Character &you, const tripoint_bub_ms &examp );
+void iso_recycler( Character &you, const tripoint_bub_ms &examp );
 void elevator( Character &you, const tripoint_bub_ms &examp );
+void genemill( Character &you, const tripoint_bub_ms &examp );
 void nanofab( Character &you, const tripoint_bub_ms &examp );
 void controls_gate( Character &you, const tripoint_bub_ms &examp );
-void cardreader( Character &you, const tripoint &examp );
+void cardreader( Character &you, const tripoint_bub_ms &examp );
 void cardreader_robofac( Character &you, const tripoint_bub_ms &examp );
 void cardreader_foodplace( Character &you, const tripoint_bub_ms &examp );
 void intercom( Character &you, const tripoint_bub_ms &examp );
-void cvdmachine( Character &you, const tripoint_bub_ms &examp );
+void intercom_balthazar( Character &you, const tripoint_bub_ms &examp );
 void change_appearance( Character &you, const tripoint_bub_ms &examp );
 void rubble( Character &you, const tripoint_bub_ms &examp );
 void chainfence( Character &you, const tripoint_bub_ms &examp );
@@ -79,6 +89,7 @@ void deployed_furniture( Character &you, const tripoint_bub_ms &pos );
 void portable_structure( Character &you, const tripoint_bub_ms &examp );
 void pit( Character &you, const tripoint_bub_ms &examp );
 void pit_covered( Character &you, const tripoint_bub_ms &examp );
+void thin_ice( Character &you, const tripoint_bub_ms &examp );
 void safe( Character &you, const tripoint_bub_ms &examp );
 void gunsafe_el( Character &you, const tripoint_bub_ms &examp );
 void harvest_furn_nectar( Character &you, const tripoint_bub_ms &examp );
@@ -93,11 +104,11 @@ void pedestal_wyrm( Character &you, const tripoint_bub_ms &examp );
 void pedestal_temple( Character &you, const tripoint_bub_ms &examp );
 void door_peephole( Character &you, const tripoint_bub_ms &examp );
 void fswitch( Character &you, const tripoint_bub_ms &examp );
-void flower_tulip( Character &you, const tripoint &examp );
-void flower_spurge( Character &you, const tripoint &examp );
+void flower_tulip( Character &you, const tripoint_bub_ms &examp );
+void flower_spurge( Character &you, const tripoint_bub_ms &examp );
 void flower_poppy( Character &you, const tripoint_bub_ms &examp );
 void flower_cactus( Character &you, const tripoint_bub_ms &examp );
-void flower_bluebell( Character &you, const tripoint &examp );
+void flower_bluebell( Character &you, const tripoint_bub_ms &examp );
 void flower_dahlia( Character &you, const tripoint_bub_ms &examp );
 void flower_marloss( Character &you, const tripoint_bub_ms &examp );
 void fungus( Character &you, const tripoint_bub_ms &examp );
@@ -109,12 +120,12 @@ void tree_maple_tapped( Character &you, const tripoint_bub_ms &examp );
 void shrub_marloss( Character &you, const tripoint_bub_ms &examp );
 void tree_marloss( Character &you, const tripoint_bub_ms &examp );
 void shrub_wildveggies( Character &you, const tripoint_bub_ms &examp );
-// TODO: Get rid of untyped overload.
-void part_con( Character &you, const tripoint &examp );
 void part_con( Character &you, const tripoint_bub_ms &examp );
 void water_source( Character &, const tripoint_bub_ms &examp );
 void finite_water_source( Character &, const tripoint_bub_ms &examp );
 void kiln_empty( Character &you, const tripoint_bub_ms &examp );
+bool kiln_prep( Character &you, const tripoint_bub_ms &examp );
+bool kiln_fire( Character &you, const tripoint_bub_ms &examp );
 void kiln_full( Character &you, const tripoint_bub_ms &examp );
 void stook_empty( Character &, const tripoint_bub_ms &examp );
 void stook_full( Character &, const tripoint_bub_ms &examp );
@@ -136,11 +147,13 @@ void ledge( Character &you, const tripoint_bub_ms &examp );
 void autodoc( Character &you, const tripoint_bub_ms &examp );
 void attunement_altar( Character &you, const tripoint_bub_ms &examp );
 void translocator( Character &you, const tripoint_bub_ms &examp );
-void on_smoke_out( const tripoint &examp,
+void on_smoke_out( map &here, const tripoint_bub_ms &examp,
                    const time_point &start_time ); //activates end of smoking effects
-void mill_finalize( Character &, const tripoint &examp );
+void mill_finalize( Character &, map &here, const tripoint_bub_ms &examp );
 void quern_examine( Character &you, const tripoint_bub_ms &examp );
 void smoker_options( Character &you, const tripoint_bub_ms &examp );
+bool smoker_prep( Character &you, const tripoint_bub_ms &examp );
+bool smoker_fire( Character &you, const tripoint_bub_ms &examp );
 void open_safe( Character &you, const tripoint_bub_ms &examp );
 void workbench( Character &you, const tripoint_bub_ms &examp );
 void workbench_internal( Character &you, const tripoint_bub_ms &examp,
@@ -148,7 +161,7 @@ void workbench_internal( Character &you, const tripoint_bub_ms &examp,
 void workout( Character &you, const tripoint_bub_ms &examp );
 void invalid( Character &you, const tripoint_bub_ms &examp );
 
-bool pour_into_keg( const tripoint_bub_ms &pos, item &liquid );
+bool pour_into_keg( const tripoint_bub_ms &pos, item &liquid, bool silent );
 std::optional<tripoint_bub_ms> getGasPumpByNumber( const tripoint_bub_ms &p, int number );
 bool toPumpFuel( const tripoint_bub_ms &src, const tripoint_bub_ms &dst, int units );
 std::optional<tripoint_bub_ms> getNearFilledGasTank( const tripoint_bub_ms &center, int &fuel_units,
@@ -160,7 +173,7 @@ std::list<item> get_harvest_items( const itype &type, int plant_count,
                                    int seed_count, bool byproducts );
 
 // Planting functions
-std::vector<seed_tuple> get_seed_entries( const std::vector<item *> &seed_inv );
+std::vector<seed_tuple> get_seed_entries( const std::vector<item_location> &seed_inv );
 int query_seed( const std::vector<seed_tuple> &seed_entries );
 void plant_seed( Character &you, const tripoint_bub_ms &examp, const itype_id &seed_id );
 void clear_overgrown( Character &you, const tripoint_bub_ms &examp );
@@ -179,16 +192,27 @@ void practice_survival_while_foraging( Character &who );
 namespace iexamine_helper
 {
 bool drink_nectar( Character &you );
-void handle_harvest( Character &you, const std::string &itemid, bool force_drop );
+void handle_harvest( Character &you, const itype_id &itemid, bool force_drop );
 } // namespace iexamine_helper
 
 using iexamine_examine_function = void ( * )( Character &, const tripoint_bub_ms & );
 using iexamine_can_examine_function = bool ( * )( const tripoint_bub_ms & );
 struct iexamine_functions {
-    iexamine_can_examine_function can_examine;
-    iexamine_examine_function examine;
+    iexamine_can_examine_function can_examine = nullptr;
+    iexamine_examine_function examine = nullptr;
+    translation examine_name;
+
+    std::string get_name() const {
+        return examine_name.translated();
+    };
 };
 
 iexamine_functions iexamine_functions_from_string( const std::string &function_name );
+
+// Find the best available intercom operator for a faction.
+// Prefers on-shift, awake operators. Falls back to any awake operator.
+// Returns nullptr if no operator is found.
+npc *find_intercom_operator( const trait_id &marker_trait,
+                             const faction_id &fac_id );
 
 #endif // CATA_SRC_IEXAMINE_H

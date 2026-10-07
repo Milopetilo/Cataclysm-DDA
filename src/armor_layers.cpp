@@ -1,22 +1,22 @@
 #include <algorithm>
-#include <climits>
 #include <cstddef>
+#include <functional>
 #include <iterator>
 #include <list>
-#include <memory>
 #include <optional>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "activity_type.h"
+#include "avatar.h"
 #include "body_part_set.h"
 #include "bodypart.h"
 #include "catacharset.h"
 #include "character.h"
 #include "character_attire.h"
 #include "color.h"
+#include "coordinates.h"
 #include "creature.h"
 #include "cursesdef.h"
 #include "damage.h"
@@ -30,22 +30,17 @@
 #include "item.h"
 #include "item_location.h"
 #include "itype.h"
-#include "line.h"
 #include "output.h"
-#include "pimpl.h"
-#include "player_activity.h"
 #include "point.h"
 #include "string_formatter.h"
-#include "subbodypart.h"
 #include "translation.h"
 #include "translations.h"
 #include "type_id.h"
-#include "ui.h"
+#include "uilist.h"
+#include "uistate.h"
 #include "ui_manager.h"
 #include "units.h"
 #include "units_utility.h"
-
-static const activity_id ACT_ARMOR_LAYERS( "ACT_ARMOR_LAYERS" );
 
 static const flag_id json_flag_HIDDEN( "HIDDEN" );
 
@@ -251,7 +246,7 @@ std::vector<std::string> clothing_properties(
                                         _( "Item provides no protection" ) ) );
         return props;
     }
-    if( bp == bodypart_id( "bp_null" ) ) {
+    if( bp == bodypart_str_id::NULL_ID() ) {
         // if the armor has no protection data
         if( worn_item.find_armor_data()->sub_data.empty() ) {
             props.push_back( string_format( "<color_c_red>%s</color>",
@@ -293,7 +288,7 @@ std::vector<std::string> clothing_properties(
     add_folded_name_and_value( props, _( "Encumbrance:" ), string_format( "%3d", encumbrance ),
                                width );
     add_folded_name_and_value( props, _( "Warmth:" ), string_format( "%3d",
-                               worn_item.get_warmth() ), width );
+                               worn_item.get_warmth( used_bp ) ), width );
     return props;
 }
 
@@ -356,7 +351,7 @@ std::vector<std::string> clothing_protection( const item &worn_item, const int w
     }
 
     // if bp is null its gonna be impossible to really get good info
-    if( bp == bodypart_id( "bp_null" ) ) {
+    if( bp == bodypart_str_id::NULL_ID() ) {
         // if we have exactly one entry for armor we can use that data
         if( worn_item.find_armor_data()->sub_data.size() == 1 ) {
             used_bp = *worn_item.get_covered_body_parts().begin();
@@ -432,8 +427,6 @@ std::vector<std::string> clothing_flags_description( const item &worn_item, cons
         { flag_SUN_GLASSES, translate_marker( "It keeps the sun out of your eyes." ) },
         { flag_WATERPROOF, translate_marker( "It is waterproof." ) },
         { flag_WATER_FRIENDLY, translate_marker( "It is water friendly." ) },
-        { flag_FANCY, translate_marker( "It looks fancy." ) },
-        { flag_SUPER_FANCY, translate_marker( "It looks really fancy." ) },
         { flag_FLOTATION, translate_marker( "You will not drown today." ) },
         { flag_OVERSIZE, translate_marker( "It is very bulky." ) },
         { flag_SWIM_GOGGLES, translate_marker( "It helps you to see clearly underwater." ) },
@@ -464,7 +457,7 @@ item_penalties outfit::get_item_penalties( std::list<item>::const_iterator worn_
     std::vector<std::set<std::string>> lists_of_bad_items_within;
 
     for( const bodypart_id &bp : c.get_all_body_parts() ) {
-        if( bp != _bp && _bp != bodypart_id( "bp_null" ) ) {
+        if( bp != _bp && _bp != bodypart_str_id::NULL_ID() ) {
             continue;
         }
         if( !worn_item_it->covers( bp ) ) {
@@ -614,7 +607,7 @@ void outfit::sort_armor( Character &guy )
     for( const bodypart_id &it : guy.get_all_body_parts() ) {
         armor_cat.insert( it );
     }
-    armor_cat.insert( bodypart_id( "bp_null" ) );
+    armor_cat.insert( bodypart_str_id::NULL_ID() );
     const int num_of_parts = guy.get_all_body_parts().size();
 
     int win_h = 0;
@@ -690,16 +683,17 @@ void outfit::sort_armor( Character &guy )
     ctxt.register_action( "EQUIP_ARMOR" );
     ctxt.register_action( "EQUIP_ARMOR_HERE" );
     ctxt.register_action( "REMOVE_ARMOR" );
+    ctxt.register_action( "TOGGLE_FAVORITE" );
     ctxt.register_action( "USAGE_HELP" );
     ctxt.register_action( "HELP_KEYBINDINGS" );
     ctxt.register_action( "SCROLL_ITEM_INFO_UP" );
     ctxt.register_action( "SCROLL_ITEM_INFO_DOWN" );
 
     Character &player_character = get_player_character();
-    auto do_return_entry = [&player_character]() {
-        player_character.assign_activity( ACT_ARMOR_LAYERS, 0 );
-        player_character.activity.auto_resume = true;
-        player_character.activity.moves_left = INT_MAX;
+    auto do_return_entry = [this, guy_ptr = &guy]() {
+        uistate.open_menu = [this, guy_ptr]() {
+            sort_armor( *guy_ptr );
+        };
     };
 
     int leftListSize = 0;
@@ -713,7 +707,7 @@ void outfit::sort_armor( Character &guy )
         // Create ptr list of items to display
         tmp_worn.clear();
         const bodypart_id &bp = armor_cat[ tabindex ];
-        if( bp == bodypart_id( "bp_null" ) ) {
+        if( bp == bodypart_str_id::NULL_ID() ) {
             // All
             for( auto it = worn.begin(); it != worn.end(); ++it ) {
                 tmp_worn.push_back( it );
@@ -754,7 +748,8 @@ void outfit::sort_armor( Character &guy )
         // top bar
         std::string header_title = _( "Sort Armor" );
         wprintz( w_sort_cat, c_white, header_title );
-        std::string temp = bp != bodypart_id( "bp_null" ) ? body_part_name_as_heading( bp, 1 ) : _( "All" );
+        std::string temp = bp == bodypart_str_id::NULL_ID() ?  _( "All" ) : body_part_name_as_heading( bp,
+                           1 );
         temp = string_format( "  << %s >>", temp );
         wprintz( w_sort_cat, c_yellow, temp );
         int keyhint_offset = utf8_width( header_title ) + utf8_width( temp ) + 1;
@@ -770,7 +765,7 @@ void outfit::sort_armor( Character &guy )
 
         // Left header
         std:: string storage_header = string_format( _( "Storage (%s)" ), volume_units_abbr() );
-        trim_and_print( w_sort_left, point_zero, left_w - utf8_width( storage_header ) - 1, c_light_gray,
+        trim_and_print( w_sort_left, point::zero, left_w - utf8_width( storage_header ) - 1, c_light_gray,
                         _( "(Innermost)" ) );
         right_print( w_sort_left, 0, 0, c_light_gray, storage_header );
         // Left list
@@ -785,7 +780,7 @@ void outfit::sort_armor( Character &guy )
 
             std::string worn_armor_name = tmp_worn[itemindex]->tname();
             // Get storage capacity in user's preferred units
-            units::volume worn_armor_capacity = tmp_worn[itemindex]->get_total_capacity();
+            units::volume worn_armor_capacity = tmp_worn[itemindex]->get_volume_capacity();
             double worn_armor_storage = convert_volume( units::to_milliliter( worn_armor_capacity ) );
             std::string storage_string = string_format( "%.2f", worn_armor_storage );
             const int current_character_allowance = worn_armor_storage > 0 ? utf8_width( storage_string ) : 0;
@@ -843,13 +838,13 @@ void outfit::sort_armor( Character &guy )
                             _( "Nothing to see here!" ) );
         }
 
-        mvwprintz( w_encumb, point_east, c_white, _( "Encumbrance and Warmth" ) );
+        mvwprintz( w_encumb, point::east, c_white, _( "Encumbrance and Warmth" ) );
         guy.print_encumbrance( ui, w_encumb, -1,
                                ( leftListSize > 0 ) ? &*tmp_worn[leftListIndex] : nullptr );
 
         // Right header
         std::string encumbrance_header = _( "Encumbrance" );
-        trim_and_print( w_sort_right, point_zero, right_w - utf8_width( encumbrance_header ) - 1,
+        trim_and_print( w_sort_right, point::zero, right_w - utf8_width( encumbrance_header ) - 1,
                         c_light_gray,
                         _( "(Innermost)" ) );
         right_print( w_sort_right, 0, 0, c_light_gray, encumbrance_header );
@@ -864,7 +859,7 @@ void outfit::sort_armor( Character &guy )
         // Right list
         rightListSize = 0;
         for( const bodypart_id &cover : armor_cat ) {
-            if( cover == bodypart_id( "bp_null" ) ) {
+            if( cover == bodypart_str_id::NULL_ID() ) {
                 continue;
             }
             if( !combine_bp( cover ) || rl.count( cover.obj().opposite_part ) == 0 ) {
@@ -882,7 +877,7 @@ void outfit::sort_armor( Character &guy )
         int encumbrance_char_allowance = 4; //Enough for " 99+", will increase if necessary
         int item_name_offset = 2;
         for( const bodypart_id &cover : rl ) {
-            if( cover == bodypart_id( "bp_null" ) ) {
+            if( cover == bodypart_str_id::NULL_ID() ) {
                 continue;
             }
             if( curr >= rightListOffset && pos <= rightListLines ) {
@@ -938,7 +933,7 @@ void outfit::sort_armor( Character &guy )
             }
         } else {
             // Player is sorting NPC's armor here
-            if( rl_dist( player_character.pos(), guy.pos() ) > 1 ) {
+            if( rl_dist( player_character.pos_bub(), guy.pos_bub() ) > 1 ) {
                 guy.add_msg_if_npc( m_bad, _( "%s is too far to sort armor." ), guy.get_name() );
                 return;
             }
@@ -1140,15 +1135,13 @@ void outfit::sort_armor( Character &guy )
 
                     // remove the item, asking to drop it if necessary
                     guy.takeoff( loc_for_takeoff );
-                    if( !player_character.has_activity( ACT_ARMOR_LAYERS ) ) {
-                        // An activity has been created to take off the item;
-                        // we must surrender control until it is done.
-                        return;
-                    }
-                    player_character.cancel_activity();
-                    selected = -1;
-                    leftListIndex = std::max( 0, leftListIndex - 1 );
+                    return;
                 }
+            }
+        } else if( action == "TOGGLE_FAVORITE" ) {
+            if( leftListIndex < leftListSize ) {
+                item &item_to_toggle = *tmp_worn[leftListIndex];
+                item_to_toggle.set_favorite( !item_to_toggle.is_favorite );
             }
         } else if( action == "ASSIGN_INVLETS" ) {
             // prompt first before doing this (yes, yes, more popups...)
@@ -1161,10 +1154,12 @@ void outfit::sort_armor( Character &guy )
                     item &w = *witer;
                     if( invlet == w.invlet ) {
                         ++witer;
-                    } else if( guy.invlet_to_item( invlet ) != nullptr ) {
+                    } else if( guy.invlet_to_item( invlet ).where() != item_location::type::invalid ) {
                         ++iiter;
                     } else {
-                        guy.inv->reassign_item( w, invlet );
+                        if( guy.is_avatar() ) {
+                            guy.as_avatar()->reassign_item_cache( w, invlet, true );
+                        }
                         ++witer;
                         ++iiter;
                     }
@@ -1205,6 +1200,8 @@ void outfit::sort_armor( Character &guy )
                                ctxt.get_desc( "EQUIP_ARMOR_HERE" ) ),
                 string_format( _( "[<color_yellow>%s</color>] to remove selected item.\n" ),
                                ctxt.get_desc( "REMOVE_ARMOR" ) ),
+                string_format( _( "[<color_yellow>%s</color>] to toggle item as favorite.\n" ),
+                               ctxt.get_desc( "TOGGLE_FAVORITE" ) ),
                 "\n",
                 _( "Encumbrance explanation:\n" ),
                 _( "<color_light_gray>The first number is the summed encumbrance from all clothing on that bodypart."
@@ -1228,4 +1225,5 @@ void outfit::sort_armor( Character &guy )
             exit = true;
         }
     }
+    uistate.open_menu.reset();
 }

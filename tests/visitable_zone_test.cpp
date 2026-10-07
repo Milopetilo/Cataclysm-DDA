@@ -1,17 +1,29 @@
+#include <algorithm>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "cata_catch.h"
+#include "coordinates.h"
+#include "creature.h"
 #include "creature_tracker.h"
 #include "cuboid_rectangle.h"
 #include "map.h"
 #include "map_helpers.h"
+#include "map_helpers_tests.h"
 #include "map_iterator.h"
+#include "map_scale_constants.h"
 #include "monster.h"
+#include "point.h"
 #include "rng.h"
-
-#include <vector>
+#include "type_id.h"
 
 // The area of the whole map from two below to one above ground level.
 static const tripoint_bub_ms p1( 0, 0, -2 );
 static const tripoint_bub_ms p2( ( MAPSIZE *SEEX ) - 1, ( MAPSIZE *SEEY ) - 1, 1 );
+
+namespace
+{
 
 struct structure {
     structure( const tripoint_bub_ms &origin, const tripoint_rel_ms &dimensions,
@@ -23,6 +35,8 @@ struct structure {
     inclusive_cuboid<tripoint_bub_ms> area;
     std::string name_;
 };
+
+} // namespace
 
 static void place_structures( const std::vector<structure> &spawn_areas,
                               std::vector<std::vector<tripoint_bub_ms>> &interior_areas,
@@ -45,8 +59,8 @@ static void place_structures( const std::vector<structure> &spawn_areas,
                 }
                 inclusive_cuboid<tripoint_bub_ms> interior{
                     rectangle<point_bub_ms>{
-                        spawn_area.area.p_min.xy() + point_south_east,
-                        spawn_area.area.p_max.xy() - point_south_east
+                        spawn_area.area.p_min.xy() + point::south_east,
+                        spawn_area.area.p_max.xy() - point::south_east
                     },
                     spawn_area.area.p_min.z(), spawn_area.area.p_min.z()
                 };
@@ -74,30 +88,31 @@ static constexpr tripoint_rel_ms cave_offset{ building_width, building_width, 0 
 TEST_CASE( "visitable_zone_surface_test" )
 {
     map &here = get_map();
-    clear_map();
+    clear_map_without_vision();
 
     std::string mon_type = "mon_zombie";
     std::vector<monster *> monsters;
     // All of these origins must be building_width + 3 away from each other.
     // Surface building locations.
     const tripoint_bub_ms enclosed_building{ 30, 30, 0 };
-    const tripoint_bub_ms closed_door = enclosed_building + tripoint_east * 2;
+    const tripoint_bub_ms closed_door = enclosed_building + tripoint::east * 2;
     // Surface building with a door.
     const tripoint_bub_ms door_building{ 40, 30, 0 };
-    const tripoint_bub_ms open_door = door_building + tripoint_east * 2;
+    const tripoint_bub_ms open_door = door_building + tripoint::east * 2;
     // Surface building with a window.
     const tripoint_bub_ms window_building{ 50, 30, 0 };
-    const tripoint_bub_ms window = window_building + tripoint_south * 2;
+    const tripoint_bub_ms window = window_building + tripoint::south * 2;
     // Underground room.
     const tripoint_bub_ms underground_room{ 60, 30, -1 };
     // Underground room.
     const tripoint_bub_ms underground_stairs_room{ 70, 30, -1 };
-    const tripoint_bub_ms underground_stairs_up = underground_stairs_room + tripoint_south_east * 3;
-    const tripoint_bub_ms underground_stairs_down = underground_stairs_up + tripoint_above;
+    const tripoint_bub_ms underground_stairs_up = underground_stairs_room +
+            tripoint::south_east * 3;
+    const tripoint_bub_ms underground_stairs_down = underground_stairs_up + tripoint::above;
     // Elevated building with stairs to the surface.
     const tripoint_bub_ms stilts_building{ 80, 30, 1 };
-    const tripoint_bub_ms stilts_stairs_down = stilts_building + tripoint_south_east * 3;
-    const tripoint_bub_ms stilts_stairs_up = stilts_stairs_down + tripoint_below;
+    const tripoint_bub_ms stilts_stairs_down = stilts_building + tripoint::south_east * 3;
+    const tripoint_bub_ms stilts_stairs_up = stilts_stairs_down + tripoint::below;
 
     std::vector<structure> spawn_locations = {{
             { enclosed_building, building_offset, "closed door building" },
@@ -127,10 +142,10 @@ TEST_CASE( "visitable_zone_surface_test" )
     }
 
     // Some spot checks of our map edits.
-    REQUIRE( !here.passable( enclosed_building + point_east ) );
-    REQUIRE( !here.passable( door_building + point_south ) );
-    REQUIRE( !here.is_transparent_wo_fields( tripoint_bub_ms( enclosed_building + point_east ) ) );
-    REQUIRE( !here.is_transparent_wo_fields( tripoint_bub_ms( door_building + point_south ) ) );
+    REQUIRE( !here.passable( enclosed_building + point::east ) );
+    REQUIRE( !here.passable( door_building + point::south ) );
+    REQUIRE( !here.is_transparent_wo_fields( tripoint_bub_ms( enclosed_building + point::east ) ) );
+    REQUIRE( !here.is_transparent_wo_fields( tripoint_bub_ms( door_building + point::south ) ) );
 
     REQUIRE( here.passable( open_door ) );
     REQUIRE( here.is_transparent_wo_fields( tripoint_bub_ms( open_door ) ) );
@@ -177,7 +192,7 @@ TEST_CASE( "visitable_zone_surface_test" )
             spawn_site = it->name_;
         }
         CAPTURE( spawn_site );
-        CAPTURE( mon->pos() );
+        CAPTURE( mon->pos_bub() );
         CAPTURE( mon->get_reachable_zone() );
         CHECK( mon->get_reachable_zone() != 0 );
     }

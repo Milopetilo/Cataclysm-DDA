@@ -2,30 +2,33 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <cstdint>
 #include <cstdlib>
-#include <initializer_list>
 #include <iterator>
 #include <map>
+#include <optional>
+#include <set>
 #include <string>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "calendar.h"
-#include "character_id.h"
+#include "cata_utility.h"
+#include "coordinates.h"
+#include "creature_tracker.h"
 #include "cuboid_rectangle.h"
-#include "debug.h"
-#include "enums.h"
-#include "field_type.h"
 #include "flood_fill.h"
-#include "game_constants.h"
-#include "line.h"
 #include "map.h"
-#include "map_iterator.h"
 #include "mapdata.h"
+#include "map_iterator.h"
+#include "map_scale_constants.h"
 #include "mapgen.h"
 #include "mapgendata.h"
 #include "mapgenformat.h"
+#include "math_defines.h"
 #include "omdata.h"
 #include "overmap.h"
 #include "point.h"
@@ -35,7 +38,8 @@
 #include "trap.h"
 #include "vehicle_group.h"
 #include "weighted_list.h"
-#include "creature_tracker.h"
+
+class Creature;
 
 static const oter_str_id oter_river_c_not_nw( "river_c_not_nw" );
 static const oter_str_id oter_river_c_not_se( "river_c_not_se" );
@@ -47,8 +51,6 @@ static const oter_str_id oter_river_se( "river_se" );
 static const oter_str_id oter_river_south( "river_south" );
 static const oter_str_id oter_river_sw( "river_sw" );
 static const oter_str_id oter_river_west( "river_west" );
-static const oter_str_id oter_slimepit( "slimepit" );
-static const oter_str_id oter_slimepit_down( "slimepit_down" );
 
 static const ter_str_id ter_t_buffer_stop( "t_buffer_stop" );
 static const ter_str_id ter_t_clay( "t_clay" );
@@ -74,58 +76,19 @@ static const ter_str_id ter_t_water_sh( "t_water_sh" );
 
 static const vspawn_id VehicleSpawn_default_subway_deadend( "default_subway_deadend" );
 
-class npc_template;
-
-tripoint rotate_point( const tripoint &p, int rotations )
-{
-    if( p.x < 0 || p.x >= SEEX * 2 ||
-        p.y < 0 || p.y >= SEEY * 2 ) {
-        debugmsg( "Point out of range: %d,%d,%d", p.x, p.y, p.z );
-        // Mapgen is vulnerable, don't supply invalid points, debugmsg is enough
-        return tripoint( 0, 0, p.z );
-    }
-
-    rotations = rotations % 4;
-
-    tripoint ret = p;
-    switch( rotations ) {
-        case 0:
-            break;
-        case 1:
-            ret.x = p.y;
-            ret.y = SEEX * 2 - 1 - p.x;
-            break;
-        case 2:
-            ret.x = SEEX * 2 - 1 - p.x;
-            ret.y = SEEY * 2 - 1 - p.y;
-            break;
-        case 3:
-            ret.x = SEEY * 2 - 1 - p.y;
-            ret.y = p.x;
-            break;
-    }
-
-    return ret;
-}
-
 building_gen_pointer get_mapgen_cfunction( const std::string &ident )
 {
     static const std::map<std::string, building_gen_pointer> pointers = { {
             { "forest",           &mapgen_forest },
-            { "river_center", &mapgen_river_center },
             { "river_curved_not", &mapgen_river_curved_not },
             { "river_straight",   &mapgen_river_straight },
             { "river_curved",     &mapgen_river_curved },
-            // Old rock behavior, only used around slime pits
-            { "rock", &mapgen_rock_partial },
-
             { "subway_straight",    &mapgen_subway },
             { "subway_curved",      &mapgen_subway },
             // TODO: Add a dedicated dead-end function. For now it copies the straight section above.
             { "subway_end",         &mapgen_subway },
             { "subway_tee",         &mapgen_subway },
             { "subway_four_way",    &mapgen_subway },
-
             { "lake_shore", &mapgen_lake_shore },
             { "ocean_shore", &mapgen_ocean_shore },
             { "ravine_edge", &mapgen_ravine_edge },
@@ -164,7 +127,7 @@ int terrain_type_to_nesw_array( oter_id terrain_type, std::array<bool, 4> &array
 
 // perform dist counterclockwise rotations on a nesw or neswx array
 template<typename T, size_t N>
-void nesw_array_rotate( std::array<T, N> &array, size_t dist )
+static void nesw_array_rotate( std::array<T, N> &array, size_t dist )
 {
     static_assert( N == 8 || N == 4, "Only arrays of size 4 and 8 are supported" );
     if( N == 4 ) {
@@ -340,7 +303,7 @@ void mapgen_subway( mapgendata &dat )
     switch( num_dirs ) {
         case 4:
             // 4-way intersection
-            mapf::formatted_set_simple( m, point_zero,
+            mapf::formatted_set_simple( m, point_bub_ms::zero,
                                         "..^/D^^/D^....^D/^^D/^..\n"
                                         ".^/DX^/DX......XD/^XD/^.\n"
                                         "^/D^X/D^X......X^D/X^D/^\n"
@@ -382,7 +345,7 @@ void mapgen_subway( mapgendata &dat )
             break;
         case 3:
             // tee
-            mapf::formatted_set_simple( m, point_zero,
+            mapf::formatted_set_simple( m, point_bub_ms::zero,
                                         "..^/D^^/D^...^/D^^/D^...\n"
                                         ".^/D^^/D^...^/D^^/D^....\n"
                                         "^/D^^/D^...^/D^^/D^.....\n"
@@ -429,7 +392,7 @@ void mapgen_subway( mapgendata &dat )
         case 2:
             // straight or diagonal
             if( diag ) { // diagonal subway get drawn differently from all other types
-                mapf::formatted_set_simple( m, point_zero,
+                mapf::formatted_set_simple( m, point_bub_ms::zero,
                                             "...^DD^^DD^...^DD^^DD^..\n"
                                             "....^DD^^DD^...^DD^^DD^.\n"
                                             ".....^DD^^DD^...^DD^^DD^\n"
@@ -465,7 +428,7 @@ void mapgen_subway( mapgendata &dat )
                                                     furn_str_id::NULL_ID(),
                                                     furn_str_id::NULL_ID() ) );
             } else { // normal subway drawing
-                mapf::formatted_set_simple( m, point_zero,
+                mapf::formatted_set_simple( m, point_bub_ms::zero,
                                             "...^X^^^X^....^X^^^X^...\n"
                                             "...-x---x-....-x---x-...\n"
                                             "...^X^^^X^....^X^^^X^...\n"
@@ -508,7 +471,7 @@ void mapgen_subway( mapgendata &dat )
             break;
         case 1:
             // dead end
-            mapf::formatted_set_simple( m, point_zero,
+            mapf::formatted_set_simple( m, point_bub_ms::zero,
                                         "...^X^^^X^..../D^^/D^...\n"
                                         "...-x---x-.../DX^/DX^...\n"
                                         "...^X^^^X^../D^X/D^X^...\n"
@@ -561,11 +524,6 @@ void mapgen_subway( mapgendata &dat )
     m->rotate( rot );
 }
 
-void mapgen_river_center( mapgendata &dat )
-{
-    fill_background( &dat.m, ter_t_water_moving_dp );
-}
-
 void mapgen_river_curved_not( mapgendata &dat )
 {
     map *const m = &dat.m;
@@ -592,12 +550,12 @@ void mapgen_river_curved_not( mapgendata &dat )
         for( int y = 0; y < east_edge; y++ ) {
             int circle_edge = ( ( SEEX * 2 - x ) * ( SEEX * 2 - x ) ) + ( y * y );
             if( circle_edge <= 8 ) {
-                m->ter_set( point( x, y ), grass_or_dirt() );
+                m->ter_set( point_bub_ms( x, y ), grass_or_dirt() );
             }
             if( circle_edge == 9 && one_in( 25 ) ) {
-                m->ter_set( point( x, y ), clay_or_sand() );
+                m->ter_set( point_bub_ms( x, y ), clay_or_sand() );
             } else if( circle_edge <= 36 ) {
-                m->ter_set( point( x, y ), ter_t_water_moving_sh );
+                m->ter_set( point_bub_ms( x, y ), ter_t_water_moving_sh );
             }
         }
     }
@@ -627,11 +585,12 @@ void mapgen_river_straight( mapgendata &dat )
     for( int x = 0; x < SEEX * 2; x++ ) {
         int ground_edge = rng( 1, 3 );
         int shallow_edge = rng( 4, 6 );
-        line( m, grass_or_dirt(), point( x, 0 ), point( x, ground_edge ), dat.zlevel() );
+        line( m, grass_or_dirt(), point_bub_ms( x, 0 ), point_bub_ms( x, ground_edge ), dat.zlevel() );
         if( one_in( 25 ) ) {
-            m->ter_set( point( x, ++ground_edge ), clay_or_sand() );
+            m->ter_set( point_bub_ms( x, ++ground_edge ), clay_or_sand() );
         }
-        line( m, ter_t_water_moving_sh, point( x, ++ground_edge ), point( x, shallow_edge ), dat.zlevel() );
+        line( m, ter_t_water_moving_sh, point_bub_ms( x, ++ground_edge ), point_bub_ms( x, shallow_edge ),
+              dat.zlevel() );
     }
 
     // finally, unrotate the map back to its normal orientation, resulting in the new addition being rotated.
@@ -659,52 +618,37 @@ void mapgen_river_curved( mapgendata &dat )
     for( int x = 0; x < SEEX * 2; x++ ) {
         int ground_edge = rng( 1, 3 );
         int shallow_edge = rng( 4, 6 );
-        line( m, grass_or_dirt(), point( x, 0 ), point( x, ground_edge ), dat.zlevel() );
+        line( m, grass_or_dirt(), point_bub_ms( x, 0 ), point_bub_ms( x, ground_edge ), dat.zlevel() );
         if( one_in( 25 ) ) {
-            m->ter_set( point( x, ++ground_edge ), clay_or_sand() );
+            m->ter_set( point_bub_ms( x, ++ground_edge ), clay_or_sand() );
         }
-        line( m, ter_t_water_moving_sh, point( x, ++ground_edge ), point( x, shallow_edge ), dat.zlevel() );
+        line( m, ter_t_water_moving_sh, point_bub_ms( x, ++ground_edge ), point_bub_ms( x, shallow_edge ),
+              dat.zlevel() );
     }
     for( int y = 0; y < SEEY * 2; y++ ) {
         int ground_edge = rng( 19, 21 );
         int shallow_edge = rng( 16, 18 );
-        line( m, grass_or_dirt(), point( ground_edge, y ), point( SEEX * 2 - 1, y ), dat.zlevel() );
+        line( m, grass_or_dirt(), point_bub_ms( ground_edge, y ), point_bub_ms( SEEX * 2 - 1, y ),
+              dat.zlevel() );
         if( one_in( 25 ) ) {
-            m->ter_set( point( --ground_edge, y ), clay_or_sand() );
+            m->ter_set( point_bub_ms( --ground_edge, y ), clay_or_sand() );
         }
-        line( m, ter_t_water_moving_sh, point( shallow_edge, y ), point( --ground_edge, y ), dat.zlevel() );
+        line( m, ter_t_water_moving_sh, point_bub_ms( shallow_edge, y ), point_bub_ms( --ground_edge, y ),
+              dat.zlevel() );
     }
 
     // finally, unrotate the map back to its normal orientation, resulting in the new addition being rotated.
     m->rotate( rot );
 }
 
-void mapgen_rock_partial( mapgendata &dat )
-{
-    map *const m = &dat.m;
-    fill_background( m, ter_t_rock );
-    for( int i = 0; i < 4; i++ ) {
-        if( dat.t_nesw[i] == oter_slimepit || dat.t_nesw[i] == oter_slimepit_down ) {
-            dat.dir( i ) = 6;
-        } else {
-            dat.dir( i ) = 0;
-        }
-    }
-
-    for( int i = 0; i < SEEX * 2; i++ ) {
-        for( int j = 0; j < SEEY * 2; j++ ) {
-            if( rng( 0, dat.n_fac ) > j || rng( 0, dat.s_fac ) > SEEY * 2 - 1 - j ||
-                rng( 0, dat.w_fac ) > i || rng( 0, dat.e_fac ) > SEEX * 2 - 1 - i ) {
-                m->ter_set( point( i, j ), ter_t_rock_floor );
-            }
-        }
-    }
-}
-
 void mapgen_forest( mapgendata &dat )
 {
     map *const m = &dat.m;
 
+    const region_settings_forest_mapgen &settings_forest_comp =
+        dat.region.get_settings_forest_composition();
+    const std::set<forest_biome_mapgen_id> &biomes =
+        dat.region.get_settings_forest_composition().biomes;
     // perimeter_size is a useful shorthand that should not be changed:
     static constexpr int perimeter_size = SEEX * 4 + SEEY * 4;
     // The following constexpr terms would do well to be json-ized.
@@ -737,7 +681,7 @@ void mapgen_forest( mapgendata &dat )
     /**
     * Determines the density of natural features in \p ot.
     *
-    * If there is no defind biome for \p ot, returns a sparsity factor
+    * If there is no defined biome for \p ot, returns a sparsity factor
     * of 0. It's possible to specify biomes in the forest regional settings
     * that are not rendered by this forest map gen method, in order to control
     * how terrains are blended together (e.g. specify roads with an equal
@@ -746,23 +690,25 @@ void mapgen_forest( mapgendata &dat )
     * @param ot The type of terrain to determine the sparseness of.
     * @return A discrete scale of the density of natural features occurring in \p ot.
     */
-    const auto get_sparseness_adjacency_factor = [&dat]( const oter_id & ot ) {
-        const auto biome = dat.region.forest_composition.biomes.find( ot->get_type_id() );
-        if( biome == dat.region.forest_composition.biomes.end() ) {
+    const auto get_sparseness_adjacency_factor = [&settings_forest_comp]( const oter_id & ot ) {
+
+        const auto biome = settings_forest_comp.oter_to_biomes.find( ot->get_type_id() );
+        if( biome == settings_forest_comp.oter_to_biomes.end() ) {
             return 0;
         }
-        return biome->second.sparseness_adjacency_factor;
+        const forest_biome_mapgen_id &found_biome = biome->second;
+        return found_biome->sparseness_adjacency_factor;
     };
 
     const ter_furn_id no_ter_furn = ter_furn_id();
 
     // Calculate the maximum possible sparseness factor (density) for the region.
     int max_factor = 0;
-    if( !dat.region.forest_composition.biomes.empty() ) {
+    if( !biomes.empty() ) {
         std::vector<int> factors;
-        factors.reserve( dat.region.forest_composition.biomes.size() );
-        for( const auto &b : dat.region.forest_composition.biomes ) {
-            factors.push_back( b.second.sparseness_adjacency_factor );
+        factors.reserve( biomes.size() );
+        for( const auto &b : biomes ) {
+            factors.push_back( b->sparseness_adjacency_factor );
         }
         max_factor = *max_element( std::begin( factors ), std::end( factors ) );
     }
@@ -787,11 +733,12 @@ void mapgen_forest( mapgendata &dat )
 
     // In order to feather (blend) this overmap tile with adjacent ones, the general composition thereof must be known.
     // This can be calculated once from dat.t_nesw, and stored here:
-    std::array<const forest_biome *, 8> adjacent_biomes;
+    std::array<const forest_biome_mapgen *, 8> adjacent_biomes;
     for( int d = 0; d <= 7; d++ ) {
-        auto lookup = dat.region.forest_composition.biomes.find( dat.t_nesw[d]->get_type_id() );
-        if( lookup != dat.region.forest_composition.biomes.end() ) {
-            adjacent_biomes[d] = &( lookup->second );
+        auto lookup = settings_forest_comp.oter_to_biomes.find( dat.t_nesw[d]->get_type_id() );
+        if( lookup != settings_forest_comp.oter_to_biomes.end() ) {
+            const forest_biome_mapgen_id &found_biome = lookup->second;
+            adjacent_biomes[d] = &( *found_biome );
         } else {
             adjacent_biomes[d] = nullptr;
         }
@@ -804,9 +751,9 @@ void mapgen_forest( mapgendata &dat )
     for( int bd_x = 0; bd_x < 2; bd_x++ ) {
         for( int bd_y = 0; bd_y < 2; bd_y++ ) {
             // Use the corners of the overmap tiles as hash seeds.
-            point global_corner = m->getglobal( tripoint_bub_ms( bd_x * SEEX * 2, bd_y * SEEY * 2,
-                                                m->get_abs_sub().z() ) ).xy().raw();
-            uint32_t net_hash = std::hash<uint32_t> {}( global_corner.x ) ^ ( std::hash<int> {}( global_corner.y )
+            point_abs_ms global_corner = m->get_abs( tripoint_bub_ms( bd_x * SEEX * 2, bd_y * SEEY * 2,
+                                         m->get_abs_sub().z() ) ).xy();
+            uint32_t net_hash = std::hash<uint32_t> {}( global_corner.x() ) ^ ( std::hash<int> {}( global_corner.y() )
                                 << 1 );
             uint32_t h_hash = net_hash;
             uint32_t v_hash = std::hash<uint32_t> {}( net_hash );
@@ -890,17 +837,17 @@ void mapgen_forest( mapgendata &dat )
     }
 
     // Get the current biome definition for this terrain.
-    const auto current_biome_def_it = dat.region.forest_composition.biomes.find(
+    const auto current_biome_def_it = settings_forest_comp.oter_to_biomes.find(
                                           dat.terrain_type()->get_type_id() );
 
     // If there is no biome definition for this terrain, fill in with the region's default ground cover
     // and bail--nothing more to be done. Should not continue with terrain feathering if there is
     // nothing to feather into. Generally, this should never happen.
-    if( current_biome_def_it == dat.region.forest_composition.biomes.end() ) {
+    if( current_biome_def_it == settings_forest_comp.oter_to_biomes.end() ) {
         dat.fill_groundcover();
         return;
     }
-    forest_biome self_biome = current_biome_def_it->second;
+    forest_biome_mapgen self_biome = *current_biome_def_it->second;
 
     /**
     * Modifies border weights to conform to biome conditions along corners.
@@ -916,8 +863,9 @@ void mapgen_forest( mapgendata &dat )
     * @param cw_weight The relative impact of the clockwise biome on generation.
     * @param self_weight The relative impact of the original biome on generation.
     */
-    const auto unify_continuous_border = [&self_biome]( const forest_biome * ccw,
-                                         const forest_biome * corner, const forest_biome * cw, float * ccw_weight, float * cw_weight,
+    const auto unify_continuous_border = [&self_biome]( const forest_biome_mapgen * ccw,
+                                         const forest_biome_mapgen * corner, const forest_biome_mapgen * cw, float * ccw_weight,
+                                         float * cw_weight,
     float * self_weight ) {
         if( ccw != cw ) {
             if( ccw == corner && cw == &self_biome ) {
@@ -1067,7 +1015,7 @@ void mapgen_forest( mapgendata &dat )
     * @param p the point to check to place a feature at.
     */
     const auto get_feathered_feature = [&no_ter_furn, &max_factor, &factor, &self_biome,
-                                                      &adjacent_biomes, &nesw_weights, &get_feathered_groundcover, &unify_all_borders,
+                                                      &adjacent_biomes, &nesw_weights, &unify_all_borders,
                   &dat]( const point & p ) {
         std::array<float, 4> adj_weights;
         float net_weight = nesw_weights( p, factor, adj_weights );
@@ -1108,9 +1056,6 @@ void mapgen_forest( mapgendata &dat )
                 }
                 break;
         }
-        if( feature.ter == no_ter_furn.ter ) {
-            feature.ter = get_feathered_groundcover( p );
-        }
         return feature;
     };
 
@@ -1122,7 +1067,7 @@ void mapgen_forest( mapgendata &dat )
     * @param p: The point to place the dependent feature, if one is selected.
     */
     const auto set_terrain_dependent_furniture =
-    [&self_biome, &m]( const ter_id & tid, const point & p ) {
+    [&self_biome, &m]( const ter_id & tid, const point_bub_ms & p ) {
         const auto terrain_dependent_furniture_it = self_biome.terrain_dependent_furniture.find(
                     tid );
         if( terrain_dependent_furniture_it == self_biome.terrain_dependent_furniture.end() ) {
@@ -1130,7 +1075,7 @@ void mapgen_forest( mapgendata &dat )
             return;
         }
 
-        const forest_biome_terrain_dependent_furniture tdf = terrain_dependent_furniture_it->second;
+        const forest_biome_terrain_dependent_furniture_new tdf = terrain_dependent_furniture_it->second;
         if( tdf.furniture.get_weight() <= 0 ) {
             // We've got furnitures, but their weight is 0 or less.
             return;
@@ -1147,23 +1092,38 @@ void mapgen_forest( mapgendata &dat )
     // Lay groundcover, place a feature, and place terrain dependent furniture.
     for( int x = 0; x < SEEX * 2; x++ ) {
         for( int y = 0; y < SEEY * 2; y++ ) {
-            const ter_furn_id feature = get_feathered_feature( point( x, y ) );
-            m->ter_set( point( x, y ), feature.ter );
-            m->furn_set( point( x, y ), feature.furn );
-            set_terrain_dependent_furniture( feature.ter, point( x, y ) );
+            const point pos_raw = point( x, y );
+            const point_bub_ms pos = point_bub_ms( x, y );
+
+            ter_furn_id feature = get_feathered_feature( pos_raw );
+            ter_id groundcover = get_feathered_groundcover( pos_raw );
+
+            const ter_id *is_ter = std::get_if<ter_id>( &feature.ter_furn );
+            const furn_id *is_furniture = std::get_if<furn_id>( &feature.ter_furn );
+            ter_id resolved_ter = is_ter == nullptr ? groundcover : *is_ter;
+            const furn_id resolved_furn = is_furniture == nullptr ? furn_str_id::NULL_ID().id() : *is_furniture;
+
+            if( resolved_ter == ter_str_id::NULL_ID().id() ) {
+                resolved_ter = groundcover;
+            }
+
+            m->ter_set( pos, resolved_ter );
+            m->furn_set( pos, resolved_furn );
+            set_terrain_dependent_furniture( resolved_ter, pos );
         }
     }
 
     // Place items on this terrain as defined in the biome.
     for( int i = 0; i < self_biome.item_spawn_iterations; i++ ) {
         m->place_items( self_biome.item_group, self_biome.item_group_chance,
-                        point_bub_ms_zero, point_bub_ms( SEEX * 2 - 1, SEEY * 2 - 1 ), dat.zlevel(), true, dat.when() );
+                        point_bub_ms::zero, point_bub_ms( SEEX * 2 - 1, SEEY * 2 - 1 ), dat.zlevel(), true, dat.when() );
     }
 }
 
 void mapgen_lake_shore( mapgendata &dat )
 {
     map *const m = &dat.m;
+    const region_settings_lake &settings_lake = dat.region.get_settings_lake();
     // Our lake shores may "extend" adjacent terrain, if the adjacent types are defined as being
     // extendable in our regional settings. What this effectively means is that if the lake shore is
     // adjacent to one of these, e.g. a forest, then rather than the lake shore simply having the
@@ -1178,7 +1138,7 @@ void mapgen_lake_shore( mapgendata &dat )
     // NOTE: Presently this treats ocean and lake shore as identical.  Some, but not all, of the
     // ocean checks should eventually be refactored into mapgen_ocean_shore.
     bool did_extend_adjacent_terrain = false;
-    if( !dat.region.overmap_lake.shore_extendable_overmap_terrain.empty() ) {
+    if( !settings_lake.shore_extendable_overmap_terrain.empty() ) {
         std::map<oter_id, int> adjacent_type_count;
         for( oter_id &adjacent : dat.t_nesw ) {
             // Define the terrain we'll look for a match on.
@@ -1186,16 +1146,17 @@ void mapgen_lake_shore( mapgendata &dat )
 
             // Check if this terrain has an alias to something we actually will extend, and if so, use it.
             for( const shore_extendable_overmap_terrain_alias &alias :
-                 dat.region.overmap_lake.shore_extendable_overmap_terrain_aliases ) {
+                 settings_lake.shore_extendable_overmap_terrain_aliases ) {
                 if( is_ot_match( alias.overmap_terrain, adjacent, alias.match_type ) ) {
                     match = alias.alias;
                     break;
                 }
             }
 
-            if( std::find( dat.region.overmap_lake.shore_extendable_overmap_terrain.begin(),
-                           dat.region.overmap_lake.shore_extendable_overmap_terrain.end(),
-                           match ) != dat.region.overmap_lake.shore_extendable_overmap_terrain.end() ) {
+            const oter_str_id &match_copy = match.id();
+            if( std::find( settings_lake.shore_extendable_overmap_terrain.begin(),
+                           settings_lake.shore_extendable_overmap_terrain.end(),
+                           match_copy ) != settings_lake.shore_extendable_overmap_terrain.end() ) {
                 adjacent_type_count[match] += 1;
             }
         }
@@ -1592,9 +1553,9 @@ void mapgen_lake_shore( mapgendata &dat )
     };
 
     const auto fill_deep_water = [&]( const point_bub_ms & starting_point ) {
-        std::vector<point_bub_ms> water_points = ff::point_flood_fill_4_connected( starting_point, visited,
-                should_fill );
-        for( point_bub_ms &wp : water_points ) {
+        std::vector<point_bub_ms> water_points =
+            ff::point_flood_fill_4_connected<std::vector>( starting_point, visited, should_fill );
+        for( const point_bub_ms &wp : water_points ) {
             m->ter_set( wp, ter_t_water_dp );
             m->furn_set( wp, furn_str_id::NULL_ID() );
         }
@@ -1626,10 +1587,12 @@ void mapgen_lake_shore( mapgendata &dat )
 void mapgen_ocean_shore( mapgendata &dat )
 {
     map *const m = &dat.m;
+    const region_settings_lake &settings_lake = dat.region.get_settings_lake();
+    const region_settings_ocean &settings_ocean = dat.region.get_settings_ocean();
     // This is the same as lake shore but saltier.
     // Read documetation above
     bool did_extend_adjacent_terrain = false;
-    if( !dat.region.overmap_lake.shore_extendable_overmap_terrain.empty() ) {
+    if( !settings_lake.shore_extendable_overmap_terrain.empty() ) {
         std::map<oter_id, int> adjacent_type_count;
         for( oter_id &adjacent : dat.t_nesw ) {
             // Define the terrain we'll look for a match on.
@@ -1638,16 +1601,17 @@ void mapgen_ocean_shore( mapgendata &dat )
             // Check if this terrain has an alias to something we actually will extend, and if so, use it.
             // for now, these are the same as lake. They may need to be changed eventually.
             for( const shore_extendable_overmap_terrain_alias &alias :
-                 dat.region.overmap_lake.shore_extendable_overmap_terrain_aliases ) {
+                 settings_lake.shore_extendable_overmap_terrain_aliases ) {
                 if( is_ot_match( alias.overmap_terrain, adjacent, alias.match_type ) ) {
                     match = alias.alias;
                     break;
                 }
             }
 
-            if( std::find( dat.region.overmap_lake.shore_extendable_overmap_terrain.begin(),
-                           dat.region.overmap_lake.shore_extendable_overmap_terrain.end(),
-                           match ) != dat.region.overmap_lake.shore_extendable_overmap_terrain.end() ) {
+            const oter_str_id &match_copy = match.id();
+            if( std::find( settings_lake.shore_extendable_overmap_terrain.begin(),
+                           settings_lake.shore_extendable_overmap_terrain.end(),
+                           match_copy ) != settings_lake.shore_extendable_overmap_terrain.end() ) {
                 adjacent_type_count[match] += 1;
             }
         }
@@ -1746,7 +1710,7 @@ void mapgen_ocean_shore( mapgendata &dat )
     std::vector<std::vector<point_bub_ms>> line_segments;
     int ns_direction_adjust = 0;
     int ew_direction_adjust = 0;
-    int sand_margin = dat.region.overmap_ocean.sandy_beach_width / 2;
+    int sand_margin = settings_ocean.sandy_beach_width / 2;
     // This section is about pushing the straight N, S, E, or W borders inward when adjacent to an actual ocean.
     if( n_ocean ) {
         nw.y() += sector_length;
@@ -2058,9 +2022,9 @@ void mapgen_ocean_shore( mapgendata &dat )
     };
 
     const auto fill_deep_water = [&]( const point_bub_ms & starting_point ) {
-        std::vector<point_bub_ms> water_points = ff::point_flood_fill_4_connected( starting_point, visited,
-                should_fill );
-        for( point_bub_ms &wp : water_points ) {
+        std::vector<point_bub_ms> water_points =
+            ff::point_flood_fill_4_connected<std::vector>( starting_point, visited, should_fill );
+        for( const point_bub_ms &wp : water_points ) {
             m->ter_set( wp, ter_t_swater_dp );
             m->furn_set( wp, furn_str_id::NULL_ID() );
         }
@@ -2092,12 +2056,19 @@ void mapgen_ocean_shore( mapgendata &dat )
 void mapgen_ravine_edge( mapgendata &dat )
 {
     map *const m = &dat.m;
+    const region_settings_ravine &settings_ravine = dat.region.get_settings_ravine();
     // A solid chunk of z layer appropriate wall or floor is first generated to carve the cliffside off from
     if( dat.zlevel() == 0 ) {
         dat.fill_groundcover();
     } else {
-        run_mapgen_func( dat.region.default_oter[ OVERMAP_DEPTH + dat.zlevel() ].id()->get_mapgen_id(),
-                         dat );
+        const std::optional<ter_str_id> uniform_ter = dat.region.default_oter[ OVERMAP_DEPTH +
+                              dat.zlevel() ].id()->get_uniform_terrain();
+        if( uniform_ter ) {
+            m->draw_fill_background( *uniform_ter );
+        } else {
+            run_mapgen_func( dat.region.default_oter[ OVERMAP_DEPTH + dat.zlevel() ].id()->get_mapgen_id(),
+                             dat );
+        }
     }
 
     const auto is_ravine = [&]( const oter_id & id ) {
@@ -2152,7 +2123,8 @@ void mapgen_ravine_edge( mapgendata &dat )
 
         for( int x = 0; x < SEEX * 2; x++ ) {
             int ground_edge = 12 + rng( 1, 3 );
-            line( m, ter_str_id::NULL_ID(), point( x, ++ground_edge ), point( x, SEEY * 2 ), dat.zlevel() );
+            line( m, ter_str_id::NULL_ID(), point_bub_ms( x, ++ground_edge ), point_bub_ms( x, SEEY * 2 ),
+                  dat.zlevel() );
         }
 
         // Rotate the map back to its normal rotation, resulting in the new contents becoming rotated.
@@ -2178,7 +2150,8 @@ void mapgen_ravine_edge( mapgendata &dat )
 
         for( int x = 0; x < SEEX * 2; x++ ) {
             int ground_edge = 12 + rng( 1, 3 ) + x;
-            line( m, ter_str_id::NULL_ID(), point( x, ++ground_edge ), point( x, SEEY * 2 ), dat.zlevel() );
+            line( m, ter_str_id::NULL_ID(), point_bub_ms( x, ++ground_edge ), point_bub_ms( x, SEEY * 2 ),
+                  dat.zlevel() );
         }
 
         // Rotate the map back to its normal rotation, resulting in the new contents becoming rotated.
@@ -2204,14 +2177,15 @@ void mapgen_ravine_edge( mapgendata &dat )
 
         for( int x = 0; x < SEEX * 2; x++ ) {
             int ground_edge =  12  + rng( 1, 3 ) - x;
-            line( m, ter_str_id::NULL_ID(), point( x, --ground_edge ), point( x, SEEY * 2 - 1 ), dat.zlevel() );
+            line( m, ter_str_id::NULL_ID(), point_bub_ms( x, --ground_edge ), point_bub_ms( x, SEEY * 2 - 1 ),
+                  dat.zlevel() );
         }
         // Rotate the map back to its normal rotation, resulting in the new contents becoming rotated.
         m->rotate( rot );
     }
     // The placed t_null terrains are converted into the regional groundcover in the ravine's bottom level,
     // in the other levels they are converted into open air to generate the cliffside.
-    if( dat.zlevel() == dat.region.overmap_ravine.ravine_depth ) {
+    if( dat.zlevel() == settings_ravine.ravine_depth ) {
         m->translate( ter_str_id::NULL_ID(), dat.groundcover() );
     } else {
         m->translate( ter_str_id::NULL_ID(), ter_t_open_air );
@@ -2229,7 +2203,7 @@ void mremove_trap( map *m, const tripoint_bub_ms &p, trap_id type )
 void mtrap_set( map *m, const tripoint_bub_ms &p, trap_id type, bool avoid_creatures )
 {
     if( avoid_creatures ) {
-        Creature *c = get_creature_tracker().creature_at( m->getglobal( p ), true );
+        Creature *c = get_creature_tracker().creature_at( m->get_abs( p ), true );
         if( c ) {
             return;
         }
@@ -2237,10 +2211,10 @@ void mtrap_set( map *m, const tripoint_bub_ms &p, trap_id type, bool avoid_creat
     m->trap_set( p, type );
 }
 
-void mtrap_set( tinymap *m, const point &p, trap_id type, bool avoid_creatures )
+void mtrap_set( tinymap *m, const point_omt_ms &p, trap_id type, bool avoid_creatures )
 {
     if( avoid_creatures ) {
-        Creature *c = get_creature_tracker().creature_at( m->getglobal( tripoint_omt_ms( p.x, p.y,
+        Creature *c = get_creature_tracker().creature_at( m->get_abs( tripoint_omt_ms( p,
                       m->get_abs_sub().z() ) ), true );
         if( c ) {
             return;
@@ -2250,9 +2224,9 @@ void mtrap_set( tinymap *m, const point &p, trap_id type, bool avoid_creatures )
     m->trap_set( actual_location, type );
 }
 
-void madd_field( map *m, const point &p, field_type_id type, int intensity )
+void madd_field( map *m, const point_bub_ms &p, field_type_id type, int intensity )
 {
-    tripoint_bub_ms actual_location( point_bub_ms( p ), m->get_abs_sub().z() );
+    tripoint_bub_ms actual_location( p, m->get_abs_sub().z() );
     m->add_field( actual_location, type, intensity, 0_turns );
 }
 
@@ -2261,18 +2235,26 @@ void mremove_fields( map *m, const tripoint_bub_ms &p )
     m->clear_fields( p );
 }
 
-void resolve_regional_terrain_and_furniture( const mapgendata &dat )
+void resolve_regional_terrain_and_furniture( const mapgendata &dat, int z_offset /*= 0*/ )
 {
-    for( const tripoint_bub_ms &p : dat.m.points_on_zlevel() ) {
-        const ter_id &tid_before = dat.m.ter( p );
-        const ter_id &tid_after = dat.region.region_terrain_and_furniture.resolve( tid_before );
-        if( tid_after != tid_before ) {
-            dat.m.ter_set( p, tid_after );
-        }
-        const furn_id &fid_before = dat.m.furn( p );
-        const furn_id &fid_after = dat.region.region_terrain_and_furniture.resolve( fid_before );
-        if( fid_after != fid_before ) {
-            dat.m.furn_set( p, fid_after );
+    if( dat.region.id.is_valid() ) {
+        const region_settings_terrain_furniture &settings_terfurn =
+            dat.region.get_settings_terrain_furniture();
+        for( const tripoint_bub_ms &p : dat.m.points_on_zlevel( dat.m.get_abs_sub().z() + z_offset ) ) {
+            const ter_id &tid_before = dat.m.ter( p );
+            if( !tid_before.id().is_null() && tid_before->has_flag( ter_furn_flag::TFLAG_REGION_PSEUDO ) ) {
+                const ter_id &tid_after = settings_terfurn.resolve( tid_before );
+                if( tid_after != tid_before ) {
+                    dat.m.ter_set( p, tid_after );
+                }
+            }
+            const furn_id &fid_before = dat.m.furn( p );
+            if( !fid_before.id().is_null() && fid_before->has_flag( ter_furn_flag::TFLAG_REGION_PSEUDO ) ) {
+                const furn_id &fid_after = settings_terfurn.resolve( fid_before );
+                if( fid_after != fid_before ) {
+                    dat.m.furn_set( p, fid_after );
+                }
+            }
         }
     }
 }

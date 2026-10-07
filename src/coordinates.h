@@ -2,7 +2,9 @@
 #ifndef CATA_SRC_COORDINATES_H
 #define CATA_SRC_COORDINATES_H
 
+#include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <functional>
 #include <iosfwd>
 #include <iterator>
@@ -12,21 +14,22 @@
 #include <utility>
 #include <vector>
 
-#include "cata_inline.h"
-#include "coords_fwd.h"
+#include "cata_compiler_support.h"
+#include "coords_fwd.h"  // IWYU pragma: export
 #include "cuboid_rectangle.h"
 #include "debug.h"
-#include "game_constants.h"
+#include "jc_voronoi/jc_voronoi.h"
 #include "line.h"  // IWYU pragma: keep
+#include "map_iterator.h"
+#include "map_scale_constants.h"
 #include "point.h"
 
 class JsonOut;
 class JsonValue;
 
-enum class direction : unsigned;
-
 namespace coords
 {
+template <typename Point, origin Origin, scale Scale> class coord_point_ob;
 
 constexpr int map_squares_per( scale s )
 {
@@ -90,7 +93,7 @@ constexpr scale scale_from_origin( origin o )
  *
  * InBounds define if the point is guaranteed to be inbounds.
  *
- * For more details see doc/POINTS_COORDINATES.md.
+ * For more details see doc/c++/POINTS_COORDINATES.md.
  */
 template<typename Point>
 class coord_point_base
@@ -167,8 +170,38 @@ class coord_point_mut : public coord_point_base<Point>
 };
 
 template<typename Point, origin Origin, scale Scale>
+class coord_point_ob_rel
+{
+    public:
+        static const coord_point_ob<Point, Origin, Scale> north;
+        static const coord_point_ob<Point, Origin, Scale> north_east;
+        static const coord_point_ob<Point, Origin, Scale> east;
+        static const coord_point_ob<Point, Origin, Scale> south_east;
+        static const coord_point_ob<Point, Origin, Scale> south;
+        static const coord_point_ob<Point, Origin, Scale> south_west;
+        static const coord_point_ob<Point, Origin, Scale> west;
+        static const coord_point_ob<Point, Origin, Scale> north_west;
+};
+
+template<typename Point, origin Origin, scale Scale>
+class coord_point_ob_3d
+{
+    public:
+        static const coord_point_ob<Point, Origin, Scale> above;
+        static const coord_point_ob<Point, Origin, Scale> below;
+};
+
+class coord_point_ob_not_rel {};
+class coord_point_ob_not_3d {};
+
+template<typename Point, origin Origin, scale Scale>
 class coord_point_ob : public
-    coord_point_mut<Point, coord_point_ob<point, Origin, Scale>>
+    coord_point_mut<Point, coord_point_ob<point, Origin, Scale>>,
+            public std::
+            conditional_t<Origin == origin::relative, coord_point_ob_rel<Point, Origin, Scale>, coord_point_ob_not_rel>,
+            public std::
+            conditional_t < Origin == origin::relative &&Point::dimension == 3,
+            coord_point_ob_3d<Point, Origin, Scale>, coord_point_ob_not_3d >
 {
         using base = coord_point_mut<Point, coord_point_ob<point, Origin, Scale>>;
 
@@ -176,6 +209,22 @@ class coord_point_ob : public
         using base::base;
 
         static constexpr int dimension = Point::dimension;
+        // Coordinate representing the origin
+        static const coord_point_ob zero;
+        // Coordinate with minimum representable coordinates
+        static const coord_point_ob min;
+        // Coordinate with maximum representable coordinates
+        static const coord_point_ob max;
+        // Sentinel value for returning and detecting invalid coordinates.
+        // Equal to @ref min for backward compatibility.
+        static const coord_point_ob invalid;
+        constexpr bool is_invalid() const {
+            return *this == invalid;
+        }
+
+        static coord_point_ob from_string( const std::string &s ) {
+            return coord_point_ob( Point::from_string( s ) );
+        }
 
         static constexpr bool is_inbounds = false;
         using this_as_tripoint = coord_point_ob<tripoint, Origin, Scale>;
@@ -214,8 +263,12 @@ class coord_point_ob : public
             return coord_point_ob( this->raw().abs() );
         }
 
-        constexpr auto rotate( int turns, const point &dim = point_south_east ) const {
+        constexpr auto rotate( int turns, const point &dim = point::south_east ) const {
             return coord_point_ob( this->raw().rotate( turns, dim ) );
+        }
+
+        constexpr auto rotate_in_map( int turns ) const {
+            return coord_point_ob( this->raw().rotate_in_map( turns ) );
         }
 
         friend inline this_as_ob operator+( const coord_point_ob &l, const point &r ) {
@@ -242,6 +295,75 @@ class coord_point_ob : public
             return this_as_tripoint_ob( l.raw() - r );
         }
 };
+
+// These definitions can go in the class in clang and gcc, and are much shorter there,
+// but MSVC doesn't allow that, so...
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob<Point, Origin, Scale>::min =
+    coord_point_ob<Point, Origin, Scale>( Point::min );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob<Point, Origin, Scale>::max =
+    coord_point_ob<Point, Origin, Scale>( Point::max );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob<Point, Origin, Scale>::invalid =
+    coord_point_ob<Point, Origin, Scale>( Point::invalid );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob<Point, Origin, Scale>::zero =
+    coord_point_ob<Point, Origin, Scale>( Point::zero );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob_rel<Point, Origin, Scale>::north
+    =
+        coord_point_ob<Point, Origin, Scale>( Point::north );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob_rel<Point, Origin, Scale>::north_east
+    =
+        coord_point_ob<Point, Origin, Scale>( Point::north_east );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob_rel<Point, Origin, Scale>::east
+    =
+        coord_point_ob<Point, Origin, Scale>( Point::east );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob_rel<Point, Origin, Scale>::south_east
+    =
+        coord_point_ob<Point, Origin, Scale>( Point::south_east );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob_rel<Point, Origin, Scale>::south
+    =
+        coord_point_ob<Point, Origin, Scale>( Point::south );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob_rel<Point, Origin, Scale>::south_west
+    =
+        coord_point_ob<Point, Origin, Scale>( Point::south_west );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob_rel<Point, Origin, Scale>::west
+    =
+        coord_point_ob<Point, Origin, Scale>( Point::west );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob_rel<Point, Origin, Scale>::north_west
+    =
+        coord_point_ob<Point, Origin, Scale>( Point::north_west );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob_3d<Point, Origin, Scale>::above
+    =
+        coord_point_ob<Point, Origin, Scale>( Point::above );
+template<typename Point, origin Origin, scale Scale>
+const coord_point_ob<Point, Origin, Scale>
+coord_point_ob_3d<Point, Origin, Scale>::below
+    =
+        coord_point_ob<Point, Origin, Scale>( Point::below );
 
 template<typename Point, origin Origin, scale Scale>
 class coord_point_ib : public coord_point_ob<Point, Origin, Scale>
@@ -847,6 +969,7 @@ direction direction_from( const coords::coord_point_ob<Point, Origin, Scale> &lo
     return direction_from( loc1.raw(), loc2.raw() );
 }
 
+// line from loc1 to loc2, including loc2 but not loc1
 template<typename Point, coords::origin Origin, coords::scale Scale, std::enable_if_t<std::is_same_v<Point, point>, int> = 0>
 std::vector < coords::coord_point < Point, Origin, Scale >>
         line_to( const coords::coord_point_ob<Point, Origin, Scale> &loc1,
@@ -862,6 +985,7 @@ std::vector < coords::coord_point < Point, Origin, Scale >>
     return result;
 }
 
+// line from loc1 to loc2, including loc2 but not loc1
 template<typename Point, coords::origin Origin, coords::scale Scale, std::enable_if_t<std::is_same_v<Point, point>, int> = 0>
 std::vector < coords::coord_point_ib < Point, Origin, Scale >>
         line_to( const coords::coord_point_ib<Point, Origin, Scale> &loc1,
@@ -877,6 +1001,7 @@ std::vector < coords::coord_point_ib < Point, Origin, Scale >>
     return result;
 }
 
+// line from loc1 to loc2, including loc2 but not loc1
 template<typename Tripoint, coords::origin Origin, coords::scale Scale,
          std::enable_if_t<std::is_same_v<Tripoint, tripoint>, int> = 0>
 std::vector < coords::coord_point < Tripoint, Origin, Scale >>
@@ -893,6 +1018,7 @@ std::vector < coords::coord_point < Tripoint, Origin, Scale >>
     return result;
 }
 
+// line from loc1 to loc2, including loc2 but not loc1
 template<typename Tripoint, coords::origin Origin, coords::scale Scale,
          std::enable_if_t<std::is_same_v<Tripoint, tripoint>, int> = 0>
 std::vector < coords::coord_point_ib < Tripoint, Origin, Scale>>
@@ -909,6 +1035,39 @@ std::vector < coords::coord_point_ib < Tripoint, Origin, Scale>>
     return result;
 }
 
+// Returns the coordinates adjacent to loc1 that are closer to loc2 than loc1 is.
+// Out-of-bounds version.
+template<typename Tripoint, coords::origin Origin, coords::scale Scale,
+         std::enable_if_t<std::is_same_v<Tripoint, tripoint>, int> = 0>
+std::vector < coords::coord_point < Tripoint, Origin, Scale >>
+        squares_closer_to( const coords::coord_point_ob<Tripoint, Origin, Scale> &loc1,
+                           const coords::coord_point_ob<Tripoint, Origin, Scale> &loc2 )
+{
+    std::vector<Tripoint> raw_result = squares_closer_to( loc1.raw(), loc2.raw() );
+    std::vector < coords::coord_point < Tripoint, Origin, Scale>> result;
+    std::transform( raw_result.begin(), raw_result.end(), std::back_inserter( result ),
+    []( const Tripoint & p ) {
+        return coords::coord_point < Tripoint, Origin, Scale >::make_unchecked( p );
+    } );
+    return result;
+}
+
+// Returns the coordinates adjacent to loc1 that are closer to loc2 than loc1 is.
+// Out-of-bounds version.
+template<typename Tripoint, coords::origin Origin, coords::scale Scale,
+         std::enable_if_t<std::is_same_v<Tripoint, tripoint>, int> = 0>
+std::vector < coords::coord_point_ib < Tripoint, Origin, Scale>>
+        squares_closer_to( const coords::coord_point_ib<Tripoint, Origin, Scale> &loc1,
+                           const coords::coord_point_ib<Tripoint, Origin, Scale> &loc2 )
+{
+    std::vector<Tripoint> raw_result = squares_closer_to( loc1.raw(), loc2.raw() );
+    std::vector < coords::coord_point_ib < Tripoint, Origin, Scale >> result;
+    std::transform( raw_result.begin(), raw_result.end(), std::back_inserter( result ),
+    []( const Tripoint & p ) {
+        return coords::coord_point_ib < Tripoint, Origin, Scale >::make_unchecked( p );
+    } );
+    return result;
+}
 
 template<typename Point, coords::origin Origin, coords::scale Scale>
 coords::coord_point < Point, Origin, Scale >
@@ -999,6 +1158,129 @@ std::vector<coords::coord_point_ib<Point, Origin, Scale>>
                               int max_dist )
 {
     return closest_points_first( loc, 0, max_dist );
+}
+
+// construct a maximum point using the maximum value of every dimension from a set of points
+template<typename Point, coords::origin Origin, coords::scale Scale>
+coords::coord_point_ob<Point, Origin, Scale> construct_max( const
+        std::vector< coords::coord_point_ob<Point, Origin, Scale>> &locs )
+{
+    if( locs.empty() ) {
+        return coords::coord_point_ob<Point, Origin, Scale>();
+    }
+    coords::coord_point_ob<Point, Origin, Scale> constructed_max( locs.begin()->x(), locs.begin()->y(),
+            locs.begin()->z() );
+    for( const coords::coord_point_ob<Point, Origin, Scale> &p : locs ) {
+        if( p.x() > constructed_max.x() ) {
+            constructed_max.x() = p.x();
+        }
+        if( p.y() > constructed_max.y() ) {
+            constructed_max.y() = p.y();
+        }
+        if( p.z() > constructed_max.z() ) {
+            constructed_max.z() = p.z();
+        }
+    }
+    return constructed_max;
+}
+
+// construct a minimum point using the minimum value of every dimension from a set of points
+template<typename Point, coords::origin Origin, coords::scale Scale>
+coords::coord_point_ob<Point, Origin, Scale> construct_min( const
+        std::vector< coords::coord_point_ob<Point, Origin, Scale>> &locs )
+{
+    if( locs.empty() ) {
+        return coords::coord_point_ob<Point, Origin, Scale>();
+    }
+    coords::coord_point_ob<Point, Origin, Scale> constructed_min( locs.begin()->x(), locs.begin()->y(),
+            locs.begin()->z() );
+    for( const coords::coord_point_ob<Point, Origin, Scale> &p : locs ) {
+        if( p.x() < constructed_min.x() ) {
+            constructed_min.x() = p.x();
+        }
+        if( p.y() < constructed_min.y() ) {
+            constructed_min.y() = p.y();
+        }
+        if( p.z() < constructed_min.z() ) {
+            constructed_min.z() = p.z();
+        }
+    }
+    return constructed_min;
+}
+
+// converts a JCV point to a CATA point
+template<typename Point, coords::origin Origin, coords::scale Scale>
+coords::coord_point_ob<Point, Origin, Scale> jcv_to_cata_point( const jcv_point &loc )
+{
+    return coords::coord_point_ob<Point, Origin, Scale>( static_cast<int>( loc.x ),
+            static_cast<int>( loc.y ) );
+}
+
+template<typename Point, coords::origin Origin, coords::scale Scale>
+coords::coord_point_ib<Point, Origin, Scale> jcv_to_cata_point( const jcv_point &loc )
+{
+    return jcv_to_cata_point<coords::coord_point_ib<Point, Origin, Scale>>( loc );
+}
+
+// returns whether a single point `loc` is in the inclusive triangle defined by points `t0 -> t1 -> t2`
+// barycentric coordinate solution obtained from https://stackoverflow.com/a/14382692,
+// which itself was derived from https://en.wikipedia.org/wiki/Barycentric_coordinate_system
+template<typename Point, coords::origin Origin, coords::scale Scale>
+bool point_in_triangle_2d( const coords::coord_point_ob<Point, Origin, Scale> &loc,
+                           const coords::coord_point_ob<Point, Origin, Scale> &t0,
+                           const coords::coord_point_ob<Point, Origin, Scale> &t1,
+                           const coords::coord_point_ob<Point, Origin, Scale> &t2 )
+{
+    const float area = 0.5f * ( -t1.y() * t2.x() + t0.y() * ( -t1.x() + t2.x() ) + t0.x() *
+                                ( t1.y() - t2.y() ) + t1.x() * t2.y() );
+    const float s = 1.0f / ( 2.0f * area ) * ( t0.y() * t2.x() - t0.x() * t2.y() +
+                    ( t2.y() - t0.y() ) * loc.x() + ( t0.x() - t2.x() ) * loc.y() );
+    const float t = 1.0f / ( 2.0f * area ) * ( t0.x() * t1.y() - t0.y() * t1.x() +
+                    ( t0.y() - t1.y() ) * loc.x() + ( t1.x() - t0.x() ) * loc.y() );
+    constexpr float positive_float_threshold = -0.001f; // what constitutes a "positive number"
+    return s >= positive_float_threshold && t >= positive_float_threshold &&
+           1.0f - s - t >= positive_float_threshold;
+}
+
+template<typename Point, coords::origin Origin, coords::scale Scale>
+bool point_in_triangle_2d( const coords::coord_point_ib<Point, Origin, Scale> &loc,
+                           const coords::coord_point_ib<Point, Origin, Scale> &t0,
+                           const coords::coord_point_ib<Point, Origin, Scale> &t1,
+                           const coords::coord_point_ib<Point, Origin, Scale> &t2 )
+{
+    return point_in_triangle_2d( loc, t0, t1, t2 );
+}
+
+// returns ALL points in the inclusive triangle defined by points `t0 -> t1 -> t2`
+template<typename Point, coords::origin Origin, coords::scale Scale>
+std::vector<coords::coord_point_ob<Point, Origin, Scale>>
+        points_in_triangle_2d( const coords::coord_point_ob<Point, Origin, Scale> &t0,
+                               const coords::coord_point_ob<Point, Origin, Scale> &t1,
+                               const coords::coord_point_ob<Point, Origin, Scale> &t2 )
+{
+
+    const std::vector < coords::coord_point_ob<Point, Origin, Scale>> triangle_bounds = { t0, t1, t2 };
+    std::vector < coords::coord_point_ob<Point, Origin, Scale>> inside_triangle_points;
+
+    coords::coord_point_ob<Point, Origin, Scale> min_bound = construct_min( triangle_bounds );
+    coords::coord_point_ob<Point, Origin, Scale> max_bound = construct_max( triangle_bounds );
+
+    tripoint_range< coords::coord_point_ob<Point, Origin, Scale>> bounds( min_bound, max_bound );
+    for( const coords::coord_point_ob<Point, Origin, Scale> &p : bounds ) {
+        if( point_in_triangle_2d( p, t0, t1, t2 ) ) {
+            inside_triangle_points.emplace_back( p );
+        }
+    }
+    return inside_triangle_points;
+}
+
+template<typename Point, coords::origin Origin, coords::scale Scale>
+bool points_in_triangle_2d(
+    const coords::coord_point_ib<Point, Origin, Scale> &t0,
+    const coords::coord_point_ib<Point, Origin, Scale> &t1,
+    const coords::coord_point_ib<Point, Origin, Scale> &t2 )
+{
+    return points_in_triangle_2d( t0, t1, t2 );
 }
 
 /* find appropriate subdivided coordinates for absolute tile coordinate.

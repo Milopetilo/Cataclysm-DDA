@@ -1,29 +1,38 @@
+#include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <functional>
+#include <map>
 #include <memory>
+#include <random>
+#include <set>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "avatar.h"
 #include "cata_catch.h"
+#include "coordinates.h"
 #include "creature.h"
+#include "damage.h"
+#include "enums.h"
 #include "explosion.h"
 #include "fragment_cloud.h"
 #include "game.h"
 #include "item.h"
 #include "itype.h"
+#include "iuse.h"
 #include "iuse_actor.h"
-#include "line.h"
 #include "map.h"
 #include "map_helpers.h"
+#include "map_helpers_tests.h"
 #include "monster.h"
-#include "mtype.h"
 #include "point.h"
 #include "projectile.h"
+#include "rng.h"
 #include "test_statistics.h"
 #include "type_id.h"
 #include "units.h"
-#include "veh_type.h"
 #include "vehicle.h"
 #include "vpart_position.h"
 #include "vpart_range.h"
@@ -32,9 +41,16 @@ static const ammo_effect_str_id ammo_effect_NULL_SOURCE( "NULL_SOURCE" );
 
 static const damage_type_id damage_bullet( "bullet" );
 
+static const itype_id itype_grenade_act( "grenade_act" );
+
+namespace
+{
+
 enum class outcome_type {
     Kill, Casualty
 };
+
+} // namespace
 
 static float get_damage_vs_target( const std::string &target_id )
 {
@@ -57,7 +73,7 @@ static float get_damage_vs_target( const std::string &target_id )
         //REQUIRE( target_monster.type->armor_bullet == 0 );
         // This mirrors code in explosion::shrapnel() that scales hit rate with size and avoids crits.
         frag.missed_by = rng_float( 0.05, 1.0 / target_monster.ranged_target_size() );
-        target_monster.deal_projectile_attack( nullptr, frag, false );
+        target_monster.deal_projectile_attack( &get_map(), nullptr, frag, frag.missed_by, false );
         if( frag.dealt_dam.total_damage() > 0 ) {
             damaging_hits++;
             damage_taken += frag.dealt_dam.total_damage();
@@ -66,7 +82,7 @@ static float get_damage_vs_target( const std::string &target_id )
     return static_cast<float>( damage_taken ) / static_cast<float>( damaging_hits );
 }
 
-static void check_lethality( const std::string &explosive_id, const int range, float lethality,
+static void check_lethality( const itype_id &explosive_id, const int range, float lethality,
                              float margin, outcome_type expected_outcome )
 {
     const epsilon_threshold target_lethality{ lethality, margin };
@@ -117,7 +133,7 @@ static void check_lethality( const std::string &explosive_id, const int range, f
         } );
         num_survivors += survivors.size();
         for( Creature *survivor : survivors ) {
-            survivor_stats << survivor->pos() << " " << survivor->get_hp() << ", ";
+            survivor_stats << survivor->pos_bub() << " " << survivor->get_hp() << ", ";
             bool wounded = survivor->get_hp() < survivor->get_hp_max() * 0.75;
             num_wounded += wounded ? 1 : 0;
             total_hp += survivor->get_hp();
@@ -135,7 +151,7 @@ static void check_lethality( const std::string &explosive_id, const int range, f
         }
     } while( victims.uncertain_about( target_lethality ) );
     CAPTURE( margin );
-    INFO( explosive_id );
+    INFO( explosive_id.c_str() );
     item grenade( explosive_id );
     const explosion_data &ex = dynamic_cast<const explosion_iuse *>
                                ( grenade.type->countdown_action.get_actor_ptr() )->explosion;
@@ -173,7 +189,7 @@ static std::vector<int> get_part_hp( vehicle *veh )
     return part_hp;
 }
 
-static void check_vehicle_damage( const std::string &explosive_id, const std::string &vehicle_id,
+static void check_vehicle_damage( const itype_id &explosive_id, const std::string &vehicle_id,
                                   const int range, const double damage_lower_bound, const double damage_upper_bound = 1.0 )
 {
     // Clear map
@@ -181,7 +197,7 @@ static void check_vehicle_damage( const std::string &explosive_id, const std::st
     tripoint_bub_ms origin( 30, 30, 0 );
 
     vehicle *target_vehicle = get_map().add_vehicle( vproto_id( vehicle_id ), origin, 0_degrees,
-                              -1, 0 );
+                              -1, veh_spawn_status::UNDAMAGED );
     std::vector<int> before_hp = get_part_hp( target_vehicle );
 
     while( get_map().veh_at( origin ) ) {
@@ -212,7 +228,7 @@ static void check_vehicle_damage( const std::string &explosive_id, const std::st
     CHECK( after_hp_total <= ceil( before_hp_total * damage_upper_bound ) );
 }
 
-TEST_CASE( "grenade_lethality_scaling_with_size", "[grenade],[explosion],[balance]" )
+TEST_CASE( "grenade_lethality_scaling_with_size", "[grenade] [explosion] [balance]" )
 {
     // We want monsters of different sizes with the same armor to test that we aren't scaling damage with size.
     float tiny = get_damage_vs_target( "mon_spawn_raptor" );
@@ -234,14 +250,14 @@ TEST_CASE( "grenade_lethality_scaling_with_size", "[grenade],[explosion],[balanc
     CHECK( large_armored == Approx( huge_armored ).margin( 1.0 ) );
 }
 
-TEST_CASE( "grenade_lethality", "[grenade],[explosion],[balance],[slow]" )
+TEST_CASE( "grenade_lethality", "[grenade] [explosion] [balance] [slow]" )
 {
-    check_lethality( "grenade_act", 0, 0.99, 0.06, outcome_type::Kill );
-    check_lethality( "grenade_act", 5, 0.95, 0.06, outcome_type::Kill );
-    check_lethality( "grenade_act", 15, 0.40, 0.06, outcome_type::Casualty );
+    check_lethality( itype_grenade_act, 0, 0.99, 0.06, outcome_type::Kill );
+    check_lethality( itype_grenade_act, 5, 0.95, 0.06, outcome_type::Kill );
+    check_lethality( itype_grenade_act, 15, 0.40, 0.06, outcome_type::Casualty );
 }
 
-TEST_CASE( "grenade_vs_vehicle", "[grenade],[explosion],[balance]" )
+TEST_CASE( "grenade_vs_vehicle", "[grenade] [explosion] [balance]" )
 {
     /* as of test writing, car hp is 17653. 0.998 of that means the grenade
      * has to do more than 36 points of damage to 'fail', which isn't remotely
@@ -258,9 +274,9 @@ TEST_CASE( "grenade_vs_vehicle", "[grenade],[explosion],[balance]" )
      * heavy duty frames.
      */
     for( size_t i = 0; i <= 20 ; ++i ) {
-        check_vehicle_damage( "grenade_act", "car", 5, 0.998 );
-        check_vehicle_damage( "grenade_act", "motorcycle", 5, 0.997 );
-        check_vehicle_damage( "grenade_act", "motorcycle", 0, 0.975, 0.9985 );
-        check_vehicle_damage( "grenade_act", "humvee", 5, 1 );
+        check_vehicle_damage( itype_grenade_act, "car", 5, 0.998 );
+        check_vehicle_damage( itype_grenade_act, "motorcycle", 5, 0.997 );
+        check_vehicle_damage( itype_grenade_act, "motorcycle", 0, 0.975, 0.9985 );
+        check_vehicle_damage( itype_grenade_act, "humvee", 5, 1 );
     }
 }

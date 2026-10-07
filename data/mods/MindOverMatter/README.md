@@ -19,7 +19,7 @@ The goal is for each path to be upgraded through usage, since sitting and studyi
 
 ADVANTAGES
 
-1) Psionic powers are fast. Many powers take less than 100 moves to use, with high-level powers sometimes taking much less (a level 10 Telekinetic Hand takes only 10 moves!), reflecting that they are as fast as thought.
+1) Psionic powers are fast. Many powers take less than 100 moves to use, with high-level powers sometimes taking much less (a fully-levlled Far Hand takes only 65 moves!), reflecting that they are as fast as thought.
 2) Powers use Stamina as their power source, meaning that a fully-charged psychic is only a five-minute breather away. 
 3) Powers are generally very quiet (generally. Pyrokinesis is very loud)
 
@@ -27,7 +27,7 @@ DISADVANTAGES
 
 1) Powers use Stamina as their power source. This is also a disadvantage because every power use reduces your ability to run away.
 2) Powers have a caloric cost as well as a Stamina cost.  While eldritch magic draws on mystical components and mana, psions must rely on the reserves of their own body. This also means that long-term use during a day will deplete your weariness meter.
-3) All powers require concentration and thus are affected by Focus. It's very difficult to concentrate enough to lift a pursuing boomer if you've just fought off a grappler in close range and there's blood all around you.
+3) All powers require concentration and thus are affected by your condition: Pain, being distracted, having higher levels of Nether Attunement (q.v.), repeatly using powers in close succession, and various other factors can influence your success chance. It's very difficult to concentrate enough to lift a pursuing boomer if you've just fought off a grappler in close range and there's blood all around you.
 
 NETHER ATTUNEMENT
 
@@ -71,6 +71,7 @@ To be eligible to learn new powers, you must be in a generally good mental and p
 
 Further Information
 
-For a listing of powers, including their requirements to learn, check the [Power Spoilers document](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/data/mods/MindOverMatter/PowerDescriptionSpoilers.md).
+For a listing of powers, including their requirements to learn, check the [Power Spoilers document](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/data/mods/MindOverMatter/PowerDescriptionSpoilers.md).  
+For details of nether attunement, including a list of consequences, check the [Nether Attunement Spoilers document](https://github.com/CleverRaven/Cataclysm-DDA/blob/master/data/mods/MindOverMatter/NetherAttunementSpoilers.md).  
 
 

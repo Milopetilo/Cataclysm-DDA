@@ -1,12 +1,13 @@
 #include "event_field_transformations.h"
 
-#include <cmath>
 #include <cstdlib>
 #include <optional>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "coordinates.h"
+#include "flat_set.h" // IWYU pragma: keep
 #include "itype.h"
 #include "mapdata.h"
 #include "mtype.h"

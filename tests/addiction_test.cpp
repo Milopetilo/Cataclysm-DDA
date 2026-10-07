@@ -1,8 +1,16 @@
 #include "addiction.h"
+
+#include <algorithm>
+#include <map>
+#include <memory>
+
 #include "cata_catch.h"
 #include "character.h"
+#include "enums.h"
+#include "item.h"
 #include "itype.h"
 #include "player_helpers.h"
+#include "value_ptr.h"
 
 static const addiction_id addiction_alcohol( "alcohol" );
 static const addiction_id addiction_amphetamine( "amphetamine" );
@@ -22,10 +30,14 @@ static const addiction_id addiction_test_nicotine( "test_nicotine" );
 static const efftype_id effect_hallu( "hallu" );
 static const efftype_id effect_shakes( "shakes" );
 
+static const itype_id itype_test_whiskey_caffenated( "test_whiskey_caffenated" );
+
 static const trait_id trait_MUT_JUNKIE( "MUT_JUNKIE" );
 
 static constexpr int max_iters = 100000;
 
+namespace
+{
 struct addict_effect_totals {
     int sleepiness = 0;
     int morale = 0;
@@ -45,10 +57,10 @@ struct addict_effect_totals {
         sleepiness += u.get_sleepiness();
         morale += u.get_morale_level();
         stim += u.get_stim();
-        str_bonus += u.str_cur;
-        dex_bonus += u.dex_cur;
-        per_bonus += u.per_cur;
-        int_bonus += u.int_cur;
+        str_bonus += u.get_str();
+        dex_bonus += u.get_dex();
+        per_bonus += u.get_per();
+        int_bonus += u.get_int();
         health_mod += u.get_daily_health();
         pkiller += u.get_painkiller();
         pain += u.get_pain();
@@ -57,6 +69,7 @@ struct addict_effect_totals {
         hallu += u.has_effect( effect_hallu ) ? 1 : 0;
     }
 };
+} // namespace
 
 static void clear_addictions( Character &u )
 {
@@ -64,10 +77,10 @@ static void clear_addictions( Character &u )
     u.clear_effects();
     u.set_moves( u.get_speed() );
     u.set_daily_health( 0 );
-    u.str_max = 8;
-    u.dex_max = 8;
-    u.int_max = 8;
-    u.per_max = 8;
+    u.set_str_base( 8 );
+    u.set_dex_base( 8 );
+    u.set_int_base( 8 );
+    u.set_per_base( 8 );
     u.set_str_bonus( 0 );
     u.set_dex_bonus( 0 );
     u.set_int_bonus( 0 );
@@ -720,7 +733,7 @@ TEST_CASE( "check_marloss_addiction_effects", "[addiction]" )
 
 TEST_CASE( "check_that_items_can_inflict_multiple_addictions", "[addiction]" )
 {
-    item addict_itm( "test_whiskey_caffenated" );
+    item addict_itm( itype_test_whiskey_caffenated );
     REQUIRE( addict_itm.is_comestible() );
     REQUIRE( addict_itm.get_comestible()->addictions.size() == 2 );
     CHECK( addict_itm.get_comestible()->addictions.at( addiction_alcohol ) == 101 );
@@ -731,7 +744,7 @@ TEST_CASE( "check_that_items_can_inflict_multiple_addictions", "[addiction]" )
     REQUIRE( !victim.has_addiction( addiction_alcohol ) );
     REQUIRE( !victim.has_addiction( addiction_caffeine ) );
     for( int i = 0; i < MIN_ADDICTION_LEVEL; i++ ) {
-        item addict_itm = item( "test_whiskey_caffenated" );
+        item addict_itm = item( itype_test_whiskey_caffenated );
         REQUIRE( victim.consume( addict_itm, true ) != trinary::NONE );
     }
     CHECK( victim.has_addiction( addiction_alcohol ) );

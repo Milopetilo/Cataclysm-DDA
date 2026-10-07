@@ -6,7 +6,7 @@
     "name_suffix": "CPT",
     "class": "NC_SOLDIER",
     "attitude": 0,
-    "mission": 7,
+    "mission": "GUARD",
     "chat": "TALK_OLD_GUARD_NEC_CPT",
     "faction": "old_guard",
     "mission_offered": "MISSION_OLD_GUARD_NEC_1"
@@ -93,9 +93,7 @@
     "difficulty": 5,
     "value": 250000,
     "monster_type": "mon_charred_nightmare",
-    "start": {
-      "assign_mission_target": { "om_terrain": "necropolis_c_44", "om_special": "Necropolis", "z": -2, "search_range": 240 }
-    },
+    "start": { "assign_mission_target": { "om_terrain": "necropolis_c_44", "om_special": "Necropolis", "z": -2 } },
     "monster_kill_goal": 20,
     "origins": [ "ORIGIN_SECONDARY" ],
     "dialogue": {

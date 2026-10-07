@@ -1,12 +1,22 @@
 #include "ui_extended_description.h"
 
+#include <imgui/imgui.h>
+
+#include "cata_utility.h"
 #include "character.h"
+#include "color.h"
+#include "creature.h"
 #include "creature_tracker.h"
-#include "faction.h"
 #include "map.h"
+#include "mapdata.h"
+#include "point.h"
+#include "string_formatter.h"
+#include "text.h"
+#include "translations.h"
+#include "type_id.h"
 #include "ui_manager.h"
-#include "vehicle.h"
-#include "veh_type.h"
+#include "viewer.h"
+#include "vpart_position.h"
 
 static const trait_id trait_ILLITERATE( "ILLITERATE" );
 
@@ -30,8 +40,10 @@ static description_target &operator--( description_target &c )
 
 static const Creature *seen_critter( const tripoint_bub_ms &p )
 {
+    const map &here = get_map();
+
     const Creature *critter = get_creature_tracker().creature_at( p, true );
-    if( critter != nullptr && get_player_view().sees( *critter ) ) {
+    if( critter != nullptr && get_player_view().sees( here, *critter ) ) {
         return critter;
     }
 
@@ -60,13 +72,18 @@ static void draw_graffiti_text( const tripoint_bub_ms &p )
     }
 }
 
-void draw_extended_description( const std::vector<std::string> &description, const uint64_t width )
+void draw_extended_description( const std::vector<std::string> &description, cataimgui::scroll &s )
 {
+    cataimgui::set_scroll( s );
+
     for( const std::string &s : description ) {
         if( s == "--" ) {
             ImGui::Separator();
         } else {
-            cataimgui::draw_colored_text( s, c_light_gray, width );
+            for( const std::string &line : string_split( s, '\n' ) ) {
+                cataimgui::TextColoredParagraph( c_light_gray, line );
+                ImGui::NewLine();
+            }
         }
     }
 }
@@ -77,6 +94,8 @@ extended_description_window::extended_description_window( tripoint_bub_ms &p ) :
                        ImGuiWindowFlags_NoNavInputs ),
     p( p )
 {
+    const map &here = get_map();
+
     ctxt = input_context( "EXTENDED_DESCRIPTION" );
     ctxt.register_action( "NEXT_TAB" );
     ctxt.register_action( "PREV_TAB" );
@@ -87,31 +106,35 @@ extended_description_window::extended_description_window( tripoint_bub_ms &p ) :
     ctxt.register_action( "CONFIRM" );
     ctxt.register_action( "QUIT" );
     ctxt.register_action( "HELP_KEYBINDINGS" );
+    ctxt.register_action( "UP" );
+    ctxt.register_action( "DOWN" );
+    ctxt.register_action( "PAGE_UP" );
+    ctxt.register_action( "PAGE_DOWN" );
     ctxt.set_timeout( 10 );
 
     const Creature *critter = seen_critter( p );
     if( critter ) {
         creature_description = critter->extended_description();
     }
-    bool sees = get_player_character().sees( p );
-    const furn_id &furn = get_map().furn( p );
+    bool sees = get_player_character().sees( here, p );
+    const furn_id &furn = here.furn( p );
     if( sees && furn ) {
         furniture_description = furn->extended_description();
     }
-    const ter_id &ter = get_map().ter( p );
+    const ter_id &ter = here.ter( p );
     if( sees && ter ) {
         terrain_description = ter->extended_description();
     }
-    const optional_vpart_position &vp = get_map().veh_at( p );
+    const optional_vpart_position &vp = here.veh_at( p );
     if( sees && vp ) {
         veh_app_description = vp.extended_description();
     }
 
     if( critter ) {
         switch_target = description_target::creature;
-    } else if( get_map().has_furn( p ) ) {
+    } else if( here.has_furn( p ) ) {
         switch_target = description_target::furniture;
-    } else if( get_map().veh_at( p ) ) {
+    } else if( here.veh_at( p ) ) {
         switch_target = description_target::vehicle;
     }
 
@@ -140,7 +163,7 @@ void extended_description_window::draw_creature_tab()
     if( ImGui::BeginTabItem( title.c_str(), nullptr, flags ) ) {
         cur_target = description_target::creature;
         if( !creature_description.empty() ) {
-            draw_extended_description( creature_description, str_width_to_pixels( TERMX ) );
+            draw_extended_description( creature_description, info_scroll );
         } else {
             cataimgui::draw_colored_text( _( "You do not see any creature here." ), c_light_gray );
         }
@@ -159,7 +182,7 @@ void extended_description_window::draw_furniture_tab()
     if( ImGui::BeginTabItem( title.c_str(), nullptr, flags ) ) {
         cur_target = description_target::furniture;
         if( !furniture_description.empty() ) {
-            draw_extended_description( furniture_description, str_width_to_pixels( TERMX ) );
+            draw_extended_description( furniture_description, info_scroll );
         } else {
             cataimgui::draw_colored_text( _( "You do not see any furniture here." ), c_light_gray );
         }
@@ -179,7 +202,7 @@ void extended_description_window::draw_terrain_tab()
     if( ImGui::BeginTabItem( title.c_str(), nullptr, flags ) ) {
         cur_target = description_target::terrain;
         if( !terrain_description.empty() ) {
-            draw_extended_description( terrain_description, str_width_to_pixels( TERMX ) );
+            draw_extended_description( terrain_description, info_scroll );
         } else {
             cataimgui::draw_colored_text( _( "You can't see the terrain here." ), c_light_gray );
         }
@@ -199,7 +222,7 @@ void extended_description_window::draw_vehicle_tab()
     if( ImGui::BeginTabItem( title.c_str(), nullptr, flags ) ) {
         cur_target = description_target::vehicle;
         if( !veh_app_description.empty() ) {
-            draw_extended_description( veh_app_description, str_width_to_pixels( TERMX ) );
+            draw_extended_description( veh_app_description, info_scroll );
         } else {
             cataimgui::draw_colored_text( _( "You can't see vehicles or appliances here." ), c_light_gray );
         }
@@ -223,6 +246,14 @@ void extended_description_window::show()
         } else if( action == "PREV_TAB" ) {
             switch_target = cur_target;
             --switch_target;
+        }  else if( action == "UP" ) {
+            info_scroll = cataimgui::scroll::line_up;
+        }  else if( action == "DOWN" ) {
+            info_scroll = cataimgui::scroll::line_down;
+        }  else if( action == "PAGE_UP" ) {
+            info_scroll = cataimgui::scroll::page_up;
+        }  else if( action == "PAGE_DOWN" ) {
+            info_scroll = cataimgui::scroll::page_down;
         } else if( action == "CREATURE" ) {
             switch_target = description_target::creature;
         } else if( action == "FURNITURE" ) {

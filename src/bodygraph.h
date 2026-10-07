@@ -42,6 +42,7 @@ struct bodygraph_info {
     std::pair<int, nc_color> temperature;
     std::string temp_approx;
     int avg_coverage = 0;
+    int avg_env_protection = 0;
     int total_encumbrance = 0;
     int part_hp_cur = 0;
     int part_hp_max = 0;
@@ -88,6 +89,6 @@ using bodygraph_callback =
  */
 std::vector<std::string> get_bodygraph_lines( const Character &u,
         const bodygraph_callback &fragment_cb, const bodygraph_id &id = bodygraph_id::NULL_ID(),
-        int width = 0, int height = 0, const std::string_view &label = "" );
+        int width = 0, int height = 0, std::string_view label = "" );
 
 #endif // CATA_SRC_BODYGRAPH_H

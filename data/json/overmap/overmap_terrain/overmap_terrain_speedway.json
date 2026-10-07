@@ -41,7 +41,7 @@
   {
     "type": "overmap_terrain",
     "abstract": "speedway_track_abstract",
-    "copy-from": "generic_city_building_no_sidewalk",
+    "copy-from": "road_abstract",
     "vision_levels": "blends_till_outlines",
     "name": "speedway"
   },
@@ -147,13 +147,13 @@
     "vision_levels": "large_building",
     "name": "bleachers",
     "sym": "^",
-    "color": "light_blue"
+    "color": "light_blue",
+    "delete": { "post_process_generators": [ "riot_damage" ] }
   },
   {
     "type": "overmap_terrain",
     "abstract": "speedway_road_abstract",
     "copy-from": "road_abstract",
-    "color": "light_gray",
     "see_cost": "none",
     "extras": "build",
     "mondensity": 2,
@@ -212,10 +212,12 @@
       "speedway_4_9"
     ],
     "copy-from": "generic_city_building_no_sidewalk",
+    "looks_like": "s_lot",
     "vision_levels": "large_pavement",
     "name": "parking lot",
     "sym": "O",
-    "color": "dark_gray"
+    "color": "dark_gray",
+    "delete": { "post_process_generators": [ "riot_damage" ] }
   },
   {
     "type": "overmap_terrain",
@@ -224,7 +226,8 @@
     "vision_levels": "isolated_building",
     "name": "garage",
     "sym": "O",
-    "color": "white"
+    "color": "white",
+    "delete": { "post_process_generators": [ "riot_damage" ] }
   },
   {
     "type": "overmap_terrain",

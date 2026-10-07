@@ -5,9 +5,10 @@
     "name_unique": "Uyen Tran",
     "gender": "female",
     "name_suffix": "Refugee",
+    "portrait_filename": "Named_NPC_uyen_tran",
     "class": "NC_REFUGEE_Uyen",
     "attitude": 0,
-    "mission": 3,
+    "mission": "SHOPKEEP",
     "chat": "TALK_REFUGEE_Uyen_1",
     "faction": "free_merchants",
     "mission_offered": "MISSION_REFUGEE_Uyen_1"
@@ -253,7 +254,7 @@
       "concatenate": [
         "We've got it okay, I guess",
         {
-          "math": [ "u_counter_refugee_center_refugee_happiness", ">=", "6" ],
+          "math": [ "u_counter_refugee_center_refugee_happiness >= 6" ],
           "yes": ".  Things have been getting better.  I wasn't even sure it was possible",
           "no": ", as long as this doesn't last too long."
         },
@@ -293,7 +294,7 @@
       "effect": [
         { "u_spawn_item": "FMCNote", "count": 8 },
         { "u_add_var": "mission_flag_Uyen_Mission1", "value": "yes" },
-        { "math": [ "u_counter_refugee_center_refugee_happiness", "++" ] }
+        { "math": [ "u_counter_refugee_center_refugee_happiness++" ] }
       ]
     }
   },
@@ -325,7 +326,7 @@
       "effect": [
         { "u_spawn_item": "FMCNote", "count": 7 },
         { "u_add_var": "mission_flag_Uyen_Mission2", "value": "yes" },
-        { "math": [ "u_counter_refugee_center_refugee_happiness", "++" ] }
+        { "math": [ "u_counter_refugee_center_refugee_happiness++" ] }
       ]
     }
   },
@@ -356,7 +357,7 @@
       "effect": [
         { "u_spawn_item": "FMCNote", "count": 5 },
         { "u_add_var": "mission_flag_Uyen_Mission3", "value": "yes" },
-        { "math": [ "u_counter_refugee_center_refugee_happiness", "+=", "3" ] }
+        { "math": [ "u_counter_refugee_center_refugee_happiness += 3" ] }
       ]
     }
   }

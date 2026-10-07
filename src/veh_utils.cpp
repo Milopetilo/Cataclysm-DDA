@@ -1,33 +1,44 @@
 #include "veh_utils.h"
 
 #include <algorithm>
+#include <climits>
 #include <cmath>
 #include <functional>
 #include <list>
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "avatar.h"
 #include "calendar.h"
+#include "cata_imgui.h"
 #include "character.h"
-#include "craft_command.h"
+#include "coordinates.h"
+#include "crafting.h"
+#include "debug.h"
 #include "enums.h"
 #include "game.h"
 #include "game_constants.h"
 #include "input_context.h"
-#include "inventory.h"
+#include "input_enums.h"
 #include "item.h"
+#include "localized_comparator.h"
 #include "map.h"
+#include "memory_fast.h"
 #include "point.h"
 #include "requirements.h"
+#include "temp_crafting_inventory.h"
+#include "translation.h"
 #include "translations.h"
-#include "ui.h"
-#include "units_fwd.h"
+#include "uilist.h"
+#include "units.h"
 #include "veh_type.h"
 #include "vehicle.h"
 #include "vpart_position.h"
 #include "vpart_range.h"
+
+static const trait_id trait_DEBUG_HS( "DEBUG_HS" );
 
 namespace veh_utils
 {
@@ -56,7 +67,9 @@ int calc_xp_gain( const vpart_info &vp, const skill_id &sk, const Character &who
 
 vehicle_part *most_repairable_part( vehicle &veh, Character &who )
 {
-    const inventory &inv = who.crafting_inventory();
+    const temp_crafting_inventory &inv = who.crafting_inventory();
+    // no inventory-backed item or power changes in this loop, so query caches hold
+    temp_crafting_inventory::query_cache_scope cache_scope;
     vehicle_part *vp_broken = nullptr;
     vehicle_part *vp_most_damaged = nullptr;
     int most_damage = 0;
@@ -71,7 +84,7 @@ vehicle_part *most_repairable_part( vehicle &veh, Character &who )
 
         if( vp.is_broken() ) {
             if( who.meets_skill_requirements( info.install_skills ) &&
-                info.install_requirements().can_make_with_inventory( inv, is_crafting_component ) ) {
+                info.install_requirements().can_make_with_inventory( &who, inv, is_crafting_component ) ) {
                 vp_broken = &vp;
             }
             continue;
@@ -79,7 +92,7 @@ vehicle_part *most_repairable_part( vehicle &veh, Character &who )
 
         if( who.meets_skill_requirements( info.repair_skills ) ) {
             const requirement_data reqs = info.repair_requirements() * vp.get_base().repairable_levels();
-            if( reqs.can_make_with_inventory( inv, is_crafting_component ) ) {
+            if( reqs.can_make_with_inventory( &who, inv, is_crafting_component ) ) {
                 const int repairable_damage = vp.get_base().damage();
                 if( repairable_damage > most_damage ) {
                     most_damage = repairable_damage;
@@ -91,7 +104,7 @@ vehicle_part *most_repairable_part( vehicle &veh, Character &who )
     return vp_most_damaged != nullptr ? vp_most_damaged : vp_broken;
 }
 
-bool repair_part( vehicle &veh, vehicle_part &pt, Character &who )
+bool repair_part( map &here, vehicle &veh, vehicle_part &pt, Character &who )
 {
     const vpart_info &vp = pt.info();
 
@@ -99,13 +112,14 @@ bool repair_part( vehicle &veh, vehicle_part &pt, Character &who )
                                   ? vp.install_requirements()
                                   : vp.repair_requirements() * pt.get_base().repairable_levels();
 
-    const inventory &inv = who.crafting_inventory( who.pos(), PICKUP_RANGE, !who.is_npc() );
-    inventory map_inv;
+    const temp_crafting_inventory &inv = who.crafting_inventory( who.pos_bub(), PICKUP_RANGE,
+                                         !who.is_npc() );
+    temp_crafting_inventory map_inv;
     // allow NPCs to use welding rigs they can't see ( on the other side of a vehicle )
     // as they have the handicap of not being able to use the veh interaction menu
     // or able to drag a welding cart etc.
-    map_inv.form_from_map( who.pos(), PICKUP_RANGE, &who, false, !who.is_npc() );
-    if( !reqs.can_make_with_inventory( inv, is_crafting_component ) ) {
+    map_inv.form_from_map( who.pos_bub(), PICKUP_RANGE, &who, !who.is_npc() );
+    if( !reqs.can_make_with_inventory( &who, inv, is_crafting_component ) ) {
         who.add_msg_if_player( m_info, _( "You don't meet the requirements to repair the %s." ),
                                pt.name() );
         return false;
@@ -140,15 +154,15 @@ bool repair_part( vehicle &veh, vehicle_part &pt, Character &who )
         const point_rel_ms mount = pt.mount;
         const units::angle direction = pt.direction;
         const std::string variant = pt.variant;
-        get_map().spawn_items( who.pos_bub(), pt.pieces_for_broken_part() );
+        here.spawn_items( who.pos_bub( here ), pt.pieces_for_broken_part() );
         veh.remove_part( pt );
-        const int partnum = veh.install_part( mount, vpid, std::move( base ) );
+        const int partnum = veh.install_part( here, mount, vpid, std::move( base ) );
         if( partnum >= 0 ) {
             vehicle_part &vp = veh.part( partnum );
             vp.direction = direction;
             vp.variant = variant;
         }
-        veh.part_removal_cleanup();
+        veh.part_removal_cleanup( here );
         who.add_msg_if_player( m_good, _( "You replace the %1$s's %2$s. (was %3$s)" ),
                                veh.name, partname, startdurability );
     } else {
@@ -157,6 +171,52 @@ bool repair_part( vehicle &veh, vehicle_part &pt, Character &who )
                                veh.name, partname, startdurability );
     }
     return true;
+}
+
+bool can_install_anywhere( const Character &who, const temp_crafting_inventory &inv,
+                           const vehicle &veh, const vpart_info &vpart )
+{
+    bool engine_reqs_met = true;
+    const bool can_make = vpart.install_requirements().can_make_with_inventory( &who, inv,
+                          is_crafting_component, 1, craft_flags::none, false );
+    const bool hammerspace = who.has_trait( trait_DEBUG_HS );
+    if( vpart.has_flag( VPFLAG_ENGINE ) && vpart.has_flag( "E_HIGHER_SKILL" ) ) {
+        int engines = 0;
+        for( const vpart_reference &vp : veh.get_avail_parts( "ENGINE" ) ) {
+            if( vp.has_feature( "E_HIGHER_SKILL" ) ) {
+                engines++;
+            }
+        }
+        engine_reqs_met = engines < 2;
+    }
+    return hammerspace || ( can_make && engine_reqs_met && !vpart.has_flag( VPFLAG_APPLIANCE ) );
+}
+
+install_candidates list_install_candidates( const Character &who,
+        const temp_crafting_inventory &inv, const vehicle &veh )
+{
+    // no inventory-backed item or power changes while the list is built, so query caches hold
+    temp_crafting_inventory::query_cache_scope cache_scope;
+    install_candidates ret;
+    std::vector<const vpart_info *> req_missing;
+    for( const vpart_info &vpi : vehicles::parts::get_all() ) {
+        if( vpi.has_flag( "NO_INSTALL_HIDDEN" ) || vpi.has_flag( VPFLAG_APPLIANCE ) ) {
+            continue;
+        }
+        if( can_install_anywhere( who, inv, veh, vpi ) ) {
+            ret.parts.push_back( &vpi );
+            ret.installable.insert( &vpi );
+        } else {
+            req_missing.push_back( &vpi );
+        }
+    }
+    const auto by_name = []( const vpart_info * a, const vpart_info * b ) {
+        return localized_compare( a->name(), b->name() );
+    };
+    std::sort( ret.parts.begin(), ret.parts.end(), by_name );
+    std::sort( req_missing.begin(), req_missing.end(), by_name );
+    ret.parts.insert( ret.parts.end(), req_missing.cbegin(), req_missing.cend() );
+    return ret;
 }
 
 } // namespace veh_utils
@@ -364,6 +424,8 @@ std::vector<uilist_entry> veh_menu::get_uilist_entries() const
     return entries;
 }
 
+namespace
+{
 class veh_menu_cb : public uilist_callback
 {
     public:
@@ -373,7 +435,7 @@ class veh_menu_cb : public uilist_callback
             last_view = player_character.view_offset;
             terrain_draw_cb = make_shared_fast<game::draw_callback_t>( [this, &player_character]() {
                 if( draw_trail && last >= 0 && static_cast<size_t>( last ) < points.size() ) {
-                    g->draw_trail_to_square( player_character.view_offset.raw(), true );
+                    g->draw_trail_to_square( player_character.view_offset, true );
                 }
             } );
             g->add_draw_callback( terrain_draw_cb );
@@ -398,24 +460,27 @@ class veh_menu_cb : public uilist_callback
             last = menu->selected;
             avatar &player_character = get_avatar();
             if( menu->selected < 0 || menu->selected >= static_cast<int>( points.size() ) ) {
-                player_character.view_offset = tripoint_rel_ms_zero;
+                player_character.view_offset = tripoint_rel_ms::zero;
             } else {
                 const tripoint &center = points[menu->selected];
-                player_character.view_offset = tripoint_rel_ms( center - player_character.pos() );
+                player_character.view_offset = tripoint_rel_ms( center - player_character.pos_bub().raw() );
                 // Remove next line if/when it's wanted/safe to shift view to other zlevels
                 player_character.view_offset.z() = 0;
             }
             g->invalidate_main_ui_adaptor();
             if( on_select ) {
                 on_select();
-                map &m = get_map();
-                m.invalidate_map_cache( m.get_abs_sub().z() );
+                map &here = get_map(); // TODO: Handle getting the correct map.
+                here.invalidate_map_cache( here.get_abs_sub().z() );
             }
         }
 };
+} // namespace
 
 bool veh_menu::query()
 {
+    map &here = get_map(); // TODO: Handle getting the correct map.
+
     if( items.empty() ) {
         debugmsg( "veh_menu::query() called with empty items" );
         return false;
@@ -483,10 +548,13 @@ bool veh_menu::query()
 
     chosen._on_submit();
 
-    veh.refresh();
-    map &m = get_map();
-    m.invalidate_visibility_cache();
-    m.invalidate_map_cache( m.get_abs_sub().z() );
+    // There's probably a better way to detect this?
+    // If we're swapping dimensions the veh reference has been invalidated.
+    if( !g->swapping_dimensions ) {
+        veh.refresh( );
+        here.invalidate_visibility_cache();
+        here.invalidate_map_cache( here.get_abs_sub().z() );
+    }
 
     return chosen._keep_menu_open;
 }

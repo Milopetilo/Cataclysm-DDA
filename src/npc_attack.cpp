@@ -1,24 +1,42 @@
 #include "npc_attack.h"
 
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+
 #include "cata_utility.h"
 #include "character.h"
+#include "creature.h"
 #include "creature_tracker.h"
+#include "damage.h"
+#include "debug.h"
 #include "dialogue.h"
+#include "dialogue_helpers.h"
 #include "flag.h"
 #include "item.h"
-#include "itype.h"
-#include "line.h"
+#include "item_location.h"
 #include "magic.h"
 #include "magic_spell_effect_helpers.h"
 #include "map.h"
+#include "mapdata.h"
 #include "messages.h"
 #include "npc.h"
+#include "pimpl.h"
 #include "point.h"
 #include "projectile.h"
 #include "ranged.h"
+#include "ret_val.h"
+#include "rng.h"
+#include "talker.h"
+#include "temp_crafting_inventory.h"
 
 static const bionic_id bio_hydraulics( "bio_hydraulics" );
 
+static const json_character_flag json_flag_CANNOT_MOVE( "CANNOT_MOVE" );
 static const json_character_flag json_flag_SUBTLE_SPELL( "SUBTLE_SPELL" );
 
 namespace npc_attack_constants
@@ -61,7 +79,7 @@ static bool can_move( const npc &source )
 static bool can_move_melee( const npc &source )
 {
     return can_move( source ) && source.rules.engagement != combat_engagement::FREE_FIRE &&
-           source.rules.engagement != combat_engagement::NO_MOVE;
+           source.rules.engagement != combat_engagement::NO_MOVE && !source.has_flag( json_flag_CANNOT_MOVE );
 }
 
 bool npc_attack_rating::operator>( const npc_attack_rating &rhs ) const
@@ -107,7 +125,7 @@ void npc_attack_spell::use( npc &source, const tripoint_bub_ms &location ) const
         source.unwield();
     }
     add_msg_debug( debugmode::debug_filter::DF_NPC, "%s is casting %s", source.disp_name(), sp.name() );
-    source.cast_spell( sp, false, location.raw() );
+    source.cast_spell( sp, false, location );
 }
 
 npc_attack_rating npc_attack_spell::evaluate( const npc &source,
@@ -173,6 +191,8 @@ int npc_attack_spell::base_time_penalty( const npc &source ) const
 npc_attack_rating npc_attack_spell::evaluate_tripoint(
     const npc &source, const Creature *target, const tripoint_bub_ms &location ) const
 {
+    const map &here = get_map();
+
     const spell &attack_spell = source.magic->get_spell( attack_spell_id );
 
     double total_potential = 0;
@@ -194,7 +214,7 @@ npc_attack_rating npc_attack_spell::evaluate_tripoint(
 
         const Creature::Attitude att = source.attitude_to( *critter );
         int damage = 0;
-        if( source.sees( *critter ) ) {
+        if( source.sees( here, *critter ) ) {
             damage = attack_spell.dps( source, *critter );
         }
         const int distance_to_me = rl_dist( source.pos_bub(), potential_target );
@@ -244,7 +264,7 @@ void npc_attack_melee::use( npc &source, const tripoint_bub_ms &location ) const
     }
     int target_distance = rl_dist( source.pos_bub(), location );
     if( !source.is_adjacent( critter, true ) ) {
-        if( target_distance <= weapon.reach_range( source ) ) {
+        if( target_distance <= weapon.reach_range( source ).first ) {
             add_msg_debug( debugmode::debug_filter::DF_NPC, "%s is attempting a reach attack",
                            source.disp_name() );
             // check for friendlies in the line of fire
@@ -268,8 +288,8 @@ void npc_attack_melee::use( npc &source, const tripoint_bub_ms &location ) const
                 source.look_for_player( get_player_character() );
             }
         } else {
-            source.update_path( tripoint_bub_ms( location ) );
-            if( source.path.size() > 1 ) {
+            source.update_path( location );
+            if( source.path.size() > 1 && !source.has_flag( json_flag_CANNOT_MOVE ) ) {
                 bool clear_path = can_move_melee( source );
                 if( clear_path && source.mem_combat.formation_distance == -1 ) {
                     source.move_to_next();
@@ -306,8 +326,10 @@ void npc_attack_melee::use( npc &source, const tripoint_bub_ms &location ) const
                                    source.disp_name() );
                     source.melee_attack( *critter, true );
                 }
-            } else {
+            } else if( !source.has_flag( json_flag_CANNOT_MOVE ) ) {
                 source.look_for_player( get_player_character() );
+            } else {
+                source.move_pause();
             }
         }
     } else if( source.mem_combat.formation_distance != -1 &&
@@ -395,12 +417,21 @@ npc_attack_rating npc_attack_melee::evaluate_critter( const npc &source,
         return npc_attack_rating{};
     }
 
+    // Can't melee creatures that are underwater beneath a solid surface
+    if( critter->is_underwater() ) {
+        const map &here = get_map();
+        if( here.has_flag( ter_furn_flag::TFLAG_SWIM_UNDER, critter->pos_bub() ) ) {
+            return npc_attack_rating{};
+        }
+    }
+
     // TODO: Give bashing weapons a better
     // rating against armored targets
     double damage{ weapon.base_damage_melee().total_damage() };
     damage *= 100.0 / weapon.attack_time( source );
-    const int reach_range{ weapon.reach_range( source ) };
-    const int distance_to_me = clamp( rl_dist( source.pos(), critter->pos() ) - reach_range, 0, 10 );
+    const int reach_range{ weapon.reach_range( source ).first };
+    const int distance_to_me = clamp( rl_dist( source.pos_bub(), critter->pos_bub() ) - reach_range, 0,
+                                      10 );
     // Multiplier of 0.5f to 1.5f based on distance
     const float distance_multiplier = 1.5f - distance_to_me * 0.1f;
     double potential = damage * distance_multiplier;
@@ -408,7 +439,7 @@ npc_attack_rating npc_attack_melee::evaluate_critter( const npc &source,
     if( damage >= critter->get_hp() ) {
         potential *= npc_attack_constants::kill_modifier;
     }
-    if( target && target->pos() == critter->pos() ) {
+    if( target && target->pos_bub() == critter->pos_bub() ) {
         potential *= npc_attack_constants::target_modifier;
     }
 
@@ -435,7 +466,7 @@ void npc_attack_gun::use( npc &source, const tripoint_bub_ms &location ) const
 
     if( has_obstruction( source.pos_bub(), location, false ) ||
         ( source.rules.has_flag( ally_rule::avoid_friendly_fire ) &&
-          !source.wont_hit_friend( tripoint_bub_ms( location ), gun, false ) ) ) {
+          !source.wont_hit_friend( location, gun, false ) ) ) {
         if( can_move( source ) ) {
             source.avoid_friendly_fire();
         } else {
@@ -444,12 +475,13 @@ void npc_attack_gun::use( npc &source, const tripoint_bub_ms &location ) const
         return;
     }
 
-    const int dist = rl_dist( source.pos_bub(), location );
+    const Target_attributes target( source.pos_bub(), location );
+    const aim_mods_cache aim_cache = source.gen_aim_mods_cache( gun );
 
     // Only aim if we aren't in risk of being hit
     // TODO: Get distance to closest enemy
-    if( dist > 1 && source.aim_per_move( gun, source.recoil ) > 0 &&
-        source.confident_gun_mode_range( gunmode, source.recoil ) < dist ) {
+    if( target.range > 1 && source.aim_per_move( gun, source.recoil, target, aim_cache ) > 0 &&
+        source.confident_gun_mode_range( gunmode, source.recoil ) < target.range ) {
         add_msg_debug( debugmode::debug_filter::DF_NPC, "%s is aiming", source.disp_name() );
         source.aim( Target_attributes( source.pos_bub(), location ) );
     } else {
@@ -482,14 +514,7 @@ int npc_attack_gun::base_time_penalty( const npc &source ) const
     if( !weapon.ammo_sufficient( &source ) ) {
         time_penalty += npc_attack_constants::base_time_penalty;
     }
-    int recoil_penalty = 0;
-    if( source.is_wielding( weapon ) ) {
-        recoil_penalty = source.recoil;
-    } else {
-        recoil_penalty = MAX_RECOIL;
-    }
-    recoil_penalty /= 100;
-    return time_penalty + recoil_penalty;
+    return time_penalty;
 }
 
 tripoint_range<tripoint_bub_ms> npc_attack_gun::targetable_points( const npc &source ) const
@@ -566,7 +591,7 @@ npc_attack_rating npc_attack_gun::evaluate_tripoint(
     if( has_obstruction( source.pos_bub(), location, avoids_friendly_fire ) ) {
         potential *= 0.9f;
     } else if( avoids_friendly_fire &&
-               !source.wont_hit_friend( tripoint_bub_ms( location ), gun, false ) ) {
+               !source.wont_hit_friend( location, gun, false ) ) {
         potential *= 0.95f;
     }
 
@@ -576,7 +601,7 @@ npc_attack_rating npc_attack_gun::evaluate_tripoint(
     if( damage >= critter->get_hp() ) {
         potential *= npc_attack_constants::kill_modifier;
     }
-    if( target && target->pos() == critter->pos() ) {
+    if( target && target->pos_bub() == critter->pos_bub() ) {
         potential *= npc_attack_constants::target_modifier;
     }
     return npc_attack_rating( static_cast<int>( std::round( potential ) ), location );
@@ -731,8 +756,9 @@ npc_attack_rating npc_attack_throw::evaluate(
         // please don't throw your pants...
         return effectiveness;
     }
-    const inventory &available_weapons = source.crafting_inventory( tripoint_zero, -1 );
-    if( &thrown_item == source.evaluate_best_weapon() &&
+    const temp_crafting_inventory &available_weapons = source.crafting_inventory( tripoint_bub_ms::zero,
+            -1 );
+    if( &thrown_item == best_weapon &&
         available_weapons.amount_of( thrown_item.typeId() ) <= 1 &&
         available_weapons.charges_of( thrown_item.typeId() ) <= 1 ) {
         // Don't throw if it's the best individual killy-thing we've got
@@ -822,12 +848,12 @@ npc_attack_rating npc_attack_throw::evaluate_tripoint(
     }
 
     if( source.rules.has_flag( ally_rule::avoid_friendly_fire ) &&
-        !source.wont_hit_friend( tripoint_bub_ms( location ), thrown_item, true ) ) {
+        !source.wont_hit_friend( location, thrown_item, true ) ) {
         // Avoid friendy fire
         return npc_attack_rating( std::nullopt, location );
     }
 
-    const float throw_mult = throw_cost( source, single_item ) * source.speed_rating() / 100.0f;
+    const float throw_mult = throw_cost( source, single_item ) * source_speed_rating / 100.0f;
     const int damage = source.thrown_item_total_damage_raw( single_item );
     float dps = damage / throw_mult;
     const int distance_to_me = rl_dist( location, source.pos_bub() );
@@ -844,7 +870,7 @@ npc_attack_rating npc_attack_throw::evaluate_tripoint(
     if( potential > 0.0f && critter && damage >= critter->get_hp() ) {
         potential *= npc_attack_constants::kill_modifier;
     }
-    if( potential > 0.0f && target && critter && target->pos() == critter->pos() ) {
+    if( potential > 0.0f && target && critter && target->pos_bub() == critter->pos_bub() ) {
         potential *= npc_attack_constants::target_modifier;
     }
     return npc_attack_rating( static_cast<int>( std::round( potential ) ), location );

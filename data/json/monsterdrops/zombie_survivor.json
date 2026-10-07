@@ -19,8 +19,7 @@
       },
       { "group": "survivor_grenades", "prob": 10 },
       { "group": "stash_food", "prob": 20 },
-      { "group": "ammo_common", "prob": 25 },
-      { "group": "ammo_rare", "prob": 10 },
+      { "group": "ammo_common_boxed_used", "prob": 35 },
       { "group": "stash_drugs", "prob": 25 },
       { "group": "gear_survival", "prob": 15 },
       { "group": "mil_food", "prob": 10 },
@@ -29,7 +28,7 @@
       { "group": "mil_surplus", "prob": 15 },
       { "group": "default_zombie_items_bags", "prob": 15 },
       { "group": "default_zombie_items_pockets", "prob": 15 },
-      { "item": "cash_card", "charges": [ 25000, 100000 ] },
+      { "item": "credit_card" },
       {
         "distribution": [ { "group": "full_survival_kit", "damage": [ 1, 4 ] }, { "group": "used_survival_kit", "damage": [ 1, 4 ] } ],
         "prob": 5
@@ -128,7 +127,6 @@
       [ "bat_metal", 5 ],
       [ "bwirebat", 20 ],
       [ "crowbar", 5 ],
-      [ "homewrecker", 5 ],
       [ "nailboard", 25 ],
       [ "makeshift_crowbar", 35 ],
       [ "nailbat", 25 ],
@@ -172,8 +170,8 @@
           },
           { "group": "grenades", "prob": 10 },
           { "group": "launchers", "prob": 1 },
-          { "group": "stash_food", "prob": 40 },
-          { "group": "ammo_common", "prob": 26 },
+          { "group": "stash_food", "prob": 10 },
+          { "group": "ammo_common_boxed_used", "prob": 26 },
           { "group": "stash_drugs", "prob": 28 },
           { "group": "gear_survival", "prob": 18 },
           { "group": "mil_food", "prob": 22 },
@@ -182,7 +180,7 @@
           { "group": "mil_surplus", "prob": 6 }
         ]
       },
-      { "item": "cash_card", "charges": [ 50000, 150000 ] }
+      { "item": "credit_card" }
     ]
   },
   {
@@ -220,6 +218,7 @@
     "items": [
       [ "gasbomb_makeshift", 30 ],
       [ "molotov", 100 ],
+      [ "gelled_molotov", 5 ],
       [ "pipebomb", 30 ],
       [ "small_homemade_grenade", 30 ],
       [ "40x46mm_hornets_nest_22lr", 5 ],
@@ -233,7 +232,6 @@
     "items": [
       [ "spear_copper", 1 ],
       [ "spear_steel", 1 ],
-      [ "spear_forked", 15 ],
       [ "spear_knife", 15 ],
       [ "spear_pipe", 10 ],
       [ "spear_spike", 15 ],
@@ -269,7 +267,6 @@
       { "item": "mossberg_500", "prob": 5, "charges": [ 0, 6 ] },
       { "item": "remington_870", "prob": 5, "charges": [ 0, 5 ] },
       { "item": "ruger_1022", "prob": 15, "charges": [ 0, 10 ] },
-      { "item": "shotgun_410", "prob": 10, "charges": [ 0, 1 ] },
       { "item": "shotgun_s", "prob": 10, "charges": [ 0, 1 ] },
       { "item": "shotgun_d", "prob": 10, "charges": [ 0, 2 ] },
       { "item": "sten", "prob": 20, "charges": [ 0, 32 ] },
@@ -347,13 +344,15 @@
     "type": "item_group",
     "//": "Anything a survivor looted or cobbled together to wear on their face",
     "items": [
-      [ "glasses_safety", 15 ],
+      [ "glasses_safety", 10 ],
+      [ "goggles_chem", 5 ],
       [ "goggles_swim", 5 ],
       [ "goggles_ski", 10 ],
       { "item": "mask_gas", "prob": 60, "charges": [ 0, 100 ] },
       { "item": "mask_gas_half", "prob": 60, "charges": [ 0, 100 ] },
       [ "mask_hockey", 10 ],
       [ "mask_bal", 1 ],
+      [ "balaclava_cut_resistant", 1 ],
       [ "mask_rioter", 5 ]
     ]
   },
@@ -377,6 +376,7 @@
       [ "carpet_armguards", 8 ],
       [ "improvised_armguard_tire", 4 ],
       [ "elbow_pads", 20 ],
+      [ "armguard_cut_resistant", 2 ],
       [ "chainmail_junk_arms", 1 ]
     ]
   },
@@ -388,7 +388,6 @@
       [ "vest_leather", 20 ],
       [ "vest_leather_mod", 8 ],
       [ "stab_vest", 15 ],
-      [ "dragonskin", 1 ],
       [ "chainmail_junk_vest", 1 ],
       [ "chestguard_hard", 10 ],
       [ "armor_riot_torso", 10 ],
@@ -403,6 +402,7 @@
       [ "vest_jean_mod", 2 ],
       [ "soft_3a_vest", 3 ],
       [ "level_3_vest", 3 ],
+      [ "apron_cut_resistant", 3 ],
       [ "lame_foil", 1 ],
       [ "sleeveless_trenchcoat_leather", 12 ],
       [ "sleeveless_trenchcoat", 12 ]
@@ -429,6 +429,7 @@
       [ "motorbike_armor", 25 ],
       [ "ski_jacket", 10 ],
       [ "coat_winter", 10 ],
+      [ "coat_light_winter", 10 ],
       [ "coat_fur", 1 ],
       [ "coat_faux_fur", 1 ]
     ]
@@ -504,7 +505,6 @@
       [ "technician_pants_gray", 15 ],
       [ "jeans", 20 ],
       [ "jeans_mod", 10 ],
-      [ "jeans_red", 5 ],
       [ "motorbike_pants", 10 ],
       [ "survivor_adhoc_leather_pants", 15 ],
       [ "pants_faux_fur", 5 ],

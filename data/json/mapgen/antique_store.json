@@ -1,9 +1,7 @@
 [
   {
     "type": "mapgen",
-    "method": "json",
     "om_terrain": [ "s_antique" ],
-    "weight": 500,
     "object": {
       "fill_ter": "t_floor",
       "rows": [
@@ -15,7 +13,7 @@
         "FFFFFFFFFFFFFFFFFFFFFFFF",
         "FFFFFFFFFFFFFFFFFFFFFFFF",
         "###OOOOOO##++##OOOOOO###",
-        "#l                    l#",
+        "#l       §            l#",
         "#l                    l#",
         "#l  llllll    llllll  l#",
         "#l                    l#",
@@ -24,7 +22,7 @@
         "#l                    l#",
         "#l                    l#",
         "#      ccTTTTTTcc      #",
-        "#              Lc      #",
+        "#     §        Lc     §#",
         "###########M############",
         ".4........._________<...",
         "........................",
@@ -55,14 +53,13 @@
         { "item": "antique", "x": [ 22, 22 ], "y": [ 8, 15 ], "chance": 85, "repeat": [ 1, 3 ] },
         { "item": "antique_rare", "x": [ 9, 14 ], "y": [ 16, 16 ], "chance": 65 },
         { "item": "cash_register_random", "x": [ 15, 16 ], "y": 16, "chance": 100 }
-      ]
+      ],
+      "nested": { "§": { "chunks": [ "fire_extinguisher" ] } }
     }
   },
   {
     "type": "mapgen",
-    "method": "json",
     "om_terrain": [ "s_antique_roof" ],
-    "weight": 500,
     "object": {
       "fill_ter": "t_tar_flat_roof",
       "rows": [
@@ -92,7 +89,7 @@
         "                        "
       ],
       "palettes": [ "roof_palette" ],
-      "place_items": [ { "item": "roof_trash", "x": [ 4, 16 ], "y": [ 8, 15 ], "chance": 50, "repeat": [ 1, 3 ] } ],
+      "place_items": [ { "item": "SUS_trash_roof", "x": [ 4, 16 ], "y": [ 8, 15 ], "chance": 50, "repeat": [ 1, 3 ] } ],
       "place_nested": [
         { "chunks": [ [ "roof_2x2_golf", 5 ], [ "null", 85 ], [ "roof_3x3_wine", 10 ] ], "x": [ 13, 20 ], "y": 15 },
         {

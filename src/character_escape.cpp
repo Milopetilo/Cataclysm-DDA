@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <functional>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "bodypart.h"
@@ -7,6 +9,7 @@
 #include "character.h"
 #include "character_attire.h"
 #include "character_martial_arts.h"
+#include "coordinates.h"
 #include "creature_tracker.h"
 #include "damage.h"
 #include "debug.h"
@@ -46,6 +49,7 @@ static const itype_id itype_beartrap( "beartrap" );
 static const itype_id itype_rope_6( "rope_6" );
 static const itype_id itype_snare_trigger( "snare_trigger" );
 
+static const json_character_flag json_flag_CANNOT_MOVE( "CANNOT_MOVE" );
 static const json_character_flag json_flag_DOWNED_RECOVERY( "DOWNED_RECOVERY" );
 
 static const limb_score_id limb_score_balance( "balance" );
@@ -74,19 +78,23 @@ void Character::try_remove_downed()
     int chance = ( get_dex() + get_arm_str() / 2.0 ) * get_limb_score( limb_score_balance ) * 10.0;
     // Always 2,5% chance to stand up
     chance += has_flag( json_flag_DOWNED_RECOVERY ) ? 20 : 1;
-    if( !x_in_y( chance, 40 ) ) {
-        add_msg_if_player( _( "You struggle to stand." ) );
-    } else {
-        add_msg_player_or_npc( m_good,
-                               has_flag( json_flag_DOWNED_RECOVERY ) ? _( "You deftly roll to your feet." ) : _( "You stand up." ),
-                               has_flag( json_flag_DOWNED_RECOVERY ) ? _( "<npcname> deftly rolls to their feet." ) :
-                               _( "<npcname> stands up." ) );
-        remove_effect( effect_downed );
+    if( !has_flag( json_flag_CANNOT_MOVE ) ) {
+        if( !x_in_y( chance, 40 ) ) {
+            add_msg_if_player( _( "You struggle to stand." ) );
+        } else {
+            add_msg_player_or_npc( m_good,
+                                   has_flag( json_flag_DOWNED_RECOVERY ) ? _( "You deftly roll to your feet." ) : _( "You stand up." ),
+                                   has_flag( json_flag_DOWNED_RECOVERY ) ? _( "<npcname> deftly rolls to their feet." ) :
+                                   _( "<npcname> stands up." ) );
+            remove_effect( effect_downed );
+        }
     }
 }
 
 void Character::try_remove_bear_trap()
 {
+    map &here = get_map();
+
     /* Real bear traps can't be removed without the proper tools or immense strength; eventually this should
        allow normal players two options: removal of the limb or removal of the trap from the ground
        (at which point the player could later remove it from the leg with the right tools).
@@ -99,7 +107,7 @@ void Character::try_remove_bear_trap()
             if( x_in_y( mon->type->melee_dice * mon->type->melee_sides, 200 ) ) {
                 mon->remove_effect( effect_beartrap );
                 remove_effect( effect_beartrap );
-                get_map().spawn_item( pos_bub(), itype_beartrap );
+                here.spawn_item( pos_bub(), itype_beartrap );
                 add_msg( _( "The %s escapes the bear trap!" ), mon->get_name() );
             } else {
                 add_msg_if_player( m_bad,
@@ -107,14 +115,19 @@ void Character::try_remove_bear_trap()
             }
         }
     } else {
-        if( can_escape_trap( 100 ) ) {
-            remove_effect( effect_beartrap );
-            get_map().spawn_item( pos_bub(), itype_beartrap );
-            add_msg_player_or_npc( m_good, _( "You free yourself from the bear trap!" ),
-                                   _( "<npcname> frees themselves from the bear trap!" ) );
-        } else {
-            add_msg_if_player( m_bad,
-                               _( "You try to free yourself from the bear trap, but can't get loose!" ) );
+        // If we were caught in several bear traps at once, conduct a separate attempt to free for each one
+        for( const bodypart_id &bp : get_all_body_parts() ) {
+            if( has_effect( effect_beartrap, bp ) ) {
+                if( can_escape_trap( 100 ) ) {
+                    remove_effect( effect_beartrap, bp );
+                    here.spawn_item( pos_bub(), itype_beartrap );
+                    add_msg_player_or_npc( m_good, _( "You free yourself from the bear trap!" ),
+                                           _( "<npcname> frees themselves from the bear trap!" ) );
+                } else {
+                    add_msg_if_player( m_bad,
+                                       _( "You try to free yourself from the bear trap, but can't get loose!" ) );
+                }
+            }
         }
     }
 }
@@ -155,12 +168,12 @@ void Character::try_remove_heavysnare()
             }
         }
     } else {
-        if( can_escape_trap( 32 - dex_cur, true ) ) {
+        if( can_escape_trap( 32 - get_dex(), true ) ) {
             remove_effect( effect_heavysnare );
             add_msg_player_or_npc( m_good, _( "You free yourself from the heavy snare!" ),
                                    _( "<npcname> frees themselves from the heavy snare!" ) );
-            item rope( "rope_6", calendar::turn );
-            item snare( "snare_trigger", calendar::turn );
+            item rope( itype_rope_6, calendar::turn );
+            item snare( itype_snare_trigger, calendar::turn );
             here.add_item_or_charges( pos_bub(), rope );
             here.add_item_or_charges( pos_bub(), snare );
         } else {
@@ -212,8 +225,11 @@ bool Character::try_remove_grab( bool attacking )
 
         // No need to recalculate it in-loop, breaking previous grabs doesn't change skills
         float skill_factor = std::min( 0.8f,
-                                       std::max( std::max( static_cast<float>( get_skill_level( skill_melee ) ) / 10, 0.1f ),
-                                               std::max( static_cast<float>( get_skill_level( skill_unarmed ) ) / 8, 0.1f ) ) );
+        std::max( {
+            static_cast<float>( get_skill_level( skill_melee ) ) / 10,
+            0.1f,
+            static_cast<float>( get_skill_level( skill_unarmed ) ) / 8
+        } ) );
         int grab_break_factor = has_grab_break_tec() ? 10 : 0;
         const tripoint_range<tripoint_bub_ms> &surrounding = here.points_in_radius( pos_bub(), 1, 0 );
 
@@ -411,7 +427,7 @@ bool Character::move_effects( bool attacking )
     // than this will need to be reworked to only have success effects if /all/ checks succeed
     if( has_effect( effect_in_pit ) ) {
         /** @EFFECT_DEX increases chance to escape pit, slightly */
-        if( !can_escape_trap( 40 - dex_cur / 2 ) ) {
+        if( !can_escape_trap( 40 - get_dex() / 2 ) ) {
             add_msg_if_player( m_bad, _( "You try to escape the pit, but slip back in." ) );
             return false;
         } else {

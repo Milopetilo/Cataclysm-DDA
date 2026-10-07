@@ -23,6 +23,7 @@
 #include <utility>
 #include <vector>
 #if defined(_WIN32)
+#include "cata_allocator.h"
 #include "platform_win.h"
 #else
 #include <csignal>
@@ -31,6 +32,7 @@
 #include <flatbuffers/util.h>
 
 #include "cached_options.h"
+#include "cata_allocator.h"
 #include "cata_path.h"
 #include "color.h"
 #include "compatibility.h"
@@ -75,20 +77,18 @@
 
 class ui_adaptor;
 
+#if defined(TILES) || defined(SDL_SOUND)
+#   include "sdl_version_wrappers.h"
+#endif
+
 #if defined(TILES)
-#   if defined(_MSC_VER) && defined(USE_VCPKG)
-#      include <SDL2/SDL_version.h>
-#   else
-#      include <SDL_version.h>
-#   endif
+#   include "sdltiles.h"
 #endif
 
 #if defined(__ANDROID__)
-#include <SDL_filesystem.h>
-#include <SDL_keyboard.h>
-#include <SDL_system.h>
 #include <android/log.h>
 #include <unistd.h>
+#include "sdl_wrappers.h" // for GetAndroidExternalStoragePath(), SDL_main
 
 // Taken from: https://codelab.wordpress.com/2014/11/03/how-to-use-standard-output-streams-for-logging-in-android-apps/
 // Force Android standard output to adb logcat output
@@ -143,30 +143,30 @@ namespace
 // Used only if AttachConsole() works
 FILE *CONOUT;
 #endif
-
-#if !defined(_WIN32)
-extern "C" void sigint_handler( int /* s */ )
+void exit_handler( int s )
 {
-    if( g->uquit != QUIT_EXIT_PENDING ) {
-        g->uquit = QUIT_EXIT;
-    }
-}
-#endif
+    const int old_timeout = inp_mngr.get_timeout();
+    inp_mngr.reset_timeout();
+    if( s != 2 || query_yn( _( "Really Quit?  All unsaved changes will be lost." ) ) ) {
+        deinitDebug();
 
-void exit_handler( int /* s */ )
-{
-    deinitDebug();
+        int exit_status = 0;
+        g.reset();
 
-    g.reset();
-
-    catacurses::endwin();
+        catacurses::endwin();
 
 #if defined(__ANDROID__)
-    // Avoid capturing SIGABRT on exit on Android in crash report
-    // Can be removed once the SIGABRT on exit problem is fixed
-    signal( SIGABRT, SIG_DFL );
+        // Avoid capturing SIGABRT on exit on Android in crash report
+        // Can be removed once the SIGABRT on exit problem is fixed
+        signal( SIGABRT, SIG_DFL );
 #endif
 
+        imclient.reset();
+        exit( exit_status );
+    }
+    inp_mngr.set_timeout( old_timeout );
+    ui_manager::redraw_invalidated();
+    catacurses::doupdate();
 }
 
 struct arg_handler {
@@ -573,7 +573,7 @@ bool assure_essential_dirs_exist()
     return true;
 }
 
-}  // namespace
+} // namespace
 
 #if defined(EMSCRIPTEN)
 EM_ASYNC_JS( void, mount_idbfs, (), {
@@ -616,34 +616,22 @@ EM_ASYNC_JS( void, mount_idbfs, (), {
 } );
 #endif
 
-#if defined(USE_WINMAIN)
-int APIENTRY WinMain( _In_ HINSTANCE /* hInstance */, _In_opt_ HINSTANCE /* hPrevInstance */,
-                      _In_ LPSTR /* lpCmdLine */, _In_ int /* nCmdShow */ )
+namespace
 {
-    int argc = __argc;
-    char **argv = __argv;
-#elif defined(__ANDROID__)
-extern "C" int SDL_main( int argc, char **argv ) {
-#else
-int main( int argc, const char *argv[] )
+void initialize_runtime()
 {
-#endif
+    cata::init_allocator();
+
     ordered_static_globals();
     init_crash_handlers();
     reset_floating_point_mode();
 #if defined(FLATBUFFERS_LOCALE_INDEPENDENT) && (FLATBUFFERS_LOCALE_INDEPENDENT > 0)
     flatbuffers::ClassicLocale::Get();
 #endif
+}
 
-#if defined(EMSCRIPTEN)
-    mount_idbfs();
-#endif
-
-    on_out_of_scope json_member_reporting_guard{ [] {
-            // Disable reporting unvisited members if stack unwinding leaves main early.
-            Json::globally_report_unvisited_members( false );
-        } };
-
+void initialize_platform_output()
+{
 #if defined(_WIN32) and defined(TILES)
     const HANDLE std_output { GetStdHandle( STD_OUTPUT_HANDLE ) }, std_error { GetStdHandle( STD_ERROR_HANDLE ) };
     if( std_output != INVALID_HANDLE_VALUE and std_error != INVALID_HANDLE_VALUE ) {
@@ -660,10 +648,15 @@ int main( int argc, const char *argv[] )
 #if defined(__ANDROID__)
     // Start the standard output logging redirector
     start_logger( "cdda" );
+#endif
+}
 
+void initialize_default_paths()
+{
+#if defined(__ANDROID__)
     // On Android first launch, we copy all data files from the APK into the app's writeable folder so std::io stuff works.
     // Use the external storage so it's publicly modifiable data (so users can mess with installed data, save games etc.)
-    std::string external_storage_path( SDL_AndroidGetExternalStoragePath() );
+    std::string external_storage_path( GetAndroidExternalStoragePath() );
 
     PATH_INFO::init_base_path( external_storage_path );
 #else
@@ -685,11 +678,10 @@ int main( int argc, const char *argv[] )
 #   endif
 #endif
     PATH_INFO::set_standard_filenames();
+}
 
-    MAP_SHARING::setDefaults();
-
-    cli_opts cli = parse_commandline( argc, const_cast<const char **>( argv ) );
-
+void validate_directories()
+{
     if( !dir_exist( PATH_INFO::datadir() ) ) {
         printf( "Fatal: Can't find data directory \"%s\"\nPlease ensure the current working directory is correct or specify data directory with --datadir.  Perhaps you meant to start \"cataclysm-launcher\"?\n",
                 PATH_INFO::datadir().c_str() );
@@ -701,7 +693,10 @@ int main( int argc, const char *argv[] )
                 PATH_INFO::user_dir().c_str() );
         exit( 1 );
     }
+}
 
+void initialize_debugging()
+{
 #if defined(EMSCRIPTEN)
     setupDebug( DebugOutput::std_err );
 #else
@@ -709,7 +704,10 @@ int main( int argc, const char *argv[] )
 #endif
     // NOLINTNEXTLINE(cata-tests-must-restore-global-state)
     json_error_output_colors = json_error_output_colors_t::color_tags;
+}
 
+void initialize_locale()
+{
     /**
      * OS X does not populate locale env vars correctly (they usually default to
      * "C") so don't bother trying to set the locale based on them.
@@ -737,23 +735,27 @@ int main( int argc, const char *argv[] )
 
     DebugLog( D_INFO, DC_ALL ) << "[main] C locale set to " << setlocale( LC_ALL, nullptr );
     DebugLog( D_INFO, DC_ALL ) << "[main] C++ locale set to " << std::locale().name();
+}
 
-#if defined(TILES)
-    SDL_version compiled;
-    SDL_VERSION( &compiled );
+void log_sdl_versions()
+{
+#if defined(TILES) || defined(SDL_SOUND)
+    const SDLVersionInfo compiled = GetCompiledSDLVersion();
     DebugLog( D_INFO, DC_ALL ) << "SDL version used during compile is "
-                               << static_cast<int>( compiled.major ) << "."
-                               << static_cast<int>( compiled.minor ) << "."
-                               << static_cast<int>( compiled.patch );
+                               << compiled.major << "."
+                               << compiled.minor << "."
+                               << compiled.patch;
 
-    SDL_version linked;
-    SDL_GetVersion( &linked );
+    const SDLVersionInfo linked = GetLinkedSDLVersion();
     DebugLog( D_INFO, DC_ALL ) << "SDL version used during linking and in runtime is "
-                               << static_cast<int>( linked.major ) << "."
-                               << static_cast<int>( linked.minor ) << "."
-                               << static_cast<int>( linked.patch );
+                               << linked.major << "."
+                               << linked.minor << "."
+                               << linked.patch;
 #endif
+}
 
+bool initialize_interface( const cli_opts &cli )
+{
 #if !defined(TILES)
     get_options().init();
     get_options().load();
@@ -770,21 +772,18 @@ int main( int argc, const char *argv[] )
             // can't use any curses function as it has not been initialized
             std::cerr << "Error while initializing the interface: " << err.what() << std::endl;
             DebugLog( D_ERROR, DC_ALL ) << "Error while initializing the interface: " << err.what() << "\n";
-            return 1;
+            return false;
         }
     } else if( cli.check_mods ) {
         get_options().init();
         get_options().load();
     }
 
-    set_language_from_options();
+    return true;
+}
 
-    rng_set_engine_seed( cli.seed );
-
-    game_ui::init_ui();
-
-    g = std::make_unique<game>();
-
+void load_static_game_data( const cli_opts &cli )
+{
     // First load and initialize everything that does not
     // depend on the mods.
     try {
@@ -801,11 +800,22 @@ int main( int argc, const char *argv[] )
         debugmsg( "%s", err.what() );
         exit_handler( -999 );
     }
+}
 
+void initialize_imgui()
+{
     // Load the colors of ImGui to match the colors set by the user.
     cataimgui::init_colors();
 
-    // Override existing settings from cli  options
+    // set decimal point for float input widgets
+    // uses system locale, because that's what imgui uses to parse and display floats
+    ImGui::GetPlatformIO().Platform_LocaleDecimalPoint =
+        static_cast<unsigned char>( *localeconv()->decimal_point );
+}
+
+void apply_runtime_cli_overrides( const cli_opts &cli )
+{
+    // Override existing settings from cli options
     if( cli.disable_ascii_art ) {
         get_options().get_option( "ENABLE_ASCII_ART" ).setValue( "false" );
         get_options().get_option( "ENABLE_ASCII_TITLE" ).setValue( "false" );
@@ -814,9 +824,10 @@ int main( int argc, const char *argv[] )
     if( cli.noverify ) {
         get_options().get_option( "SKIP_VERIFICATION" ).setValue( "true" );
     }
+}
 
-    // Now we do the actual game.
-
+void configure_curses_cursor()
+{
 #if defined(DEBUG_CURSES_CURSOR)
     catacurses::curs_set( 2 );
 #else
@@ -824,49 +835,120 @@ int main( int argc, const char *argv[] )
     // Any value works well enough for debugging at least
     catacurses::curs_set( 0 ); // Invisible cursor here, because MAPBUFFER.load() is crash-prone
 #endif
+}
 
+void install_signal_handlers()
+{
 #if !defined(_WIN32)
     struct sigaction sigIntHandler;
-    sigIntHandler.sa_handler = sigint_handler;
+    sigIntHandler.sa_handler = exit_handler;
     sigemptyset( &sigIntHandler.sa_mask );
     sigIntHandler.sa_flags = 0;
     sigaction( SIGINT, &sigIntHandler, nullptr );
 #endif
+}
+
+void select_initial_language()
+{
+#if defined(LOCALIZE)
+    if( get_option<std::string>( "USE_LANG" ).empty() && !SystemLocale::Language().has_value() ) {
+#if defined(TILES)
+        display_buffer_draw_scope draw_scope;
+        if( !display_buffer_scope_is_invalid() ) {
+#endif
+            imclient->new_frame(); // we have to prime the pump, because of reasons
+            imclient->end_frame();
+            const std::string lang = select_language();
+            get_options().get_option( "USE_LANG" ).setValue( lang );
+            set_language_from_options();
+#if defined(TILES)
+        }
+#endif
+    }
+#endif
+}
+
+void run_game_loop( cli_opts &cli )
+{
+    main_menu::queued_world_to_load = std::move( cli.world );
+
+    while( true ) {
+        main_menu menu;
+        if( !menu.opening_screen() ) {
+            break;
+        }
+
+        shared_ptr_fast<ui_adaptor> ui = g->create_or_get_main_ui_adaptor();
+        get_event_bus().send<event_type::game_begin>( getVersionString() );
+        while( !g->do_turn() ) {}
+    }
+}
+
+}  // namespace
+
+#if defined(USE_WINMAIN)
+int APIENTRY WinMain( _In_ HINSTANCE /* hInstance */, _In_opt_ HINSTANCE /* hPrevInstance */,
+                      _In_ LPSTR /* lpCmdLine */, _In_ int /* nCmdShow */ )
+{
+    int argc = __argc;
+    char **argv = __argv;
+#elif defined(__ANDROID__)
+extern "C" int SDL_main( int argc, char **argv ) {
+#else
+int main( int argc, const char *argv[] )
+{
+#endif
+
+    initialize_runtime();
+
+#if defined(EMSCRIPTEN)
+    mount_idbfs();
+#endif
+
+    on_out_of_scope json_member_reporting_guard{ [] {
+            // Disable reporting unvisited members if stack unwinding leaves main early.
+            Json::globally_report_unvisited_members( false );
+        } };
+
+    initialize_platform_output();
+    initialize_default_paths();
+
+    MAP_SHARING::setDefaults();
+
+    cli_opts cli = parse_commandline( argc, const_cast<const char **>( argv ) );
+
+    validate_directories();
+    initialize_debugging();
+    initialize_locale();
+    log_sdl_versions();
+
+    if( !initialize_interface( cli ) ) {
+        return 1;
+    }
+
+    set_language_from_options();
+    rng_set_engine_seed( cli.seed );
+    game_ui::init_ui();
+
+    g = std::make_unique<game>();
+    load_static_game_data( cli );
+
+    initialize_imgui();
+    apply_runtime_cli_overrides( cli );
+
+    // Now we do the actual game.
+    configure_curses_cursor();
+    install_signal_handlers();
 
     if( !assure_essential_dirs_exist() ) {
         exit_handler( -999 );
         return 0;
     }
 
-#if defined(LOCALIZE)
-    if( get_option<std::string>( "USE_LANG" ).empty() && !SystemLocale::Language().has_value() ) {
-        imclient->new_frame(); // we have to prime the pump, because of reasons
-        imclient->end_frame();
-        const std::string lang = select_language();
-        get_options().get_option( "USE_LANG" ).setValue( lang );
-        set_language_from_options();
-    }
-#endif
+    select_initial_language();
     replay_buffered_debugmsg_prompts();
 
-    main_menu::queued_world_to_load = std::move( cli.world );
-
-    get_help().load();
-
-    while( true ) {
-        main_menu menu;
-        try {
-            if( !menu.opening_screen() ) {
-                break;
-            }
-
-            shared_ptr_fast<ui_adaptor> ui = g->create_or_get_main_ui_adaptor();
-            get_event_bus().send<event_type::game_begin>( getVersionString() );
-            while( !do_turn() ) { }
-        } catch( game::exit_exception const &/* ex */ ) {
-            break;
-        }
-    }
+    run_game_loop( cli );
 
     exit_handler( -999 );
     return 0;

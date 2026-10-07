@@ -5,7 +5,6 @@
 #include <map>
 #include <utility>
 
-#include "cata_assert.h"
 #include "game_constants.h"
 #include "options.h"
 #include "string_formatter.h"
@@ -22,18 +21,23 @@ int activity_tracker::weariness() const
 void activity_tracker::try_reduce_weariness( int bmr, float sleepiness_mod,
         float sleepiness_regen_mod )
 {
+    const float recovery_mult = get_option<float>( "WEARY_RECOVERY_MULT" );
+    // As sleepiness_mod approaches zero, low_activity_ticks and reduction approach infinity which in turn make tracker approach - infinity before being capped at 0.
+    // Cap at effective 99% sleepiness mod reduction since mod interactions can reduce sleepiness gain to 0
+    if( sleepiness_mod <= 0.0f ) {
+        sleepiness_mod = 0.01f;
+    }
     if( average_activity() < LIGHT_EXERCISE ) {
-        cata_assert( sleepiness_mod > 0.0f );
-        low_activity_ticks += std::min( 1.0f, ( ( LIGHT_EXERCISE - average_activity() ) /
-                                                ( LIGHT_EXERCISE - NO_EXERCISE ) ) ) / sleepiness_mod;
+        // cata_assert( sleepiness_mod > 0.0f );
+        low_activity_ticks += std::min( 1.0f,
+                                        ( ( LIGHT_EXERCISE - average_activity() ) / ( LIGHT_EXERCISE - NO_EXERCISE ) ) ) / sleepiness_mod;
         // Recover (by default) twice as fast while sleeping
         if( average_activity() < NO_EXERCISE ) {
-            low_activity_ticks += ( ( NO_EXERCISE - average_activity() ) /
-                                    ( NO_EXERCISE - SLEEP_EXERCISE ) ) * sleepiness_regen_mod;
+            low_activity_ticks += ( ( NO_EXERCISE - average_activity() ) / ( NO_EXERCISE - SLEEP_EXERCISE ) ) *
+                                  sleepiness_regen_mod;
         }
     }
 
-    const float recovery_mult = get_option<float>( "WEARY_RECOVERY_MULT" );
     const int bmr_cal = bmr * 1000;
 
     if( low_activity_ticks >= 1.0f ) {

@@ -8,10 +8,11 @@
 #include <vector>
 
 #include "coordinates.h"
+#include "item_pocket.h"
+#include "point.h"
 #include "safe_reference.h"
 
 class item;
-class item_pocket;
 
 // A struct used to uniquely identify an item within a submap or vehicle.
 struct item_reference {
@@ -22,6 +23,7 @@ struct item_reference {
     std::vector<item_pocket const *> pocket_chain;
 
     float spoil_multiplier() const;
+    float insulation() const;
     bool has_watertight_container() const;
 };
 

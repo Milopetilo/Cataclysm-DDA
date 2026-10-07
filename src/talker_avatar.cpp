@@ -1,9 +1,12 @@
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "avatar.h"
 #include "calendar.h"
-#include "character.h"
+#include "coordinates.h"
+#include "debug.h"
+#include "enums.h"
 #include "game.h"
 #include "messages.h"
 #include "monster.h"
@@ -13,6 +16,7 @@
 #include "output.h"
 #include "talker.h"
 #include "talker_avatar.h"
+#include "translation.h"
 #include "translations.h"
 
 static const efftype_id effect_pacified( "pacified" );
@@ -39,6 +43,13 @@ int talker_avatar_const::parse_mod( const std::string &attribute, const int fact
     int modifier = 0;
     if( attribute == "U_INTIMIDATE" ) {
         modifier = me_chr->intimidation();
+    } else if( attribute.find( "u_has_trait" ) != std::string::npos ) {
+        // shim/hack, reusing the syntax from EOCs
+
+        // Nasty string handling.
+        const std::string after = "u_has_trait: ";
+        trait_id checked_trait = trait_id( attribute.substr( after.size() ) );
+        modifier = me_chr->has_trait( checked_trait ) ? 1 : 0;
     }
     modifier *= factor;
     return modifier;
@@ -77,7 +88,7 @@ bool talker_avatar::buy_monster( talker &seller, const mtype_id &mtype, int cost
     }
 
     for( int i = 0; i < count; i++ ) {
-        monster *const mon_ptr = g->place_critter_around( mtype, me_chr->pos(), 3 );
+        monster *const mon_ptr = g->place_critter_around( mtype, me_chr->pos_bub(), 3 );
         if( !mon_ptr ) {
             add_msg_debug( debugmode::DF_TALKER, "Cannot place u_buy_monster, no valid placement locations." );
             break;

@@ -35,7 +35,7 @@
       { "item": "sports_bra" },
       { "item": "panties" },
       { "item": "socks" },
-      { "item": "tshirt", "variant": "tux" },
+      { "item": "tshirt" },
       { "item": "jeans" },
       { "item": "hoodie" },
       { "item": "sneakers" },
@@ -60,9 +60,10 @@
     "name_unique": "Jenny Forcette",
     "gender": "female",
     "name_suffix": "Refugee",
+    "portrait_filename": "Named_NPC_jenny_forcette",
     "class": "NC_REFUGEE_Jenny",
     "attitude": 0,
-    "mission": 7,
+    "mission": "GUARD",
     "chat": "TALK_REFUGEE_JENNY_1",
     "faction": "free_merchants",
     "mission_offered": "MISSION_REFUGEE_Jenny_GET_MOTOR"
@@ -118,7 +119,7 @@
         "topic": "TALK_REFUGEE_JENNY_Teach2",
         "condition": {
           "and": [
-            { "math": [ "time_since(n_timer_flag_Jenny_teach)", ">", "time('1 d')" ] },
+            { "math": [ "time_since(n_timer_flag_Jenny_teach) > time('1 d')" ] },
             { "compare_string": [ "yes", { "u_val": "knowledge_flag_Jenny_teach" } ] }
           ]
         }
@@ -178,7 +179,7 @@
         "topic": "TALK_REFUGEE_JENNY_Teach1",
         "condition": {
           "and": [
-            { "math": [ "time_since(n_timer_flag_Jenny_teach)", ">", "time('1 d')" ] },
+            { "math": [ "time_since(n_timer_flag_Jenny_teach) > time('1 d')" ] },
             { "not": { "compare_string": [ "yes", { "u_val": "knowledge_flag_Jenny_teach" } ] } }
           ]
         }
@@ -282,7 +283,7 @@
   {
     "type": "talk_topic",
     "id": "TALK_REFUGEE_JENNY_Games3",
-    "dynamic_line": "Well, of course I played the mandatory amount of dice based RPGs necessary to graduate my engineering program,\" she grins.  \"They're fun, something like that would be nice around here, but I'm not that kind of storyteller and I don't think anyone else here is nerdy enough for it.\"  Jenny tips her head a bit.  \"It's nice that you're asking but don't worry about me, I've got recreation.\"",
+    "dynamic_line": "Well, of course I played the mandatory amount of dice based RPGs necessary to graduate my engineering program,\" she grins.  \"They're fun, something like that would be nice around here, but I'm not that kind of storyteller and I don't think anyone else here is nerdy enough for it.\"  Jenny tips her head a bit.  \"It's nice that you're asking but don't worry about me, I've got recreation.",
     "responses": [
       { "text": "Have you ever thought about going back for your board games?", "topic": "TALK_REFUGEE_JENNY_Games2" },
       { "text": "<done_conversation_section>", "topic": "TALK_NONE" },
@@ -292,15 +293,15 @@
   {
     "type": "talk_topic",
     "id": "TALK_REFUGEE_JENNY_Teach1",
-    "dynamic_line": "Huh.\"  She purses her lips and looks at you reluctantly.  \"I guess I can teach you a bit, but you'd have to be like, my on-the-job apprentice and help me get stuff done.  It'll cost you a bit depending on what you want to learn.  Do you know anything about electronics, computers, or mechanics already?\"",
+    "dynamic_line": "Huh.\"  She purses her lips and looks at you reluctantly.  \"I guess I can teach you a bit, but you'd have to be like, my on-the-job apprentice and help me get stuff done.  It'll cost you a bit depending on what you want to learn.  Do you know anything about electronics, computers, or mechanics already?",
     "responses": [
       {
         "text": "[Skill 2] I'm not a total noob.",
         "condition": {
           "or": [
-            { "math": [ "u_skill('computer')", ">=", "2" ] },
-            { "math": [ "u_skill('electronics')", ">=", "2" ] },
-            { "math": [ "u_skill('mechanics')", ">=", "2" ] }
+            { "math": [ "u_skill('computer') >= 2" ] },
+            { "math": [ "u_skill('electronics') >= 2" ] },
+            { "math": [ "u_skill('mechanics') >= 2" ] }
           ]
         },
         "topic": "TALK_REFUGEE_JENNY_Teach2"
@@ -309,9 +310,9 @@
         "text": "[Skill <2] No, that's why I want you to teach me.",
         "condition": {
           "and": [
-            { "math": [ "u_skill('computer')", "<", "2" ] },
-            { "math": [ "u_skill('electronics')", "<", "2" ] },
-            { "math": [ "u_skill('mechanics')", "<", "2" ] }
+            { "math": [ "u_skill('computer') < 2" ] },
+            { "math": [ "u_skill('electronics') < 2" ] },
+            { "math": [ "u_skill('mechanics') < 2" ] }
           ]
         },
         "topic": "TALK_REFUGEE_JENNY_Teach2_Sorry"
@@ -320,9 +321,9 @@
         "text": "[INT 10] No, but I'm a fast learner.",
         "condition": {
           "and": [
-            { "math": [ "u_skill('computer')", "<", "2" ] },
-            { "math": [ "u_skill('electronics')", "<", "2" ] },
-            { "math": [ "u_skill('mechanics')", "<", "2" ] },
+            { "math": [ "u_skill('computer') < 2" ] },
+            { "math": [ "u_skill('electronics') < 2" ] },
+            { "math": [ "u_skill('mechanics') < 2" ] },
             { "u_has_intelligence": 10 }
           ]
         },
@@ -330,7 +331,7 @@
         "failure": { "topic": "TALK_REFUGEE_JENNY_Teach2_Sorry" },
         "success": { "topic": "TALK_REFUGEE_JENNY_Teach2" }
       },
-      { "text": "Um, you know what?  Nevermind.  What were you saying?", "topic": "TALK_NONE" },
+      { "text": "Um, you know what?  Never mind.  What were you saying?", "topic": "TALK_NONE" },
       { "text": "<end_talking_leave>", "topic": "TALK_DONE" }
     ]
   },
@@ -341,7 +342,7 @@
     "speaker_effect": {
       "effect": [
         { "u_add_var": "knowledge_flag_Jenny_teach", "value": "yes" },
-        { "math": [ "n_timer_flag_Jenny_teach", "=", "time('now')" ] }
+        { "math": [ "n_timer_flag_Jenny_teach = time('now')" ] }
       ]
     },
     "responses": [
@@ -353,7 +354,7 @@
     "type": "talk_topic",
     "id": "TALK_REFUGEE_JENNY_Teach2_Sorry",
     "dynamic_line": "&\"I'm sorry, I don't have the time to teach someone who can't pull their weight, I just don't.\"  She gives you a look of genuine regret, then shrugs.",
-    "speaker_effect": { "effect": { "math": [ "n_timer_flag_Jenny_teach", "=", "time('now')" ] } },
+    "speaker_effect": { "effect": { "math": [ "n_timer_flag_Jenny_teach = time('now')" ] } },
     "responses": [
       { "text": "Fine.  What were you saying?", "topic": "TALK_NONE" },
       { "text": "<end_talking_leave>", "topic": "TALK_DONE" }
@@ -375,7 +376,7 @@
       {
         "text": "If I see anything, I'll let you know.  Can you tell me more about your project?",
         "topic": "TALK_REFUGEE_JENNY_Project2",
-        "effect": { "assign_mission": "MISSION_REFUGEE_Jenny_GET_PNEUMATICS" },
+        "effect": { "add_mission": "MISSION_REFUGEE_Jenny_GET_PNEUMATICS" },
         "condition": {
           "and": [
             { "not": { "u_has_mission": "MISSION_REFUGEE_Jenny_GET_PNEUMATICS" } },
@@ -425,13 +426,13 @@
     "type": "talk_topic",
     "id": "TALK_REFUGEE_JENNY_Project3",
     "dynamic_line": {
-      "math": [ "time_since(n_timer_flag_Jenny_project_timer)", ">=", "time('7 d')" ],
+      "math": [ "time_since(n_timer_flag_Jenny_project_timer) >= time('7 d')" ],
       "no": {
         "gendered_line": "Things are coming along.  I have a lot of studying to do before I know how to fix my design issues, but the book you brought definitely has everything I need.  Now that I've got some progress to show, administration is much more willing to help me get the parts I need.  You've been a great gofer, but I can probably handle the rest on my own.  Check back in a week or two!",
         "relevant_genders": [ "u" ]
       },
       "yes": {
-        "math": [ "time_since(n_timer_flag_Jenny_project_timer)", ">=", "time('14 d')" ],
+        "math": [ "time_since(n_timer_flag_Jenny_project_timer) >= time('14 d')" ],
         "no": "I'm really making headway.  We've done some live demonstrations with a working device, and now it's just a matter of manufacturing a few of them.  We should be ready for release in a week or two.",
         "yes": "It's finally ready!  The pipes are laid to the first patch of ground we'll set turrets up in and I'd like for you to join me to go inspect how they are working.  I'll let you know when I'm ready to go.",
         "//": "After content freeze remove last sentence on var yes, create mission to nearby field, create air powered turrets, use update mapgen to have some corpses that will rise near the turrets as you approach, create followup followup missions that add additional turrets to nearby fields as time goes on."
@@ -571,7 +572,7 @@
     "id": "MISSION_REFUGEE_Jenny_GET_PNEUMATICS",
     "type": "mission_definition",
     "name": { "str": "Find reference material about air rifles for Jenny." },
-    "description": "Find reference material about air rifles.  <color_yellow>A book that has 'Pneumatic' in its name</color> could be the thing she wants.",
+    "description": "Find reference material about air rifles.  <color_yellow>A book that has 'Pneumatic' in its name</color> could be the thing she wants.  She probably wants a physical copy, if I can find it. ",
     "difficulty": 1,
     "value": 0,
     "goal": "MGOAL_FIND_ITEM",
@@ -619,7 +620,7 @@
       "effect": [
         { "u_spawn_item": "FMCNote", "count": 4 },
         { "u_add_var": "mission_completed_Jenny_mission_2", "value": "yes" },
-        { "math": [ "u_counter_refugee_center_refugee_happiness", "++" ] }
+        { "math": [ "u_counter_refugee_center_refugee_happiness++" ] }
       ]
     }
   },
@@ -649,7 +650,7 @@
       "effect": [
         { "u_spawn_item": "FMCNote", "count": 5 },
         { "u_add_var": "mission_completed_Jenny_mission_2", "value": "yes" },
-        { "math": [ "u_counter_refugee_center_refugee_happiness", "++" ] }
+        { "math": [ "u_counter_refugee_center_refugee_happiness++" ] }
       ]
     }
   },
@@ -679,8 +680,8 @@
       "effect": [
         { "u_spawn_item": "FMCNote", "count": 5 },
         { "u_add_var": "mission_completed_Jenny_mission_3", "value": "yes" },
-        { "math": [ "n_timer_flag_Jenny_project_timer", "=", "time('now')" ] },
-        { "math": [ "u_counter_refugee_center_refugee_happiness", "++" ] }
+        { "math": [ "n_timer_flag_Jenny_project_timer = time('now')" ] },
+        { "math": [ "u_counter_refugee_center_refugee_happiness++" ] }
       ]
     }
   }

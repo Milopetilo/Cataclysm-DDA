@@ -1,23 +1,33 @@
 #include "npctrade.h"
 
 #include <algorithm>
-#include <iosfwd>
+#include <cmath>
+#include <cstdlib>
+#include <climits>
+#include <functional>
 #include <iterator>
 #include <list>
+#include <memory>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <vector>
 
 #include "avatar.h"
 #include "character.h"
+#include "character_attire.h"
 #include "debug.h"
+#include "enums.h"
 #include "faction.h"
 #include "item.h"
 #include "item_category.h" // IWYU pragma: keep
+#include "item_contents.h"
 #include "item_location.h"
 #include "item_pocket.h"
 #include "npc.h"
+#include "npc_opinion.h"
 #include "npctrade_utils.h"
+#include "pocket_type.h"
 #include "ret_val.h"
 #include "skill.h"
 #include "trade_ui.h"
@@ -60,9 +70,15 @@ std::list<item> npc_trading::transfer_items( trade_selector::select_t &stuff, Ch
                     trading_price( giver, receiver, { item_location{ giver, it }, 1 } );
                 if( !f_wants( item_location{ ip.first, it }, price ) ) {
                     giver.i_add_or_drop( *it, 1, ip.first.get_item() );
-                    gift.remove_item( *it );
+                    // need some lvalues to pass into this function
+                    int all = INT_MAX;
+                    std::list<item> res{};
+                    gift.remove_internal( [it]( const item & other ) {
+                        return &other == it;
+                    }, all, res );
                 }
             }
+            gift.on_contents_changed();
         }
 
         gift.set_owner( receiver );
@@ -142,7 +158,7 @@ double npc_trading::net_price_adjustment( const Character &buyer, const Characte
     ///\EFFECT_INT slightly increases bartering price changes, relative to NPC INT
 
     ///\EFFECT_BARTER increases bartering price changes, relative to NPC BARTER
-    int const int_diff = seller.int_cur - buyer.int_cur;
+    int const int_diff = seller.get_int() - buyer.get_int();
     double const int_adj = 1 + 0.05 * std::min( 19, std::abs( int_diff ) );
     double const soc_adj = price_adjustment( round( seller.get_skill_level( skill_speech ) -
                            buyer.get_skill_level( skill_speech ) ) );
@@ -207,7 +223,7 @@ int _trading_price( Character const &buyer, Character const &seller, item_locati
         }
     }
     int ret = npc_trading::adjusted_price( it.get_item(), amount, buyer, seller );
-    for( item_pocket const *pk : it->get_all_standard_pockets() ) {
+    for( item_pocket const *pk : it->get_standard_pockets() ) {
         for( item const *pkit : pk->all_items_top() ) {
             ret += _trading_price( buyer, seller, item_location{ it, const_cast<item *>( pkit ) },
                                    -1 );
@@ -358,7 +374,7 @@ bool npc_trading::npc_can_fit_items( npc const &np, trade_selector::select_t con
                 break;
             }
         }
-        if( !item_stored && !np.can_wear( *it.first, false ).success() ) {
+        if( !item_stored ) {
             return false;
         }
     }

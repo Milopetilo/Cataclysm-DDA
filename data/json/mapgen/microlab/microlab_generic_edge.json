@@ -1,7 +1,6 @@
 [
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "concrete_wall_ew",
     "object": {
       "mapgensize": [ 24, 24 ],
@@ -10,7 +9,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "concrete_wall_hole_ew",
     "object": {
       "mapgensize": [ 24, 24 ],
@@ -19,13 +17,11 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "concrete_corner",
     "object": { "mapgensize": [ 1, 1 ], "set": [ { "point": "terrain", "id": "t_concrete_wall", "x": 0, "y": 0 } ] }
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "concrete_wall_ns",
     "object": {
       "mapgensize": [ 24, 24 ],
@@ -34,7 +30,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "concrete_wall_hole_ns",
     "object": {
       "mapgensize": [ 24, 24 ],
@@ -43,23 +38,54 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "om_terrain": [ "microlab_generic_edge" ],
     "object": {
       "fill_ter": "t_strconc_floor",
       "place_nested": [
-        { "chunks": [ "microlab_generic_edge_tile" ], "x": 0, "y": 0 },
         {
+          "chunks": [
+            [ "microlab_generic_edge_tile", 75 ],
+            [
+              {
+                "switch": { "param": "labtype", "fallback": "microlab_generic" },
+                "cases": {
+                  "microlab_meat": "microlab_generic_edge_tile",
+                  "microlab_serum": "microlab_serum_edge_tile",
+                  "microlab_generic": "microlab_generic_edge_tile"
+                }
+              },
+              25
+            ]
+          ],
+          "x": 0,
+          "y": 0
+        },
+        {
+          "//": "These chunks are analoguos to mapgen_extras",
           "chunks": [
             {
               "switch": { "param": "labtype", "fallback": "microlab_generic" },
-              "cases": { "microlab_meat": "micolab_meat_pools", "microlab_generic": "null" }
+              "cases": { "microlab_meat": "micolab_meat_pools", "microlab_serum": "null", "microlab_generic": "null" }
             }
           ],
           "x": 0,
           "y": 0
         },
-        { "chunks": [ { "param": "unique_foe", "fallback": "mnm_more_density" } ], "x": 0, "y": 0 },
+        {
+          "chunks": [
+            {
+              "switch": { "param": "labtype", "fallback": "microlab_generic" },
+              "cases": {
+                "microlab_meat": "microlab_meat_unique_foe",
+                "microlab_serum": "microlab_serum_unique_foe",
+                "microlab_generic": "microlab_unique_foe"
+              }
+            },
+            25
+          ],
+          "x": 0,
+          "y": 0
+        },
         { "else_chunks": [ "concrete_wall_ew" ], "x": 0, "y": 0, "neighbors": { "north": "microlab" } },
         { "else_chunks": [ "concrete_wall_ns" ], "x": 23, "y": 0, "neighbors": { "east": "microlab" } },
         { "else_chunks": [ "concrete_wall_ew" ], "x": 0, "y": 23, "neighbors": { "south": "microlab" } },
@@ -77,12 +103,12 @@
         {
           "group": {
             "switch": { "param": "labtype", "fallback": "microlab_generic" },
-            "cases": { "microlab_meat": "GROUP_MEATLAB", "microlab_generic": "GROUP_MICROLAB" }
+            "cases": { "microlab_meat": "GROUP_MEATLAB", "microlab_serum": "GROUP_SERUM_LAB", "microlab_generic": "GROUP_MICROLAB" }
           },
           "chance": 80,
           "x": [ 0, 23 ],
           "y": [ 0, 23 ],
-          "repeat": [ 1, 5 ]
+          "repeat": [ 2, 7 ]
         }
       ]
     }
@@ -90,7 +116,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -125,7 +150,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -160,7 +184,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -195,7 +218,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -230,7 +252,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -265,7 +286,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -300,7 +320,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -335,7 +354,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -370,7 +388,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -405,7 +422,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -440,7 +456,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [
@@ -475,7 +490,6 @@
   {
     "type": "mapgen",
     "nested_mapgen_id": "microlab_generic_edge_tile",
-    "method": "json",
     "object": {
       "mapgensize": [ 24, 24 ],
       "rows": [

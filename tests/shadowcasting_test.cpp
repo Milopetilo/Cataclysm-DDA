@@ -1,19 +1,23 @@
-#include <algorithm>
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <functional>
+#include <memory>
+#include <optional>
+#include <random>
 #include <sstream>
-#include <type_traits>
+#include <string>
 #include <vector>
 
 #include "cata_catch.h"
+#include "coordinates.h"
 #include "cuboid_rectangle.h"
-#include "game_constants.h"
 #include "level_cache.h"
 #include "lightmap.h"
 #include "line.h" // For rl_dist.
 #include "map.h"
+#include "map_scale_constants.h"
 #include "mdarray.h"
 #include "point.h"
 #include "rng.h"
@@ -53,7 +57,7 @@ static void oldCastLight(
             }
 
             //check if it's within the visible area and mark visible if so
-            if( rl_dist( tripoint_zero, delta ) <= radius ) {
+            if( rl_dist( tripoint::zero, delta ) <= radius ) {
                 output_cache[current.x][current.y] = VISIBILITY_FULL;
             }
 
@@ -135,7 +139,7 @@ static bool is_nonzero( const four_quadrants &x )
 }
 
 template<typename Exp>
-bool grids_are_equivalent(
+static bool grids_are_equivalent(
     const cata::mdarray<float, point_bub_ms> &control,
     const cata::mdarray<Exp, point_bub_ms> &experiment )
 {
@@ -152,7 +156,7 @@ bool grids_are_equivalent(
 }
 
 template<typename Exp>
-void print_grid_comparison(
+static void print_grid_comparison(
     const point_bub_ms &offset,
     cata::mdarray<float, point_bub_ms> &transparency_cache,
     const cata::mdarray<float, point_bub_ms> &control,
@@ -510,6 +514,9 @@ static constexpr float X = LIGHT_TRANSPARENCY_SOLID;
 
 static const tripoint_bub_ms ORIGIN( 65, 65, 11 );
 
+namespace
+{
+
 struct grid_overlay {
     std::vector<std::vector<std::vector<float>>> data;
     std::vector<std::vector<std::vector<bool>>> floor;
@@ -564,6 +571,8 @@ struct grid_overlay {
         return default_floor;
     }
 };
+
+} // namespace
 
 static void run_spot_check( const grid_overlay &test_case, const grid_overlay &expected,
                             bool fov_3d )
@@ -1131,6 +1140,18 @@ TEST_CASE( "shadowcasting_float_quad_performance", "[.]" )
 {
     shadowcasting_float_quad( 1000000 );
     shadowcasting_float_quad( 1000000, 100 );
+}
+
+TEST_CASE( "trig_dist_lut_matches_sqrt", "[shadowcasting]" )
+{
+    for( int dx = 0; dx <= MAX_VIEW_DISTANCE; dx++ ) {
+        for( int dy = 0; dy <= MAX_VIEW_DISTANCE; dy++ ) {
+            const int expected = static_cast<int>(
+                                     std::sqrt( static_cast<double>( dx * dx + dy * dy ) ) );
+            CAPTURE( dx, dy );
+            CHECK( trig_dist_2d( point( dx, dy ) ) == expected );
+        }
+    }
 }
 
 // I'm not sure this will ever work.

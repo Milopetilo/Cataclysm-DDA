@@ -53,6 +53,7 @@
       {
         "id": "head",
         "name": "the head",
+        "is_head": true,
         "coverage": 5,
         "crit_mult": { "all": 1.1 },
         "armor_mult": { "physical": 0.75 },
@@ -60,43 +61,24 @@
         "effects": [
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 5,
             "message": "The %s is stunned!",
             "damage_required": [ 1, 10 ]
           },
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 25,
             "message": "The %s is stunned!",
             "damage_required": [ 11, 50 ]
           },
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 45,
             "message": "The %s is stunned!",
             "damage_required": [ 51, 100 ]
-          }
-        ]
-      },
-      {
-        "id": "eye",
-        "name": "the eye",
-        "armor_mult": { "physical": 0 },
-        "coverage": 1,
-        "crit_mult": { "all": 1.25 },
-        "difficulty": { "ranged": 8, "melee": 6 },
-        "coverage_mult": { "broad": 0.5 },
-        "effects": [
-          { "effect": "blind", "duration": [ 1, 2 ], "chance": 40, "message": "The %s is blinded!", "damage_required": [ 1, 25 ] },
-          {
-            "effect": "blind",
-            "permanent": true,
-            "chance": 30,
-            "message": "The %s's eyes are obliterated!",
-            "damage_required": [ 26, 100 ]
           }
         ]
       }
@@ -105,10 +87,12 @@
   {
     "type": "weakpoint_set",
     "id": "wps_humanoid_head_big",
+    "//": "overrides weakpoints of the same id from wps_humanoid_body",
     "weakpoints": [
       {
         "id": "head",
         "name": "the head",
+        "is_head": true,
         "coverage": 6,
         "crit_mult": { "all": 1.1 },
         "armor_mult": { "physical": 0.75 },
@@ -116,21 +100,21 @@
         "effects": [
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 5,
             "message": "The %s is stunned!",
             "damage_required": [ 1, 10 ]
           },
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 25,
             "message": "The %s is stunned!",
             "damage_required": [ 11, 50 ]
           },
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 45,
             "message": "The %s is stunned!",
             "damage_required": [ 51, 100 ]
@@ -140,13 +124,20 @@
       {
         "id": "eye",
         "name": "the eye",
+        "is_head": true,
         "armor_mult": { "physical": 0 },
         "coverage": 1,
         "crit_mult": { "all": 1.25 },
         "difficulty": { "ranged": 7, "melee": 5 },
         "coverage_mult": { "broad": 0.5 },
         "effects": [
-          { "effect": "blind", "duration": [ 1, 2 ], "chance": 40, "message": "The %s is blinded!", "damage_required": [ 1, 25 ] },
+          {
+            "effect": "blind",
+            "duration": [ "1 seconds", "2 seconds" ],
+            "chance": 40,
+            "message": "The %s is blinded!",
+            "damage_required": [ 1, 25 ]
+          },
           {
             "effect": "blind",
             "permanent": true,
@@ -161,10 +152,12 @@
   {
     "type": "weakpoint_set",
     "id": "wps_humanoid_head_small",
+    "//": "overrides weakpoints of the same id from wps_humanoid_body",
     "weakpoints": [
       {
         "id": "head",
         "name": "the head",
+        "is_head": true,
         "coverage": 3,
         "crit_mult": { "all": 1.1 },
         "armor_mult": { "physical": 0.75 },
@@ -172,21 +165,21 @@
         "effects": [
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 5,
             "message": "The %s is stunned!",
             "damage_required": [ 1, 10 ]
           },
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 25,
             "message": "The %s is stunned!",
             "damage_required": [ 11, 50 ]
           },
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 45,
             "message": "The %s is stunned!",
             "damage_required": [ 51, 100 ]
@@ -196,13 +189,20 @@
       {
         "id": "eye",
         "name": "the eye",
+        "is_head": true,
         "armor_mult": { "physical": 0 },
         "coverage": 1,
         "crit_mult": { "all": 1.25 },
         "difficulty": { "ranged": 10, "melee": 8 },
         "coverage_mult": { "broad": 0.5 },
         "effects": [
-          { "effect": "blind", "duration": [ 1, 2 ], "chance": 40, "message": "The %s is blinded!", "damage_required": [ 1, 25 ] },
+          {
+            "effect": "blind",
+            "duration": [ "1 seconds", "2 seconds" ],
+            "chance": 40,
+            "message": "The %s is blinded!",
+            "damage_required": [ 1, 25 ]
+          },
           {
             "effect": "blind",
             "permanent": true,
@@ -457,6 +457,7 @@
       {
         "id": "head",
         "name": "the face",
+        "is_head": true,
         "armor_mult": { "physical": 0 },
         "crit_mult": { "all": 1.1 },
         "difficulty": { "melee": 3, "ranged": 7 },
@@ -465,21 +466,21 @@
         "effects": [
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 5,
             "message": "The %s is stunned!",
             "damage_required": [ 1, 10 ]
           },
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 25,
             "message": "The %s is stunned!",
             "damage_required": [ 11, 50 ]
           },
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 45,
             "message": "The %s is stunned!",
             "damage_required": [ 51, 100 ]
@@ -489,13 +490,20 @@
       {
         "id": "eye",
         "name": "the eye",
+        "is_head": true,
         "armor_mult": { "physical": 0 },
         "coverage": 1,
         "crit_mult": { "all": 1.25 },
         "coverage_mult": { "ranged": 0.5 },
         "difficulty": { "point": 7, "broad": 9 },
         "effects": [
-          { "effect": "blind", "duration": [ 1, 2 ], "chance": 25, "message": "The %s is blinded!", "damage_required": [ 1, 25 ] },
+          {
+            "effect": "blind",
+            "duration": [ "1 seconds", "2 seconds" ],
+            "chance": 25,
+            "message": "The %s is blinded!",
+            "damage_required": [ 1, 25 ]
+          },
           {
             "effect": "blind",
             "permanent": true,
@@ -508,6 +516,7 @@
       {
         "id": "neck",
         "name": "the neck",
+        "is_head": true,
         "armor_mult": { "physical": 0.25 },
         "difficulty": { "melee": 4, "ranged": 6 },
         "coverage_mult": { "broad": 0.5 },
@@ -532,6 +541,7 @@
       {
         "id": "head",
         "name": "the face shield",
+        "is_head": true,
         "crit_mult": { "all": 1.1 },
         "difficulty": { "melee": 3, "ranged": 7 },
         "coverage_mult": { "ranged": 0.5 },
@@ -539,21 +549,21 @@
         "effects": [
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 1,
             "message": "The %s is stunned!",
             "damage_required": [ 1, 10 ]
           },
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 5,
             "message": "The %s is stunned!",
             "damage_required": [ 11, 50 ]
           },
           {
             "effect": "stunned",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 10,
             "message": "The %s is stunned!",
             "damage_required": [ 51, 100 ]
@@ -563,6 +573,7 @@
       {
         "id": "eye",
         "name": "the goggles",
+        "is_head": true,
         "armor_mult": { "physical": 1 },
         "coverage": 1,
         "coverage_mult": { "ranged": 0.5 },
@@ -570,7 +581,7 @@
         "effects": [
           {
             "effect": "blind",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 1,
             "message": "The %s is blinded!  The goggles, they did nothing!",
             "damage_required": [ 20, 100 ]
@@ -587,6 +598,7 @@
       {
         "id": "eye",
         "name": "the goggles",
+        "is_head": true,
         "armor_mult": { "physical": 1 },
         "coverage": 1,
         "coverage_mult": { "ranged": 0.5 },
@@ -594,7 +606,7 @@
         "effects": [
           {
             "effect": "blind",
-            "duration": [ 1, 2 ],
+            "duration": [ "1 seconds", "2 seconds" ],
             "chance": 1,
             "message": "The %s is blinded!  The goggles, they did nothing!",
             "damage_required": [ 20, 100 ]

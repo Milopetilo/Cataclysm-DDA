@@ -1,6 +1,5 @@
 #include "cached_options.h"
 
-int fov_3d_z_range;
 bool keycode_mode;
 bool log_from_top;
 int message_ttl;
@@ -11,6 +10,7 @@ bool prevent_occlusion_retract;
 bool prevent_occlusion_transp;
 float prevent_occlusion_min_dist;
 float prevent_occlusion_max_dist;
+bool show_creature_overlay_icons;
 bool use_tiles;
 bool use_far_tiles;
 bool use_pinyin_search;
@@ -22,10 +22,12 @@ int pixel_minimap_r;
 int pixel_minimap_g;
 int pixel_minimap_b;
 int pixel_minimap_a;
+float combat_speed_modifier;
 
 namespace cata::options
 {
 std::vector<std::string> damage_indicators;
+mouse_t mouse;
 } // namespace cata::options
 
 #ifndef CATA_IN_TOOL

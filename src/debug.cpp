@@ -33,7 +33,6 @@
 #include "color.h"
 #include "cursesdef.h"
 #include "filesystem.h"
-#include "game.h"
 #include "get_version.h"
 #include "input.h"
 #include "loading_ui.h"
@@ -172,6 +171,8 @@ static uintptr_t get_image_base( const char *const path )
  * Class for capturing debugmsg,
  * used by capture_debugmsg_during.
  */
+namespace
+{
 class capture_debugmsg
 {
     public:
@@ -179,6 +180,7 @@ class capture_debugmsg
         std::string dmsg();
         ~capture_debugmsg();
 };
+} // namespace
 
 std::string capture_debugmsg_during( const std::function<void()> &func )
 {
@@ -209,6 +211,12 @@ bool debug_has_error_been_observed()
     return error_observed;
 }
 
+void debug_reset_error_observed()
+{
+    error_observed = false;
+}
+
+// saved in game::serialize
 bool debug_mode = false;
 
 namespace debugmode
@@ -241,6 +249,7 @@ std::string filter_name( debug_filter value )
         case DF_EXPLOSION: return "DF_EXPLOSION";
         case DF_FOOD: return "DF_FOOD";
         case DF_GAME: return "DF_GAME";
+        case DF_HIGHWAY: return "DF_HIGHWAY";
         case DF_IEXAMINE: return "DF_IEXAMINE";
         case DF_IUSE: return "DF_IUSE";
         case DF_MAP: return "DF_MAP";
@@ -253,6 +262,7 @@ std::string filter_name( debug_filter value )
         case DF_NPC_COMBATAI: return "DF_NPC_COMBATAI";
         case DF_NPC_ITEMAI: return "DF_NPC_ITEMAI";
         case DF_NPC_MOVEAI: return "DF_NPC_MOVEAI";
+        case DF_NPC_NEEDS: return "DF_NPC_NEEDS";
         case DF_OVERMAP: return "DF_OVERMAP";
         case DF_RADIO: return "DF_RADIO";
         case DF_RANGED: return "DF_RANGED";
@@ -262,6 +272,9 @@ std::string filter_name( debug_filter value )
         case DF_VEHICLE: return "DF_VEHICLE";
         case DF_VEHICLE_DRAG: return "DF_VEHICLE_DRAG";
         case DF_VEHICLE_MOVE: return "DF_VEHICLE_MOVE";
+        case DF_WEAKPOINTS: return "DF_WEAKPOINTS";
+        case DF_WOUNDS: return "DF_WOUNDS";
+        case DF_MONITOR: return "DF_MONITOR";
         // *INDENT-ON*
         case DF_LAST:
         default:
@@ -271,6 +284,8 @@ std::string filter_name( debug_filter value )
 }
 } // namespace debugmode
 
+namespace
+{
 struct buffered_prompt_info {
     std::string filename;
     std::string line;
@@ -278,6 +293,7 @@ struct buffered_prompt_info {
     std::string text;
     bool forced;
 };
+} // namespace
 
 namespace
 {
@@ -318,11 +334,11 @@ static void debug_error_prompt(
 
     std::string formatted_report =
         string_format( // developer-facing error report. INTENTIONALLY UNTRANSLATED!
-            " DEBUG    : %s\n\n"
-            " FUNCTION : %s\n"
-            " FILE     : %s\n"
-            " LINE     : %s\n"
-            " VERSION  : %s\n",
+            " DEBUG : %s\n\n"
+            " REPORTING FUNCTION : %s\n"
+            " C++ SOURCE FILE    : %s\n"
+            " LINE               : %s\n"
+            " VERSION            : %s\n",
             text, funcname, filename, line, getVersionString()
         );
 
@@ -334,43 +350,48 @@ static void debug_error_prompt(
         );
 #endif
 
+    const std::string error_message = string_format(
+                                          "\n\n" // Looks nicer with some space
+                                          " %s\n" // translated user string: error notification
+                                          " -----------------------------------------------------------\n"
+                                          "%s"
+                                          " -----------------------------------------------------------\n"
+#if defined(BACKTRACE)
+                                          " %s\n" // translated user string: where to find backtrace
+#endif
+                                          , _( "An error has occurred!  Written below is the error report:" ),
+                                          formatted_report
+#if defined(BACKTRACE)
+                                          , backtrace_instructions
+#endif
+                                      );
+    const std::string instructions = string_format(
+                                         " %s\n" // translated user string: space to continue
+                                         " %s\n" // translated user string: ignore key
+#if defined(TILES)
+                                         " %s\n" // translated user string: copy
+#endif // TILES
+                                         , _( "Press <color_white>space bar</color> to continue the game." )
+                                         , _( "Press <color_white>I</color> (or <color_white>i</color>) to also ignore this particular message in the future." )
+#if defined(TILES)
+                                         , _( "Press <color_white>C</color> (or <color_white>c</color>) to copy this message to the clipboard." )
+#endif // TILES
+                                     );
+    std::string message = error_message + instructions;
+
     // Create a special debug message UI that does various things to ensure
     // the graphics are correct when the debug message is displayed during a
     // redraw callback.
-    ui_adaptor ui( ui_adaptor::debug_message_ui {} );
+    ui_adaptor ui( ui_adaptor::debug_message_ui{} );
     const auto init_window = []( ui_adaptor & ui ) {
         ui.position_from_window( catacurses::stdscr );
     };
     init_window( ui );
     ui.on_screen_resize( init_window );
-    const std::string message = string_format(
-                                    "\n\n" // Looks nicer with some space
-                                    " %s\n" // translated user string: error notification
-                                    " -----------------------------------------------------------\n"
-                                    "%s"
-                                    " -----------------------------------------------------------\n"
-#if defined(BACKTRACE)
-                                    " %s\n" // translated user string: where to find backtrace
-#endif
-                                    " %s\n" // translated user string: space to continue
-                                    " %s\n" // translated user string: ignore key
-#if defined(TILES)
-                                    " %s\n" // translated user string: copy
-#endif // TILES
-                                    , _( "An error has occurred!  Written below is the error report:" ),
-                                    formatted_report,
-#if defined(BACKTRACE)
-                                    backtrace_instructions,
-#endif
-                                    _( "Press <color_white>space bar</color> to continue the game." ),
-                                    _( "Press <color_white>I</color> (or <color_white>i</color>) to also ignore this particular message in the future." )
-#if defined(TILES)
-                                    , _( "Press <color_white>C</color> (or <color_white>c</color>) to copy this message to the clipboard." )
-#endif // TILES
-                                );
+
     ui.on_redraw( [&]( const ui_adaptor & ) {
         catacurses::erase();
-        fold_and_print( catacurses::stdscr, point_zero, getmaxx( catacurses::stdscr ), c_light_red,
+        fold_and_print( catacurses::stdscr, point::zero, getmaxx( catacurses::stdscr ), c_light_red,
                         "%s", message );
         wnoutrefresh( catacurses::stdscr );
     } );
@@ -383,19 +404,11 @@ static void debug_error_prompt(
 #endif
     for( bool stop = false; !stop; ) {
         ui_manager::redraw();
-        inp_mngr.set_timeout( 50 );
-        input_event ievent = inp_mngr.get_input_event();
-        if( ievent.type == input_event_t::timeout ) {
-            if( are_we_quitting() ) {
-                g->query_exit_to_OS();
-            }
-            continue;
-        }
-        switch( ievent.get_first_input() ) {
+        switch( inp_mngr.get_input_event().get_first_input() ) {
 #if defined(TILES)
             case 'c':
             case 'C':
-                SDL_SetClipboardText( formatted_report.c_str() );
+                SetClipboardText( formatted_report );
                 break;
 #endif // TILES
             case 'i':
@@ -404,6 +417,8 @@ static void debug_error_prompt(
                 [[fallthrough]];
             case ' ':
                 stop = true;
+                message = error_message;
+                ui_manager::redraw();
                 break;
         }
     }
@@ -426,6 +441,8 @@ void replay_buffered_debugmsg_prompts()
     buffered_prompts().clear();
 }
 
+namespace
+{
 struct time_info {
     int hours;
     int minutes;
@@ -446,9 +463,12 @@ struct time_info {
         return out;
     }
 };
+} // namespace
 
 static time_info get_time() noexcept;
 
+namespace
+{
 struct repetition_folder {
     const char *m_filename = nullptr;
     const char *m_line = nullptr;
@@ -509,6 +529,7 @@ struct repetition_folder {
         return ( now_raw - old_raw ) > timeout_raw;
     }
 };
+} // namespace
 
 static repetition_folder rep_folder;
 static void output_repetitions( std::ostream &out );
@@ -604,6 +625,8 @@ void limitDebugClass( int class_bitmask )
 // Null OStream                                                     {{{2
 // ---------------------------------------------------------------------
 
+namespace
+{
 class NullStream : public std::ostream
 {
     public:
@@ -611,6 +634,7 @@ class NullStream : public std::ostream
         NullStream( const NullStream & ) = delete;
         NullStream( NullStream && ) = delete;
 };
+} // namespace
 
 // DebugFile OStream Wrapper                                        {{{2
 // ---------------------------------------------------------------------
@@ -642,39 +666,98 @@ static time_info get_time() noexcept
 }
 #endif
 
-struct DebugFile {
-    DebugFile();
-    ~DebugFile();
-    void init( DebugOutput, const std::string &filename );
-    void deinit();
-    std::ostream &get_file();
+#if defined(_WIN32)
+// Send the DebugLog stream to Windows' debug facility
+struct OutputDebugStreamA : public std::ostream {
 
+        // Use the file buffer from DebugFile
+        OutputDebugStreamA( const std::shared_ptr<std::ostream> &stream )
+            : std::ostream( &buf ), buf( stream->rdbuf() ) {}
+
+        // Intercept stream operations
+        struct _Buf : public std::streambuf {
+            _Buf( std::streambuf *buf ) : buf( buf ) {
+                output_string.reserve( max );
+            }
+            virtual int overflow( int c ) override {
+                if( EOF != c ) {
+                    buf->sputc( c );
+                    if( std::iscntrl( c ) ) {
+                        send();
+                    } else {
+                        output_string.push_back( c );
+                        if( output_string.size() >= max ) {
+                            send();
+                        }
+                    }
+                } else {
+                    send();
+                }
+                return c;
+            }
+            virtual std::streamsize xsputn( const char *s, std::streamsize n ) override {
+                std::streamsize rc = buf->sputn( s, n ), last = 0, i = 0;
+                for( ; i < n; ++i ) {
+                    if( std::iscntrl( static_cast<unsigned char>( s[i] ) ) ) {
+                        if( i == last + 1 ) { // Skip multiple empty lines
+                            last = i;
+                            continue;
+                        }
+                        const std::string sv( s + last, i - last );
+                        last = i;
+                        send( sv.c_str() );
+                    }
+                }
+                std::string append( s + last, n - last );
+                // Skip if only made of multiple newlines
+                if( none_of( append.begin(), append.end(), []( unsigned char c ) {
+                return std::iscntrl( c );
+                } ) ) {
+                    output_string.append( s + last, n - last );
+                }
+                if( output_string.size() >= max ) {
+                    send();
+                }
+                return rc;
+            }
+            void send( const char *s = nullptr ) {
+                if( s == nullptr ) {
+                    ::OutputDebugStringA( output_string.c_str() );
+                    output_string.clear();
+                } else {
+                    ::OutputDebugStringA( s );
+                }
+                buf->pubsync();
+            }
+            static constexpr std::streamsize max = 4096;
+            std::string output_string{};
+            std::streambuf *buf = nullptr;
+        } buf;
+};
+#endif
+
+namespace
+{
+struct DebugFile {
+    void init( DebugOutput, const cata_path &filename );
+    void deinit();
+    ~DebugFile() {
+        deinit();
+    }
+    std::ostream &get_file();
+    static DebugFile &instance() {
+        static DebugFile instance;
+        return instance;
+    };
     // Using shared_ptr for the type-erased deleter support, not because
     // it needs to be shared.
-    std::shared_ptr<std::ostream> file;
-    std::string filename;
+    std::shared_ptr<std::ostream> file = std::make_shared<std::ostringstream>();
+    cata_path filename;
 };
+} // namespace
 
 // DebugFile OStream Wrapper                                        {{{2
 // ---------------------------------------------------------------------
-
-// needs to be inside the method to ensure it's initialized (and only once)
-// NOTE: using non-local static variables (defined at top level in cpp file) here is wrong,
-// because DebugLog (that uses them) might be called from the constructor of some non-local static entity
-// during dynamic initialization phase, when non-local static variables here are
-// only zero-initialized
-static DebugFile &debugFile()
-{
-    static DebugFile debugFile;
-    return debugFile;
-}
-
-DebugFile::DebugFile() = default;
-
-DebugFile::~DebugFile()
-{
-    deinit();
-}
 
 void DebugFile::deinit()
 {
@@ -689,44 +772,32 @@ void DebugFile::deinit()
 
 std::ostream &DebugFile::get_file()
 {
-    if( !file ) {
-        file = std::make_shared<std::ostringstream>();
-    }
     return *file;
 }
 
-void DebugFile::init( DebugOutput output_mode, const std::string &filename )
+void DebugFile::init( DebugOutput output_mode, const cata_path &filename )
 {
     std::shared_ptr<std::ostringstream> str_buffer = std::dynamic_pointer_cast<std::ostringstream>
             ( file );
 
+    bool rename_failed = false;
+    const cata_path oldfile = filename + ".prev";
     switch( output_mode ) {
         case DebugOutput::std_err:
             file = std::shared_ptr<std::ostream>( &std::cerr, null_deleter() );
             break;
         case DebugOutput::file: {
             this->filename = filename;
-            const std::string oldfile = filename + ".prev";
-            bool rename_failed = false;
-            struct stat buffer;
-            if( stat( filename.c_str(), &buffer ) == 0 ) {
-                // Continue with the old log file if it's smaller than 1 MiB
-                if( buffer.st_size >= 1024 * 1024 ) {
-                    rename_failed = !rename_file( filename, oldfile );
-                }
+            // Continue with the old log file if it's smaller than 1 MiB
+            namespace fs = std::filesystem;
+            if( fs::exists( fs::path( filename ) )
+                && fs::file_size( fs::path( filename ) ) >= 1024 * 1024 ) {
+                std::error_code ec;
+                fs::rename( fs::path( filename ), fs::path( oldfile ), ec );
+                rename_failed = bool( ec );
             }
             file = std::make_shared<std::ofstream>(
-                       fs::u8path( filename ), std::ios::out | std::ios::app );
-            *file << "\n\n-----------------------------------------\n";
-            *file << get_time() << " : Starting log.";
-            DebugLog( D_INFO, D_MAIN ) << "Cataclysm DDA version " << getVersionString();
-            if( rename_failed ) {
-                DebugLog( D_ERROR, DC_ALL ) << "Moving the previous log file to "
-                                            << oldfile << " failed.\n"
-                                            << "Check the file permissions.  This "
-                                            "program will continue to use the "
-                                            "previous log file.";
-            }
+                       filename.generic_u8string(), std::ios::out | std::ios::app );
         }
         break;
         default:
@@ -734,7 +805,20 @@ void DebugFile::init( DebugOutput output_mode, const std::string &filename )
                       << std::endl;
             return;
     }
-
+#ifdef _WIN32
+    static auto keep_shared_ptr = file;
+    file = std::make_shared<OutputDebugStreamA>( file );
+#endif
+    *file << "\n\n-----------------------------------------\n";
+    *file << get_time() << " : Starting log.";
+    DebugLog( D_INFO, D_MAIN ) << "Cataclysm DDA version " << getVersionString();
+    if( rename_failed ) {
+        DebugLog( D_ERROR, DC_ALL ) << "Moving the previous log file to "
+                                    << oldfile << " failed.\n"
+                                    << "Check the file permissions.  This "
+                                    "program will continue to use the "
+                                    "previous log file.";
+    }
     if( str_buffer && file ) {
         *file << str_buffer->str();
     }
@@ -786,12 +870,12 @@ void setupDebug( DebugOutput output_mode )
         limitDebugClass( cl );
     }
 
-    debugFile().init( output_mode, PATH_INFO::debug() );
+    DebugFile::instance().init( output_mode, PATH_INFO::debug() );
 }
 
 void deinitDebug()
 {
-    debugFile().deinit();
+    DebugFile::instance().deinit();
 }
 
 // OStream Operators                                                {{{2
@@ -922,6 +1006,7 @@ static std::optional<uintptr_t> debug_compute_load_offset(
     for( const char *nm_variant : nm_variants ) {
         std::ostringstream cmd;
         cmd << nm_variant << ' ' << binary << " 2>&1";
+        // NOLINTNEXTLINE(bugprone-command-processor): debug-only symbol resolution
         FILE *nm = popen( cmd.str().c_str(), "re" );
         if( !nm ) {
             out << "    backtrace: popen(nm) failed: " << strerror( errno ) << "\n";
@@ -1282,6 +1367,7 @@ void debug_write_backtrace( std::ostream &out )
             cmd << " 0x" << ( address - load_offset );
         }
         cmd << " 2>&1";
+        // NOLINTNEXTLINE(bugprone-command-processor): debug-only address symbolization
         FILE *addr2line = popen( cmd.str().c_str(), "re" );
         if( addr2line == nullptr ) {
             out << "    backtrace: popen(addr2line) failed\n";
@@ -1378,7 +1464,7 @@ void debug_write_backtrace( std::ostream &out )
     if( !addresses.empty() ) {
         call_addr2line( last_binary_name, addresses );
     }
-    free( funcNames );
+    free( funcNames );  // NOLINT( bugprone-multi-level-implicit-pointer-conversion )
 #   endif
 #endif
 }
@@ -1457,7 +1543,7 @@ std::ostream &DebugLog( DebugLevel lev, DebugClass cl )
     // Error are always logged, they are important,
     // Messages from D_MAIN come from debugmsg and are equally important.
     if( ( lev & debugLevel && cl & debugClass ) || lev & D_ERROR || cl & D_MAIN ) {
-        std::ostream &out = debugFile().get_file();
+        std::ostream &out = DebugFile::instance().get_file();
 
         output_repetitions( out );
 
@@ -1560,6 +1646,8 @@ std::string game_info::operating_system()
 }
 
 #if !defined(EMSCRIPTEN) && !defined(__CYGWIN__) && !defined (__ANDROID__) && ( defined (__linux__) || defined(unix) || defined(__unix__) || defined(__unix) || ( defined(__APPLE__) && defined(__MACH__) ) || defined(CATA_IS_ON_BSD) ) // linux; unix; MacOs; BSD
+namespace
+{
 class FILEDeleter
 {
     public:
@@ -1567,6 +1655,7 @@ class FILEDeleter
             pclose( f );
         }
 };
+} // namespace
 
 /** Execute a command with the shell by using `popen()`.
  * @param command The full command to execute.
@@ -1578,6 +1667,7 @@ static std::string shell_exec( const std::string &command )
     std::vector<char> buffer( 512 );
     std::string output;
     try {
+        // NOLINTNEXTLINE(bugprone-command-processor): crash-handler shells out by design
         std::unique_ptr<FILE, FILEDeleter> pipe( popen( command.c_str(), "r" ) );
         if( pipe ) {
             while( fgets( buffer.data(), buffer.size(), pipe.get() ) != nullptr ) {
@@ -1873,8 +1963,8 @@ std::string game_info::mods_loaded()
     mod_names.reserve( mod_ids.size() );
     std::transform( mod_ids.begin(), mod_ids.end(),
     std::back_inserter( mod_names ), []( const mod_id & mod ) -> std::string {
-        // e.g. "Dark Days Ahead [dda]".
-        return string_format( "%s [%s]", mod->name(), mod->ident.str() );
+        // e.g. "Dark Days Ahead [dda] (95c4e03)".
+        return string_format( "%s [%s] (%s)", mod->name(), mod->ident.str(), mod->version );
     } );
 
     return string_join( mod_names, ",\n    " ); // note: 4 spaces for a slight offset.

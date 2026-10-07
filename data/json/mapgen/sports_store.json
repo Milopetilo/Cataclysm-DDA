@@ -1,9 +1,7 @@
 [
   {
     "type": "mapgen",
-    "method": "json",
     "om_terrain": [ "s_sports" ],
-    "weight": 300,
     "object": {
       "fill_ter": "t_thconc_floor",
       "rows": [
@@ -13,7 +11,7 @@
         ".`''''`''''ss''''`''''`.",
         ".`''''`''''ss''''`''''`.",
         ".##~~~~~~##++##~~~~~~##.",
-        ".#   @@          @@   #.",
+        ".#   @@  §       @@   #.",
         ".#                    #.",
         ".#{  {}    mm    {}  }#.",
         ".#{  {}   ^||^   {}  }#.",
@@ -28,7 +26,7 @@
         ".#||||+|||||||||||||||#.",
         ".#& |   }}}}}}}}} OOOO#.",
         ".#  +                O#.",
-        ".#% |   {{{{{{{{{    O#.",
+        ".#% |   {{{{{{{{{  § O#.",
         ".#################*####.",
         "........4..............."
       ],
@@ -61,7 +59,7 @@
         "O": [ "f_crate_c", "f_cardboard_box", "f_crate_o" ]
       },
       "toilets": { "&": {  } },
-      "items": { "O": { "item": "allsporting", "chance": 50 } },
+      "items": { "&": { "item": "SUS_toilet", "chance": 50 }, "O": { "item": "allsporting", "chance": 50 } },
       "place_loot": [
         { "group": "clothing_sport", "x": [ 5, 6 ], "y": 6, "chance": 90, "repeat": [ 1, 8 ] },
         { "group": "clothing_sport", "x": [ 17, 18 ], "y": 6, "chance": 90, "repeat": [ 1, 8 ] },
@@ -77,12 +75,12 @@
         { "group": "allsporting", "x": [ 8, 16 ], "y": 21, "chance": 80, "repeat": [ 1, 8 ] },
         { "group": "cash_register_random", "x": [ 2, 7 ], "y": 15 }
       ],
-      "place_monsters": [ { "monster": "GROUP_ZOMBIE", "x": [ 2, 21 ], "y": 7, "chance": 2 } ]
+      "place_monsters": [ { "monster": "GROUP_ZOMBIE", "x": [ 2, 21 ], "y": 7, "chance": 2 } ],
+      "nested": { "§": { "chunks": [ "fire_extinguisher" ] } }
     }
   },
   {
     "type": "mapgen",
-    "method": "json",
     "om_terrain": "s_sports_roof",
     "object": {
       "fill_ter": "t_flat_roof",

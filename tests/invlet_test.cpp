@@ -1,16 +1,17 @@
 #include <cstddef>
-#include <functional>
-#include <list>
-#include <map>
-#include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "activity_actor_definitions.h"
 #include "avatar.h"
 #include "cata_catch.h"
+#include "character.h"
+#include "character_attire.h"
+#include "coordinates.h"
 #include "inventory.h"
 #include "item.h"
 #include "item_location.h"
@@ -18,7 +19,6 @@
 #include "map_helpers.h"
 #include "map_selector.h"
 #include "options_helpers.h"
-#include "pimpl.h"
 #include "player_activity.h"
 #include "point.h"
 #include "type_id.h"
@@ -26,7 +26,12 @@
 
 static const itype_id itype_a( "a" );
 static const itype_id itype_b( "b" );
+static const itype_id itype_backpack( "backpack" );
+static const itype_id itype_jeans( "jeans" );
+static const itype_id itype_tshirt( "tshirt" );
 
+namespace
+{
 enum inventory_location {
     GROUND,
     INVENTORY,
@@ -49,6 +54,7 @@ enum test_action {
     REMOVE_1ST_ADD_1ST,
     TEST_ACTION_NUM,
 };
+} // namespace
 
 static void set_id( item &it, const std::string &id )
 {
@@ -63,15 +69,15 @@ static std::string get_id( const item &it )
 template <typename T>
 static item *retrieve_item( const T &sel, const std::string &id )
 {
-    item *obj = nullptr;
-    sel.visit_items( [&id, &obj]( const item * e, item * ) {
+    item_location obj;
+    sel.visit_items( [&id, &obj]( const item_location & e ) {
         if( get_id( *e ) == id ) {
-            obj = const_cast<item *>( e );
+            obj = e;
             return VisitResponse::ABORT;
         }
         return VisitResponse::NEXT;
     } );
-    return obj;
+    return obj.get_item();
 }
 
 static std::string location_desc( const inventory_location loc )
@@ -219,13 +225,13 @@ static void assign_invlet( avatar &you, item &it, const char invlet, const invle
     }
 }
 
-static invlet_state check_invlet( Character &you, item &it, const char invlet )
+static invlet_state check_invlet( avatar &you, item &it, const char invlet )
 {
     if( it.invlet == '\0' ) {
         return NONE;
     } else if( it.invlet == invlet ) {
-        if( you.inv->assigned_invlet.find( invlet ) != you.inv->assigned_invlet.end() &&
-            you.inv->assigned_invlet[invlet] == it.typeId() ) {
+        if( you.invlet_is_assigned( invlet ) &&
+            you.get_itype_by_invlet( invlet ) == it.typeId() ) {
             return ASSIGNED;
         } else {
             return CACHED;
@@ -242,7 +248,7 @@ static void drop_at_feet( Character &you, const std::string &id )
     REQUIRE( found );
     item_location loc( you, found );
     you.set_moves( 100 );
-    you.drop( loc, you.pos() );
+    you.drop( loc, you.pos_bub() );
     you.activity.do_turn( you );
 
     REQUIRE( get_map().i_at( you.pos_bub() ).size() == size_before + 1 );
@@ -253,11 +259,11 @@ static void pick_up_from_feet( Character &you, const std::string &id )
     map_stack items = get_map().i_at( you.pos_bub() );
     size_t size_before = items.size();
 
-    item *found = retrieve_item( map_cursor( you.get_location() ), id );
+    item *found = retrieve_item( map_cursor( you.pos_abs() ), id );
     REQUIRE( found );
 
     you.set_moves( 100 );
-    const std::vector<item_location> target_items = { item_location( map_cursor( you.get_location() ), found ) };
+    const std::vector<item_location> target_items = { item_location( map_cursor( you.pos_abs() ), found ) };
     you.assign_activity( pickup_activity_actor( target_items, { 0 }, you.pos_bub(), false ) );
     you.activity.do_turn( you );
 
@@ -269,7 +275,7 @@ static void wear_from_feet( Character &you, const std::string &id )
     map_stack items = get_map().i_at( you.pos_bub() );
     size_t size_before = items.size();
 
-    item *found = retrieve_item( map_cursor( you.get_location() ), id );
+    item *found = retrieve_item( map_cursor( you.pos_abs() ), id );
     REQUIRE( found );
 
     you.wear_item( *found, false );
@@ -283,7 +289,7 @@ static void wield_from_feet( Character &you, const std::string &id )
     map_stack items = get_map().i_at( you.pos_bub() );
     size_t size_before = items.size();
 
-    item *found = retrieve_item( map_cursor( you.get_location() ), id );
+    item *found = retrieve_item( map_cursor( you.pos_abs() ), id );
     REQUIRE( found );
 
     you.wield( *found );
@@ -322,7 +328,7 @@ static item &item_at( Character &you, const std::string &id, const inventory_loc
 {
     switch( loc ) {
         case GROUND: {
-            item *found = retrieve_item( map_cursor( you.get_location() ), id );
+            item *found = retrieve_item( map_cursor( you.pos_abs() ), id );
             REQUIRE( found );
             return *found;
         }
@@ -457,15 +463,14 @@ static void invlet_test( avatar &dummy, const inventory_location from, const inv
         invlet_state expected_second_invlet_state = second_invlet_state;
 
         // remove all items
-        dummy.inv->clear();
         dummy.clear_worn();
         dummy.remove_weapon();
         get_map().i_clear( dummy.pos_bub() );
-        dummy.worn.wear_item( dummy, item( "backpack" ), false, false );
+        dummy.worn.wear_item( dummy, item( itype_backpack ), false, false );
 
         // some two items that can be wielded, worn, and picked up
-        item tshirt( "tshirt" );
-        item jeans( "jeans" );
+        item tshirt( itype_tshirt );
+        item jeans( itype_jeans );
 
         set_id( tshirt, "1" );
         set_id( jeans, "2" );
@@ -516,6 +521,7 @@ static void invlet_test( avatar &dummy, const inventory_location from, const inv
         INFO( test_action_desc( action, from, to, first_invlet_state, second_invlet_state,
                                 expected_first_invlet_state, expected_second_invlet_state, final_first_invlet_state,
                                 final_second_invlet_state ) );
+
         REQUIRE( final_first->typeId() == tshirt.typeId() );
         REQUIRE( final_second->typeId() == jeans.typeId() );
         CHECK( final_first_invlet_state == expected_first_invlet_state );
@@ -539,15 +545,14 @@ static void stack_invlet_test( avatar &dummy, inventory_location from, inventory
     }
 
     // remove all items
-    dummy.inv->clear();
     dummy.clear_worn();
     dummy.remove_weapon();
     get_map().i_clear( dummy.pos_bub() );
-    dummy.worn.wear_item( dummy, item( "backpack" ), false, false );
+    dummy.worn.wear_item( dummy, item( itype_backpack ), false, false );
 
     // some stackable item that can be wielded and worn
-    item tshirt1( "tshirt" );
-    item tshirt2( "tshirt" );
+    item tshirt1( itype_tshirt );
+    item tshirt2( itype_tshirt );
 
     set_id( tshirt1, "1" );
     set_id( tshirt2, "2" );
@@ -592,14 +597,13 @@ static void swap_invlet_test( avatar &dummy, inventory_location loc )
     REQUIRE( loc != GROUND );
 
     // remove all items
-    dummy.inv->clear();
     dummy.clear_worn();
     dummy.remove_weapon();
     get_map().i_clear( dummy.pos_bub() );
 
     // two items of the same type that do not stack
-    item tshirt1( "tshirt" );
-    item tshirt2( "tshirt" );
+    item tshirt1( itype_tshirt );
+    item tshirt2( itype_tshirt );
     tshirt2.mod_damage( -1 );
 
     set_id( tshirt1, "1" );
@@ -677,15 +681,14 @@ static void merge_invlet_test( avatar &dummy, inventory_location from )
                                       invlet_2 : 0;
 
         // remove all items
-        dummy.inv->clear();
         dummy.clear_worn();
         dummy.remove_weapon();
         get_map().i_clear( dummy.pos_bub() );
-        dummy.worn.wear_item( dummy, item( "backpack" ), false, false );
+        dummy.worn.wear_item( dummy, item( itype_backpack ), false, false );
 
         // some stackable item
-        item tshirt1( "tshirt" );
-        item tshirt2( "tshirt" );
+        item tshirt1( itype_tshirt );
+        item tshirt2( itype_tshirt );
 
         set_id( tshirt1, "1" );
         set_id( tshirt2, "2" );
@@ -749,12 +752,13 @@ static void merge_invlet_test( avatar &dummy, inventory_location from )
 
 TEST_CASE( "Inventory_letter_test", "[.invlet]" )
 {
+    map &here = get_map();
     avatar &dummy = get_avatar();
     const tripoint_bub_ms spot( 60, 60, 0 );
-    clear_map();
-    dummy.setpos( spot );
-    get_map().ter_set( spot, ter_id( "t_dirt" ) );
-    get_map().furn_set( spot, furn_id( "f_null" ) );
+    clear_map_without_vision();
+    dummy.setpos( here, spot );
+    here.ter_set( spot, ter_id( "t_dirt" ) );
+    here.furn_set( spot, furn_id( "f_null" ) );
 
     invlet_test_autoletter_off( "Picking up items from the ground", dummy, GROUND, INVENTORY );
     invlet_test_autoletter_off( "Wearing items from the ground", dummy, GROUND, WORN );

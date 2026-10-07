@@ -129,6 +129,28 @@
     "flags": [ "W_LABEL_NONE" ]
   },
   {
+    "id": "zenfs_oxygen_bar_only_12",
+    "type": "widget",
+    "copy-from": "oxygen_widget",
+    "label": "Oxygen",
+    "style": "graph",
+    "symbols": "·−=≡≣",
+    "colors": [ "i_red", "c_red", "c_light_red", "c_yellow", "c_light_green", "c_green" ],
+    "width": 12
+  },
+  {
+    "id": "zenfs_oxygen_bar_only_12_layout",
+    "type": "widget",
+    "style": "layout",
+    "label": "Oxygen",
+    "arrange": "rows",
+    "default_clause": { "text": "" },
+    "clauses": [
+      { "condition": { "math": [ "u_oxygen_max() != u_oxygen()" ] }, "id": "content", "widgets": "zenfs_oxygen_bar_only_12" }
+    ],
+    "flags": [ "W_DISABLED_WHEN_EMPTY" ]
+  },
+  {
     "id": "zenfs_weariness_bar_10",
     "type": "widget",
     "label": "Weariness",
@@ -193,35 +215,30 @@
     "text_align": "right",
     "width": 11,
     "clauses": [
-      {
-        "id": "well_rested",
-        "text": "Well Rested",
-        "color": "blue",
-        "condition": { "math": [ "u_val('sleepiness')", "<", "95" ] }
-      },
+      { "id": "well_rested", "text": "Well Rested", "color": "blue", "condition": { "math": [ "u_val('sleepiness') < 95" ] } },
       {
         "id": "rested",
         "text": "Rested",
         "color": "green",
-        "condition": { "and": [ { "math": [ "u_val('sleepiness')", ">=", "95" ] }, { "math": [ "u_val('sleepiness')", "<", "191" ] } ] }
+        "condition": { "and": [ { "math": [ "u_val('sleepiness') >= 95" ] }, { "math": [ "u_val('sleepiness') < 191" ] } ] }
       },
       {
         "id": "tired",
         "text": "Tired",
         "color": "yellow",
-        "condition": { "and": [ { "math": [ "u_val('sleepiness')", ">=", "191" ] }, { "math": [ "u_val('sleepiness')", "<", "383" ] } ] }
+        "condition": { "and": [ { "math": [ "u_val('sleepiness') >= 191" ] }, { "math": [ "u_val('sleepiness') < 383" ] } ] }
       },
       {
         "id": "dead_tired",
         "text": "Dead Tired",
         "color": "light_red",
-        "condition": { "and": [ { "math": [ "u_val('sleepiness')", ">=", "383" ] }, { "math": [ "u_val('sleepiness')", "<", "575" ] } ] }
+        "condition": { "and": [ { "math": [ "u_val('sleepiness') >= 383" ] }, { "math": [ "u_val('sleepiness') < 575" ] } ] }
       },
       {
         "id": "exhausted",
         "text": "Exhausted",
         "color": "red",
-        "condition": { "math": [ "u_val('sleepiness')", ">=", "575" ] }
+        "condition": { "math": [ "u_val('sleepiness') >= 575" ] }
       }
     ],
     "padding": 0

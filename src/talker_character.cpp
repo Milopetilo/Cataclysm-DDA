@@ -1,23 +1,56 @@
+#include <algorithm>
+#include <bitset>
+#include <cmath>
+#include <cstddef>
+#include <functional>
+#include <list>
+#include <map>
 #include <memory>
+#include <optional>
+#include <set>
+#include <tuple>
+#include <unordered_set>
+#include <utility>
 
-#include "avatar.h"
+#include "addiction.h"
+#include "calendar.h"
+#include "cata_utility.h"
+#include "character_attire.h"
 #include "character_id.h"
 #include "character_martial_arts.h"
+#include "coordinates.h"
+#include "creature.h"
+#include "damage.h"
+#include "debug.h"
 #include "effect.h"
+#include "faction.h"
 #include "item.h"
+#include "item_location.h"
 #include "itype.h"
 #include "magic.h"
+#include "magic_enchantment.h"
+#include "map.h"
+#include "martialarts.h"
+#include "math_parser_diag_value.h"
+#include "messages.h"
 #include "npc.h"
 #include "npctalk.h"
+#include "output.h"
 #include "pimpl.h"
 #include "player_activity.h"
-#include "point.h"
+#include "proficiency.h"
+#include "ret_val.h"
 #include "skill.h"
+#include "string_formatter.h"
 #include "talker_character.h"
+#include "translation.h"
+#include "translations.h"
+#include "units.h"
 #include "vehicle.h"
+#include "vpart_position.h"
 #include "weather.h"
 
-class time_duration;
+struct bionic;
 
 static const flag_id json_flag_FIT( "FIT" );
 static const json_character_flag json_flag_SEESLEEP( "SEESLEEP" );
@@ -47,14 +80,14 @@ std::vector<std::string> talker_character_const::get_grammatical_genders() const
     return me_chr_const->get_grammatical_genders();
 }
 
-int talker_character_const::posx() const
+int talker_character_const::posx( const map &here ) const
 {
-    return me_chr_const->posx();
+    return me_chr_const->posx( here );
 }
 
-int talker_character_const::posy() const
+int talker_character_const::posy( const map &here ) const
 {
-    return me_chr_const->posy();
+    return me_chr_const->posy( here );
 }
 
 int talker_character_const::posz() const
@@ -62,24 +95,19 @@ int talker_character_const::posz() const
     return me_chr_const->posz();
 }
 
-tripoint talker_character_const::pos() const
+tripoint_bub_ms talker_character_const::pos_bub( const map &here ) const
 {
-    return me_chr_const->pos();
+    return me_chr_const->pos_bub( here );
 }
 
-tripoint_abs_ms talker_character_const::global_pos() const
+tripoint_abs_ms talker_character_const::pos_abs() const
 {
-    return me_chr_const->get_location();
+    return me_chr_const->pos_abs();
 }
 
-tripoint_abs_omt talker_character_const::global_omt_location() const
+tripoint_abs_omt talker_character_const::pos_abs_omt() const
 {
-    return me_chr_const->global_omt_location();
-}
-
-void talker_character::set_pos( tripoint new_pos )
-{
-    me_chr->setpos( new_pos );
+    return me_chr_const->pos_abs_omt();
 }
 
 int talker_character_const::get_cur_hp( const bodypart_id &bp ) const
@@ -97,24 +125,29 @@ units::temperature talker_character_const::get_cur_part_temp( const bodypart_id 
     return me_chr_const->get_part_temp_conv( bp );
 }
 
+int talker_character_const::get_artifact_resonance() const
+{
+    return me_chr_const->enchantment_cache->get_value_add( enchant_vals::mod::ARTIFACT_RESONANCE );
+}
+
 int talker_character_const::str_cur() const
 {
-    return me_chr_const->str_cur;
+    return me_chr_const->get_str();
 }
 
 int talker_character_const::dex_cur() const
 {
-    return me_chr_const->dex_cur;
+    return me_chr_const->get_dex();
 }
 
 int talker_character_const::int_cur() const
 {
-    return me_chr_const->int_cur;
+    return me_chr_const->get_int();
 }
 
 int talker_character_const::per_cur() const
 {
-    return me_chr_const->per_cur;
+    return me_chr_const->get_per();
 }
 
 int talker_character_const::attack_speed() const
@@ -124,30 +157,47 @@ int talker_character_const::attack_speed() const
     return me_chr_const->attack_speed( cur_weap );
 }
 
+int talker_character_const::get_speed() const
+{
+    return me_chr_const->get_speed();
+}
+
 dealt_damage_instance talker_character_const::deal_damage( Creature *source, bodypart_id bp,
         const damage_instance &dam ) const
 {
     return source->deal_damage( source, bp, dam );
 }
 
+void talker_character::set_pos( tripoint_bub_ms new_pos )
+{
+    map &here = get_map();
+
+    me_chr->setpos( here, new_pos );
+}
+
+void talker_character::set_pos( tripoint_abs_ms new_pos )
+{
+    me_chr->setpos( new_pos );
+}
+
 void talker_character::set_str_max( int value )
 {
-    me_chr->str_max = value;
+    me_chr->set_str_base( value );
 }
 
 void talker_character::set_dex_max( int value )
 {
-    me_chr->dex_max = value;
+    me_chr->set_dex_base( value );
 }
 
 void talker_character::set_int_max( int value )
 {
-    me_chr->int_max = value;
+    me_chr->set_int_base( value );
 }
 
 void talker_character::set_per_max( int value )
 {
-    me_chr->per_max = value;
+    me_chr->set_per_base( value );
 }
 
 void talker_character::set_str_bonus( int value )
@@ -170,24 +220,29 @@ void talker_character::set_per_bonus( int value )
     me_chr->mod_per_bonus( value );
 }
 
+void talker_character::set_cash( int value )
+{
+    me_chr->cash = value;
+}
+
 int talker_character_const::get_str_max() const
 {
-    return me_chr_const->str_max;
+    return me_chr_const->get_str_base();
 }
 
 int talker_character_const::get_dex_max() const
 {
-    return me_chr_const->dex_max;
+    return me_chr_const->get_dex_base();
 }
 
 int talker_character_const::get_int_max() const
 {
-    return me_chr_const->int_max;
+    return me_chr_const->get_int_base();
 }
 
 int talker_character_const::get_per_max() const
 {
-    return me_chr_const->per_max;
+    return me_chr_const->get_per_base();
 }
 
 int talker_character_const::get_str_bonus() const
@@ -263,9 +318,9 @@ void talker_character::mutate( const int &highest_cat_chance, const bool &use_vi
 }
 
 void talker_character::mutate_category( const mutation_category_id &mut_cat,
-                                        const bool &use_vitamins )
+                                        const bool &use_vitamins, const bool &true_random )
 {
-    me_chr->mutate_category( mut_cat, use_vitamins );
+    me_chr->mutate_category( mut_cat, use_vitamins, true_random );
 }
 
 void talker_character::mutate_towards( const trait_id &trait, const mutation_category_id &mut_cat,
@@ -415,6 +470,15 @@ int talker_character_const::get_spell_exp( const spell_id &spell_name ) const
     return me_chr_const->magic->get_spell( spell_name ).xp();
 }
 
+int talker_character_const::get_spell_difficulty( const spell_id &spell_name,
+        bool ignore_modifiers = false ) const
+{
+    if( ignore_modifiers || !me_chr_const->magic->knows_spell( spell_name ) ) {
+        return spell_name->get_difficulty( *me_chr_const );
+    }
+    return me_chr_const->magic->get_spell( spell_name ).get_difficulty( *me_chr_const );
+}
+
 int talker_character_const::get_spell_count( const trait_id &school ) const
 {
     int count = 0;
@@ -480,6 +544,11 @@ effect talker_character_const::get_effect( const efftype_id &effect_id,
     return me_chr_const->get_effect( effect_id, bp );
 }
 
+float talker_character_const::get_limb_score( const limb_score_id &score, const bp_type &bp ) const
+{
+    return me_chr_const->get_limb_score( score, bp );
+}
+
 void talker_character::add_effect( const efftype_id &new_effect, const time_duration &dur,
                                    const std::string &bp, bool permanent, bool force,
                                    int intensity )
@@ -505,13 +574,12 @@ void talker_character::remove_effect( const efftype_id &old_effect, const std::s
     me_chr->remove_effect( old_effect, target_part );
 }
 
-std::optional<std::string> talker_character_const::maybe_get_value( const std::string &var_name )
-const
+diag_value const *talker_character_const::maybe_get_value( const std::string &var_name ) const
 {
     return me_chr_const->maybe_get_value( var_name );
 }
 
-void talker_character::set_value( const std::string &var_name, const std::string &value )
+void talker_character::set_value( const std::string &var_name, diag_value const &value )
 {
     me_chr->set_value( var_name, value );
 }
@@ -648,6 +716,12 @@ bool talker_character_const::has_stolen_item( const_talker const &guy ) const
     return false;
 }
 
+bool talker_character_const::has_software( const itype_id &software_id, int min_charges,
+        const itype_id &device_id ) const
+{
+    return me_chr_const->has_software( software_id, min_charges, device_id );
+}
+
 faction *talker_character_const::get_faction() const
 {
     return me_chr_const->get_faction();
@@ -693,6 +767,16 @@ int talker_character_const::get_instant_thirst() const
     return me_chr_const->get_instant_thirst();
 }
 
+int talker_character_const::get_oxygen() const
+{
+    return me_chr_const->oxygen;
+}
+
+int talker_character_const::get_oxygen_max() const
+{
+    return me_chr_const->get_oxygen_max();
+}
+
 int talker_character_const::get_stored_kcal() const
 {
     return me_chr_const->get_stored_kcal();
@@ -725,7 +809,9 @@ void talker_character::set_thirst( int value )
 
 bool talker_character_const::is_in_control_of( const vehicle &veh ) const
 {
-    return veh.player_in_control( *me_chr_const );
+    map &here = get_map();
+
+    return veh.player_in_control( here, *me_chr_const );
 }
 
 void talker_character::shout( const std::string &speech, bool order )
@@ -823,9 +909,9 @@ bool talker_character_const::has_item_with_flag( const flag_id &flag ) const
 int talker_character_const::item_rads( const flag_id &flag, aggregate_type agg_func ) const
 {
     std::vector<int> rad_vals;
-    me_chr_const->cache_visit_items_with( flag, [&]( const item & it ) {
-        if( me_chr_const->is_worn( it ) || me_chr_const->is_wielding( it ) ) {
-            rad_vals.emplace_back( it.irradiation );
+    me_chr_const->cache_visit_items_with( flag, [&]( const item_location & it ) {
+        if( me_chr_const->is_worn( *it ) || me_chr_const->is_wielding( *it ) ) {
+            rad_vals.emplace_back( it->irradiation );
         }
     } );
     return aggregate( rad_vals, agg_func );
@@ -862,9 +948,11 @@ bool talker_character_const::can_see() const
                                           me_chr_const->has_flag( json_flag_SEESLEEP ) );
 }
 
-bool talker_character_const::can_see_location( const tripoint &pos ) const
+bool talker_character_const::can_see_location( const tripoint_bub_ms &pos ) const
 {
-    return me_chr_const->sees( pos );
+    const map &here = get_map();
+
+    return me_chr_const->sees( here, pos );
 }
 
 void talker_character::set_sleepiness( int amount )
@@ -877,9 +965,24 @@ void talker_character::mod_daily_health( int amount, int cap )
     me_chr->mod_daily_health( amount, cap );
 }
 
-int talker_character_const::morale_cur() const
+void talker_character::set_hunger( int amount )
 {
-    return me_chr_const->get_morale_level();
+    me_chr->set_hunger( amount );
+}
+
+void talker_character::mod_livestyle( int amount )
+{
+    me_chr->mod_livestyle( amount );
+}
+
+int talker_character_const::morale_cur( bool raw ) const
+{
+    return me_chr_const->get_morale_level( raw );
+}
+
+void talker_character::set_oxygen( int value )
+{
+    me_chr->oxygen = std::clamp( value, 0, get_oxygen_max() );
 }
 
 void talker_character::set_fac_relation( const Character *guy, npc_factions::relationship rule,
@@ -911,6 +1014,11 @@ void talker_character::remove_morale( const morale_type &old_morale )
 int talker_character_const::focus_cur() const
 {
     return me_chr_const->get_focus();
+}
+
+int talker_character_const::focus_effective_cur() const
+{
+    return me_chr_const->get_effective_focus();
 }
 
 void talker_character::mod_focus( int amount )
@@ -977,6 +1085,11 @@ int talker_character_const::get_stamina() const
     return me_chr_const->get_stamina();
 }
 
+int talker_character_const::get_stamina_max() const
+{
+    return me_chr_const->get_stamina_max();
+}
+
 void talker_character::set_stamina( int amount )
 {
     me_chr->set_stamina( amount );
@@ -1012,6 +1125,11 @@ void talker_character::set_age( int amount )
 int talker_character_const::get_age() const
 {
     return me_chr_const->age();
+}
+
+int talker_character_const::get_ugliness() const
+{
+    return me_chr_const->ugliness();
 }
 
 int talker_character_const::get_bmi_permil() const
@@ -1052,6 +1170,11 @@ int talker_character_const::get_fine_detail_vision_mod() const
 int talker_character_const::get_health() const
 {
     return me_chr_const->get_lifestyle();
+}
+
+int talker_character_const::get_daily_health() const
+{
+    return me_chr_const->get_daily_health();
 }
 
 static std::pair<bodypart_id, bodypart_id> temp_delta( const Character *u )
@@ -1300,9 +1423,14 @@ bool talker_character_const::get_is_alive() const
     return !me_chr_const->is_dead_state();
 }
 
-void talker_character::die()
+bool talker_character_const::is_warm() const
 {
-    me_chr->die( nullptr );
+    return me_chr_const->is_warm();
+}
+
+void talker_character::die( map *here )
+{
+    me_chr->die( here, nullptr );
 }
 
 matec_id talker_character_const::get_random_technique( Creature const &t, bool crit,
@@ -1312,6 +1440,11 @@ matec_id talker_character_const::get_random_technique( Creature const &t, bool c
                         dodge_counter,
                         block_counter,
                         blacklist ) );
+}
+
+bool talker_character_const::is_in_vehicle() const
+{
+    return get_map().veh_at( me_chr_const->pos_bub() ).has_value();
 }
 
 void talker_character::attack_target( Creature &t, bool allow_special,
@@ -1328,6 +1461,11 @@ void talker_character::learn_martial_art( const matype_id &id )
 void talker_character::forget_martial_art( const matype_id &id )
 {
     me_chr->martial_arts_data->clear_style( id );
+}
+
+void talker_character::ensure_portrait_valid()
+{
+    me_chr->ensure_portrait_valid();
 }
 
 int talker_character_const::climate_control_str_heat() const

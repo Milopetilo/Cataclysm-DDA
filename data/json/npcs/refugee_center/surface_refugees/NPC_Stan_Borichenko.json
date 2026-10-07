@@ -5,9 +5,10 @@
     "name_unique": "Stan Borichenko",
     "gender": "male",
     "name_suffix": "Refugee",
+    "portrait_filename": "Named_NPC_stan_borichenko",
     "class": "NC_REFUGEE_Stan",
     "attitude": 0,
-    "mission": 7,
+    "mission": "GUARD",
     "chat": "TALK_REFUGEE_Stan_1",
     "faction": "free_merchants"
   },
@@ -194,7 +195,7 @@
       "concatenate": [
         "*smiles thinly.  \"Best little brother a guy could ask for.  He's been with me through everything, literally everything.",
         {
-          "math": [ "u_counter_refugee_center_refugee_happiness", ">=", "6" ],
+          "math": [ "u_counter_refugee_center_refugee_happiness >= 6" ],
           "yes": "\u00A0 I wouldn't wish this world we find ourselves in on anyone, but I'm glad Garry made it through with me.\"  Stan sighs, touching his neck.",
           "no": "\"  He seems to realize where he is suddenly, and the faint smile melts.  \"He's lost too much, too.\""
         }

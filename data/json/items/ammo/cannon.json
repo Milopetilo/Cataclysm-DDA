@@ -1,7 +1,8 @@
 [
   {
     "id": "cannon_shot",
-    "type": "AMMO",
+    "type": "ITEM",
+    "subtypes": [ "AMMO" ],
     "name": { "str_sp": "cannon round shot" },
     "description": "A bundle of wadding, black gunpowder, and a cannonball, ready to be loaded into a cannon.",
     "ascii_picture": "cannon_shot",
@@ -22,6 +23,6 @@
     "recoil": 26250,
     "//2": "Recoil currently copied from 50 bmg ball as game_balance.md does not state a method for calculating recoil",
     "loudness": 900,
-    "effects": [ "COOKOFF", "MUZZLE_SMOKE", "BLACKPOWDER", "RECYCLED" ]
+    "effects": [ "COOKOFF", "MUZZLE_SMOKE", "BLACKPOWDER", "RECYCLED", "EXCESS_PEN" ]
   }
 ]

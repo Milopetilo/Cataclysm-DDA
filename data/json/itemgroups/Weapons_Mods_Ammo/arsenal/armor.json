@@ -10,8 +10,7 @@
       { "group": "arsenal_mics_rare", "prob": 10 },
       { "group": "full_ifak", "prob": 80, "count": [ 1, 2 ] },
       { "group": "arsenal_mics_tools", "count": [ 1, 4 ] },
-      { "item": "large_repairkit", "prob": 2 },
-      { "item": "small_repairkit", "prob": 1 }
+      { "group": "guns_toolbox", "prob": 3 }
     ]
   },
   {
@@ -23,6 +22,7 @@
       { "item": "helmet_army", "prob": 100, "count": [ 1, 4 ] },
       { "item": "tac_fullhelmet", "prob": 60, "count": [ 1, 2 ] },
       { "item": "glasses_bal", "prob": 60, "count": [ 1, 2 ] },
+      { "item": "mask_bal", "prob": 30, "count": [ 1, 2 ] },
       { "item": "powered_earmuffs", "prob": 60, "count": [ 1, 2 ] }
     ]
   },

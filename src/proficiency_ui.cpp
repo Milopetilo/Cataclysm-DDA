@@ -1,8 +1,30 @@
+#include <algorithm>
+#include <map>
+#include <memory>
+#include <optional>
+#include <ostream>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "calendar.h"
+#include "cata_utility.h"
 #include "character.h"
+#include "color.h"
+#include "cursesdef.h"
+#include "debug.h"
 #include "input_context.h"
+#include "memory_fast.h"
 #include "output.h"
+#include "point.h"
 #include "proficiency.h"
+#include "string_formatter.h"
 #include "string_input_popup.h"
+#include "translation.h"
+#include "translations.h"
+#include "type_id.h"
+#include "uilist.h"
 #include "ui_manager.h"
 
 // Basic layout:
@@ -26,6 +48,8 @@
 
 using display_prof_deps = std::pair<display_proficiency, std::vector<proficiency_id>>;
 
+namespace
+{
 struct prof_window {
     input_context ctxt;
     weak_ptr_fast<ui_adaptor> ui;
@@ -61,6 +85,7 @@ struct prof_window {
     void draw_details();
     void run( std::optional<proficiency_id> default_selection = std::nullopt );
 };
+} // namespace
 
 std::vector<display_prof_deps *> &prof_window::get_current_set()
 {
@@ -101,14 +126,14 @@ void prof_window::filter()
     }
     float prog_val = 0.0f;
     if( prefix == _prof_filter_prefix::AS_PROGRESS ) {
-        try {
-            prog_val = std::stof( qry );
-        } catch( const std::invalid_argument &e ) {
+        std::optional<double> v = svtod( qry, false );
+        if( !v.has_value() ) {
             // User mistyped query. Not severe enough for debugmsg.
             DebugLog( DebugLevel::D_WARNING, DebugClass::D_GAME ) <<
-                    "Malformed proficiency query \"" << filter_str << "\": " << e.what();
+                    "Malformed proficiency query \"" << filter_str << "\"";
             return;
         }
+        prog_val = v.value();
     }
     for( display_prof_deps &dp : all_profs ) {
         if( prefix == _prof_filter_prefix::AS_PROGRESS ) {

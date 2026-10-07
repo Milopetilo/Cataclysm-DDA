@@ -113,7 +113,7 @@
     "terrain": [
       { "result": "t_dirt", "valid_terrain": [ "t_soil" ], "message": "The solid earth sinks away." },
       { "result": "t_pit", "valid_flags": [ "DIGGABLE" ], "message": "The ground opens up!" },
-      { "result": "t_hole", "valid_terrain": [ "t_pit" ], "message": "The pit deepens!" }
+      { "result": "t_open_air", "valid_terrain": [ "t_pit" ], "message": "The pit deepens!" }
     ]
   },
   {
@@ -206,18 +206,7 @@
     "furniture": [
       {
         "result": "f_rubble_rock",
-        "valid_furniture": [
-          "f_dirtmound_tall",
-          "f_dirtmound_shallow",
-          "f_dirtmound_pile_seed",
-          "f_dirtmound_pile_mature",
-          "f_dirtmound_shallow_seed",
-          "f_dirtmound_pile_harvest",
-          "f_dirtmound_pile_seedling",
-          "f_dirtmound_shallow_mature",
-          "f_dirtmound_shallow_harvest",
-          "f_dirtmound_shallow_seedling"
-        ],
+        "valid_furniture": [ "f_dirtmound_tall", "f_dirtmound_shallow" ],
         "message": "The pile of dirt hardens into a large pile of stones."
       }
     ]

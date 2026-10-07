@@ -1,7 +1,6 @@
 [
   {
     "type": "mapgen",
-    "method": "json",
     "//": "ground entrance",
     "om_terrain": [
       [ "black_dragon_lair_z-0_NW", "black_dragon_lair_z-0_NE" ],
@@ -91,7 +90,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "//": "z -1, open area entrance",
     "om_terrain": [
       [ "black_dragon_lair_z-1_NW", "black_dragon_lair_z-1_NE" ],
@@ -237,7 +235,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "//": "dragon nests, open to cavern below",
     "om_terrain": [
       [ "black_dragon_lair_z-2_NW", "black_dragon_lair_z-2_NE" ],
@@ -315,7 +312,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "//": "z -2, reserved for loot/habitat rooms, should be vaulted x2 with dragon entrances from above?",
     "om_terrain": [
       [ "black_dragon_lair_z-3_NW", "black_dragon_lair_z-3_NE" ],
@@ -418,7 +414,6 @@
           { "item": "enchanted_small_items", "chance": 10, "repeat": [ 0, 2 ] },
           { "item": "enchanted_combat_items", "chance": 10, "repeat": [ 0, 2 ] },
           { "item": "enchanted_melee_weapons_plus2", "chance": 5 },
-          { "item": "enchanted_tools_plus2", "chance": 5 },
           { "item": "spellbook_loot_1", "chance": 50, "repeat": [ 1, 2 ] },
           { "item": "spellbook_loot_2", "chance": 20, "repeat": [ 1, 2 ] }
         ]
@@ -428,7 +423,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "//": "z, -3 underwater passageways up to loot rooms",
     "om_terrain": [
       [ "black_dragon_lair_z-4_NW", "black_dragon_lair_z-4_NE" ],

@@ -4,34 +4,35 @@
 
 #include <cstddef>
 #include <functional>
-#include <iosfwd>
 #include <list>
 #include <map>
-#include <new>
 #include <optional>
 #include <set>
+#include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
+#include "coords_fwd.h"
 #include "enums.h"
 #include "flat_set.h"
 #include "pocket_type.h"
 #include "ret_val.h"
+#include "translation.h"
 #include "type_id.h"
 #include "units.h"
 #include "value_ptr.h"
 #include "visitable.h"
 
 class Character;
+class JsonArray;
 class JsonObject;
 class JsonOut;
 class item;
 class item_location;
+class map;
 class pocket_data;
 struct iteminfo;
-struct itype;
-struct tripoint;
-class map;
 
 class item_pocket
 {
@@ -133,8 +134,8 @@ class item_pocket
         bool is_restricted() const;
         bool has_any_with( const std::function<bool( const item & )> &filter ) const;
 
-        bool is_valid() const;
         bool is_type( pocket_type ptype ) const;
+        bool is_type( const std::set<pocket_type> &ptype ) const;
         bool is_ablative() const;
         bool is_holster() const;
         // checks if the pocket is a holster and if it has something in it
@@ -153,8 +154,10 @@ class item_pocket
         bool allows_speedloader( const itype_id &speedloader_id ) const;
 
         // is this pocket one of the standard types?
-        // exceptions are MOD, CORPSE, SOFTWARE, MIGRATION, etc.
+        // exceptions are MOD, CORPSE, MIGRATION, etc.
         bool is_standard_type() const;
+        // is this pocket a type that acts like a container in its underlying implementation?
+        bool is_container_like_type() const;
 
         bool is_forbidden() const;
 
@@ -168,10 +171,15 @@ class item_pocket
         std::list<item *> all_items_ptr( pocket_type pk_type );
         std::list<const item *> all_items_ptr( pocket_type pk_type ) const;
 
+        // Sum of ememory_size() across top-level contents. Only meaningful
+        // for E_FILE_STORAGE pockets, used by item::occupied_ememory().
+        units::ememory occupied_ememory() const;
+
         item &back();
         const item &back() const;
         item &front();
         const item &front() const;
+        /** Number of items in this pocket. */
         size_t size() const;
         void pop_back();
 
@@ -205,18 +213,24 @@ class item_pocket
         units::length max_containable_length() const;
         units::length min_containable_length() const;
 
+        units::volume volume_capacity() const;
         // combined volume of contained items
-        units::volume contains_volume() const;
+        units::volume contents_volume() const;
         units::volume remaining_volume() const;
+
+        // While bulk-fill is active, contents_volume()/contains_weight() return
+        // a running total updated on each insertion rather than re-summing all
+        // contents, turning an O(n^2) fill into O(n). Only correct while nothing
+        // else mutates the contents between the paired calls (e.g. filling one
+        // fresh container); end_bulk_fill() drops the totals.
+        void begin_bulk_fill();
+        void end_bulk_fill();
         // how many more of @it can this pocket hold?
         int remaining_capacity_for_item( const item &it ) const;
-        units::volume volume_capacity() const;
         // the amount of space this pocket can hold before it starts expanding
         units::volume magazine_well() const;
+
         units::mass weight_capacity() const;
-        // The largest volume of contents this pocket can have.  Different from
-        // volume_capacity because that doesn't take into account ammo containers.
-        units::volume max_contains_volume() const;
         // combined weight of contained items
         units::mass contains_weight() const;
         units::mass remaining_weight() const;
@@ -233,6 +247,8 @@ class item_pocket
         /** gets the spoilage multiplier depending on sealed data */
         float spoil_multiplier() const;
 
+        float insulation() const;
+
         int moves() const;
 
         int best_quality( const quality_id &id ) const;
@@ -245,6 +261,7 @@ class item_pocket
         std::vector<const item *> gunmods() const;
         cata::flat_set<itype_id> item_type_restrictions() const;
         item *magazine_current();
+        const item *magazine_current() const;
         // returns the default magazine if MAGAZINE_WELL, otherwise NULL_ID
         itype_id magazine_default() const;
         // returns amount of ammo consumed
@@ -254,7 +271,7 @@ class item_pocket
         int ammo_capacity( const ammotype &ammo ) const;
         int remaining_ammo_capacity( const ammotype &ammo ) const;
         void casings_handle( const std::function<bool( item & )> &func );
-        bool use_amount( const itype_id &it, int &quantity, std::list<item> &used );
+        bool use_amount( item_location &parent, const itype_id &it, int &quantity, std::list<item> &used );
         bool will_explode_in_a_fire() const;
         bool item_has_uses_recursive() const;
         // will the items inside this pocket fall out of this pocket if it is placed into another item?
@@ -277,9 +294,8 @@ class item_pocket
         bool sealed() const;
 
         std::string translated_sealed_prefix() const;
-        bool detonate( const tripoint &p, std::vector<item> &drops );
-        bool process( const itype &type, map &here, Character *carrier, const tripoint &pos,
-                      float insulation, temperature_flag flag, bool watertight_container );
+        bool detonate( const tripoint_bub_ms &p, std::vector<item> &drops );
+
         void remove_all_ammo( Character &guy );
         void remove_all_mods( Character &guy );
 
@@ -289,8 +305,9 @@ class item_pocket
         std::optional<item> remove_item( const item &it );
         std::optional<item> remove_item( const item_location &it );
         // spills any contents that can't fit into the pocket, largest items first
-        void overflow( const tripoint &pos, const item_location &loc );
-        bool spill_contents( const tripoint &pos );
+        void overflow( map &here, const tripoint_bub_ms &pos, const item_location &loc );
+        bool spill_contents( const tripoint_bub_ms &pos );
+        bool spill_contents( map *here, const tripoint_bub_ms &pos );
         void on_pickup( Character &guy, item *avoid = nullptr );
         void on_contents_changed();
         void handle_liquid_or_spill( Character &guy, const item *avoid = nullptr );
@@ -303,11 +320,12 @@ class item_pocket
          * Is part of the recursive call of item::process. see that function for additional comments
          * NOTE: this destroys the items that get processed
          */
-        void process( map &here, Character *carrier, const tripoint &pos, float insulation = 1,
+        void process( map &here, Character *carrier, const tripoint_bub_ms &pos, float insulation = 1,
                       temperature_flag flag = temperature_flag::NORMAL, float spoil_multiplier_parent = 1.0f,
                       bool watertight_container = false );
 
-        void leak( map &here, Character *carrier, const tripoint &pos, item_pocket *pocke = nullptr );
+        void leak( map &here, Character *carrier, const tripoint_bub_ms &pos,
+                   item_pocket *pocke = nullptr );
 
         pocket_type saved_type() const {
             return _saved_type;
@@ -315,6 +333,13 @@ class item_pocket
 
         bool saved_sealed() const {
             return _saved_sealed;
+        }
+
+        float get_capacity_mult() const {
+            return capacity_mult;
+        }
+        void set_capacity_mult( float m ) {
+            capacity_mult = m;
         }
 
         // tries to put an item in the pocket. returns false if failure
@@ -356,8 +381,11 @@ class item_pocket
         bool remove_internal( const std::function<bool( item & )> &filter,
                               int &count, std::list<item> &res );
         // @relates visitable
-        VisitResponse visit_contents( const std::function<VisitResponse( item *, item * )> &func,
-                                      item *parent = nullptr );
+        // the "parent is the item location who's contents you're visiting.
+        VisitResponse visit_contents( const std::function<VisitResponse( const item_location & )> &func,
+                                      const item_location &parent, const std::set<pocket_type> &allowed_pockets );
+        VisitResponse visit_contents_legacy( const std::function<VisitResponse( item *, item * )> &func,
+                                             item *parent, const std::set<pocket_type> &allowed_pockets = { pocket_type::CONTAINER } );
 
         void general_info( std::vector<iteminfo> &info, int pocket_number, bool disp_pocket_number ) const;
         void contents_info( std::vector<iteminfo> &info, int pocket_number, bool disp_pocket_number ) const;
@@ -398,11 +426,21 @@ class item_pocket
         static void delete_preset( std::vector<item_pocket::favorite_settings>::iterator iter );
         static std::vector<item_pocket::favorite_settings> pocket_presets;
 
-        // Set wether rigid items are blocked in the pocket
+        // Set whether rigid items are blocked in the pocket
         void set_no_rigid( const std::set<sub_bodypart_id> &is_no_rigid );
 
         // should the name of this pocket be used as a description
         bool name_as_description = false; // NOLINT(cata-serialize)
+
+        // pocket predicates
+        // non-forbidden, container-type pockets. The most common use-case.
+        static bool ok_default_containers( const item_pocket &pocket );
+        // *any* container-type pocket, even restricted ones.
+        // appropriate for determining how physically full something is.
+        static bool ok_all_containers( const item_pocket & );
+
+        // pocket is currently OK with taking on solid (as opposed to liquid/gaseous) items
+        static bool ok_for_solids( const item_pocket &pocket );
     private:
         // the type of pocket, saved to json
         pocket_type _saved_type = pocket_type::LAST; // NOLINT(cata-serialize)
@@ -411,6 +449,11 @@ class item_pocket
         // the items inside the pocket
         std::list<item> contents;
         bool _sealed = false;
+        // Running totals tracked only between begin_bulk_fill()/end_bulk_fill().
+        std::optional<units::volume> bulk_fill_volume; // NOLINT(cata-serialize)
+        std::optional<units::mass> bulk_fill_weight; // NOLINT(cata-serialize)
+        // Stamped from installed mods' capacity_mods; rederived on rebuild, not serialized.
+        float capacity_mult = 1.0f; // NOLINT(cata-serialize)
         // list of sub body parts that can't currently support rigid ablative armor
         std::set<sub_bodypart_id> no_rigid;
 
@@ -451,7 +494,7 @@ struct pocket_noise {
 class pocket_data
 {
     public:
-        using FlagsSetType = std::set<flag_id>;
+        using FlagsSetType = cata::flat_set<flag_id>;
 
         bool was_loaded = false;
 
@@ -466,8 +509,13 @@ class pocket_data
         static constexpr units::mass max_weight_for_container = 2000000_kilogram;
 
         pocket_type type = pocket_type::CONTAINER;
+        // max volume of stuff the pocket can hold, according to its data file.
+        // generally use volume_capacity() instead.
+        // this determines the volume capacity *if* it isn't derived from something else (i.e. ammo capacity).
+        // also used as a guess for the capacity if the derived value is not available yet.
+        units::volume raw_volume_capacity = max_volume_for_container;
         // max volume of stuff the pocket can hold
-        units::volume volume_capacity = max_volume_for_container;
+        units::volume volume_capacity() const;
         // max volume of item that can be contained, otherwise it spills
         std::optional<units::volume> max_item_volume = std::nullopt;
         // min volume of item that can be contained, otherwise it spills
@@ -493,6 +541,8 @@ class pocket_data
         pocket_noise activity_noise;
         // multiplier for spoilage rate of contained items
         float spoil_multiplier = 1.0f;
+        // insulation of contained items.
+        float insulation = 1.0f;
         // items' weight in this pocket are modified by this number
         float weight_multiplier = 1.0f;
         // items' volume in this pocket are modified by this number for calculation of the containing object
@@ -511,6 +561,8 @@ class pocket_data
         bool open_container = false;
         // items in this pocket pass their flags to the parent item
         bool inherits_flags = false;
+        // max amount of electronic memory held
+        units::ememory ememory_max = 0_KB;
         // the contents of the pocket are visible
         bool transparent = false;
 
@@ -543,6 +595,8 @@ class pocket_data
         cata::flat_set<itype_id> allowed_speedloaders;
         // the first in the json array for item_id_restriction when loaded
         itype_id default_magazine = itype_id::NULL_ID();
+        // Optional handle referenced by firing_requirements / consumption_per_use.
+        std::string pocket_id;
         // container's size and encumbrance does not change based on contents.
         bool rigid = false;
         // Parent item of this pocket has flag NO_UNLOAD
@@ -554,15 +608,43 @@ class pocket_data
 
         bool operator==( const pocket_data &rhs ) const;
 
-        units::volume max_contains_volume() const;
-
         std::string check_definition() const;
 
         void load( const JsonObject &jo );
         void deserialize( const JsonObject &data );
     private:
-
         FlagsSetType flag_restrictions;
+};
+
+class pocket_constraint
+{
+    public:
+        units::mass weight_capacity = pocket_data::max_weight_for_container;
+        units::length max_containable_length = 200000_meter;
+        units::volume volume_capacity = pocket_data::max_volume_for_container;
+        units::volume remaining_volume = pocket_data::max_volume_for_container;
+        units::volume max_item_volume = 0_ml; // literal bottlenecks; 0 = no limit
+
+        // pocket is rigid or constrained by a rigid pocket, volume won't be reduced by further constraints
+        bool in_rigid = false;
+        // pocket 'X' is dominated by pocket 'Y' if X is nested in Y,
+        // any item that could be put into X could be put into Y,
+        // and X's volume expands into Y (no rigid pockets in the way).
+        // dominated pockets are redundant when describing available spaces.
+        bool is_dominated = false;
+
+        pocket_constraint() = default;
+        explicit pocket_constraint( const item_pocket *init_pocket );
+
+        // returns whether the constraint is equally severe as 'other'. not a strict field-wise equality.
+        bool operator==( const pocket_constraint & ) const;
+        bool operator!=( const pocket_constraint & ) const;
+
+        // apply the capacity constraints of an outer pocket
+        void constrain_by( const item_pocket *outer );
+        // apply the capacity constraints of another, outer constraint to this one.
+        // this never dominates the pocket.
+        void constrain_by( const pocket_constraint &outer );
 };
 
 template<>

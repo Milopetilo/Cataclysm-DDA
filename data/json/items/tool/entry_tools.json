@@ -1,7 +1,8 @@
 [
   {
     "id": "crowbar",
-    "type": "TOOL",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": { "str": "crowbar" },
     "description": "A hefty prying tool.  Use it to open locked doors without destroying them, or to lift manhole covers.  You could also wield it to bash some heads in.",
     "weight": "1456 g",
@@ -19,12 +20,14 @@
     "techniques": [ "WBLOCK_1" ],
     "flags": [ "BELT_CLIP", "DURABLE_MELEE" ],
     "weapon_category": [ "BATONS" ],
+    "faults": [ { "fault_group": "steel_pipe_short", "weight_mult": 0.2 } ],
     "melee_damage": { "bash": 19, "cut": 1 },
     "//2": "Based on https://www.amazon.com/dp/B07B4JDQB4"
   },
   {
     "id": "emergency_lockpick",
-    "type": "TOOL",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": { "str": "rudimentary lockpick" },
     "description": "A pair of thin pieces of metal, one bent in an 'L' shape to push tumblers and the other acting as a torsion wrench.  These tools are almost totally inadequate for picking locks, but when you've got nothing else, it might work.",
     "ascii_picture": "crude_picklock",
@@ -39,7 +42,8 @@
   },
   {
     "id": "crude_picklock",
-    "type": "TOOL",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": { "str": "improvised lockpick" },
     "description": "An improvised pick and torsion wrench made from scrap metal.  You'll need MacGyver-like skills to open locks with these as they are brittle, but they lower the chances of alarms being set off.",
     "ascii_picture": "crude_picklock",
@@ -54,7 +58,8 @@
   },
   {
     "id": "iceaxe",
-    "type": "TOOL",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": { "str": "ice axe" },
     "description": "An ice axe with a hammer on the other end, a multi-purpose hiking and climbing tool used by mountaineers.  It is sturdy enough to lift manhole covers.",
     "weight": "300 g",
@@ -75,7 +80,8 @@
   },
   {
     "id": "makeshift_crowbar",
-    "type": "TOOL",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": { "str": "makeshift crowbar" },
     "description": "A pipe with both ends bent and hammered flat to resemble a crowbar.  Use it to open locked crates without destroying them, or to lift manhole covers.  It's not strong enough to pry doors or windows, though.  You could also wield it to fight with, in a pinch.",
     "copy-from": "pipe",
@@ -92,11 +98,13 @@
     "techniques": [ "WBLOCK_2", "RAPID", "PRECISE" ],
     "flags": [ "BELT_CLIP", "FRAGILE_MELEE" ],
     "weapon_category": [ "BATONS" ],
+    "faults": [ { "fault_group": "steel_pipe_short" } ],
     "melee_damage": { "bash": 10, "cut": 1 }
   },
   {
     "id": "picklocks",
-    "type": "TOOL",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": { "str": "locksmith kit" },
     "description": "A locksmith's set of sturdy steel lockpicks and torsion wrenches.  It is essential for silently and quickly opening locks, provided you have some lockpicking and mechanical skills.",
     "ascii_picture": "picklocks",
@@ -111,7 +119,8 @@
   },
   {
     "id": "pseudo_bio_picklock",
-    "type": "TOOL",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": { "str": "bio lockpick" },
     "description": { "str": "this a pseudo item", "//~": "NO_I18N" },
     "volume": "0 ml",
@@ -124,7 +133,8 @@
   },
   {
     "id": "heavy_crowbar",
-    "type": "TOOL",
+    "type": "ITEM",
+    "subtypes": [ "TOOL" ],
     "name": { "str": "heavy crowbar" },
     "looks_like": "crowbar",
     "description": "A 60-inch-long construction prybar.  Essentially a long, solid steel rod with a hardened chisel tip.",
@@ -142,6 +152,7 @@
     "price": "90 USD",
     "qualities": [ [ "HAMMER", 1 ], [ "PRY", 3 ], [ "COOK", 1 ] ],
     "use_action": [ "CROWBAR" ],
+    "faults": [ { "fault_group": "steel_pipe_long", "weight_mult": 0.1 } ],
     "melee_damage": { "bash": 45 },
     "//2": "Based on https://www.amazon.com/dp/B007DHX596"
   }

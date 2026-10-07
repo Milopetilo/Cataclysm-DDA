@@ -1,29 +1,33 @@
-#include <cctype>
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstdlib>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
-#include <tuple>
+#include <type_traits>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "activity_handlers.h"
+#include "activity_tracker.h"
 #include "addiction.h"
 #include "bionics.h"
+#include "body_part_set.h"
 #include "bodypart.h"
 #include "calendar.h"
 #include "cata_utility.h"
 #include "character.h"
+#include "character_attire.h"
+#include "color.h"
+#include "coordinates.h"
 #include "creature.h"
 #include "creature_tracker.h"
 #include "debug.h"
-#include "display.h"
+#include "dialogue.h"
 #include "effect.h"
 #include "effect_on_condition.h"
 #include "enums.h"
@@ -33,38 +37,36 @@
 #include "flag.h"
 #include "game.h"
 #include "game_constants.h"
-#include "inventory.h"
 #include "item.h"
 #include "item_location.h"
+#include "lightmap.h"
 #include "magic.h"
 #include "magic_enchantment.h"
 #include "map.h"
-#include "memory_fast.h"
+#include "map_iterator.h"
+#include "mapdata.h"
 #include "messages.h"
 #include "monster.h"
-#include "morale_types.h"
 #include "mtype.h"
 #include "mutation.h"
-#include "npc.h"
 #include "options.h"
 #include "output.h"
-#include "overmapbuffer.h"
 #include "pimpl.h"
 #include "player_activity.h"
 #include "point.h"
 #include "rng.h"
-#include "skill.h"
 #include "sounds.h"
 #include "stomach.h"
-#include "string_formatter.h"
+#include "talker.h"
 #include "teleport.h"
+#include "temp_crafting_inventory.h"
 #include "text_snippets.h"
+#include "translation.h"
 #include "translations.h"
 #include "type_id.h"
 #include "uistate.h"
 #include "units.h"
 #include "weather.h"
-#include "weather_type.h"
 
 static const addiction_id addiction_alcohol( "alcohol" );
 static const addiction_id addiction_nicotine( "nicotine" );
@@ -95,8 +97,10 @@ static const efftype_id effect_mending( "mending" );
 static const efftype_id effect_narcosis( "narcosis" );
 static const efftype_id effect_nausea( "nausea" );
 static const efftype_id effect_onfire( "onfire" );
+static const efftype_id effect_overburdened( "overburdened" );
 static const efftype_id effect_shakes( "shakes" );
 static const efftype_id effect_sleep( "sleep" );
+static const efftype_id effect_sunscreen( "sunscreen" );
 static const efftype_id effect_took_antiasthmatic( "took_antiasthmatic" );
 static const efftype_id effect_took_xanax( "took_xanax" );
 static const efftype_id effect_visuals( "visuals" );
@@ -111,6 +115,7 @@ static const efftype_id effect_weary_7( "weary_7" );
 static const efftype_id effect_weary_8( "weary_8" );
 static const efftype_id effect_winded( "winded" );
 
+static const itype_id itype_bone( "bone" );
 static const itype_id itype_e_handcuffs( "e_handcuffs" );
 static const itype_id itype_inhaler( "inhaler" );
 static const itype_id itype_oxygen_tank( "oxygen_tank" );
@@ -127,12 +132,14 @@ static const json_character_flag json_flag_MEND_LIMB( "MEND_LIMB" );
 static const json_character_flag json_flag_NYCTOPHOBIA( "NYCTOPHOBIA" );
 static const json_character_flag json_flag_PAIN_IMMUNE( "PAIN_IMMUNE" );
 static const json_character_flag json_flag_RAD_DETECT( "RAD_DETECT" );
+static const json_character_flag json_flag_SUFFOCATION_IMMUNE( "SUFFOCATION_IMMUNE" );
 static const json_character_flag json_flag_SUNBURN( "SUNBURN" );
+static const json_character_flag json_flag_SUNBURN_SUPERNATURAL( "SUNBURN_SUPERNATURAL" );
+static const json_character_flag
+json_flag_SUNBURN_SUPERNATURAL_REDUCTION( "SUNBURN_SUPERNATURAL_REDUCTION" );
 
 static const morale_type morale_feeling_bad( "morale_feeling_bad" );
 static const morale_type morale_feeling_good( "morale_feeling_good" );
-static const morale_type morale_killer_has_killed( "morale_killer_has_killed" );
-static const morale_type morale_killer_need_to_kill( "morale_killer_need_to_kill" );
 static const morale_type morale_moodswing( "morale_moodswing" );
 static const morale_type morale_pyromania_nearfire( "morale_pyromania_nearfire" );
 static const morale_type morale_pyromania_nofire( "morale_pyromania_nofire" );
@@ -148,7 +155,6 @@ static const trait_id trait_DEBUG_NOTEMP( "DEBUG_NOTEMP" );
 static const trait_id trait_FRESHWATEROSMOSIS( "FRESHWATEROSMOSIS" );
 static const trait_id trait_HAS_NEMESIS( "HAS_NEMESIS" );
 static const trait_id trait_JITTERY( "JITTERY" );
-static const trait_id trait_KILLER( "KILLER" );
 static const trait_id trait_LEAVES( "LEAVES" );
 static const trait_id trait_LEAVES2( "LEAVES2" );
 static const trait_id trait_LEAVES3( "LEAVES3" );
@@ -295,15 +301,23 @@ void suffer::mutation_power( Character &you, const trait_id &mut_id )
             }
         }
 
+        if( mut_id->stamina ) {
+            // no enough stamina
+            if( you.get_stamina() < mut_id->cost ) {
+                you.add_msg_if_player( m_warning,
+                                       _( "You don't have enough stamina to keep your %s going." ),
+                                       you.mutation_name( mut_id ) );
+                you.deactivate_mutation( mut_id );
+            } else {
+                you.mod_stamina( -mut_id->cost );
+            }
+        }
+
         // if you haven't deactivated then run the EOC
         for( const effect_on_condition_id &eoc : mut_id->processed_eocs ) {
             dialogue d( get_talker_for( you ), nullptr );
             d.set_value( "this", mut_id.str() );
-            if( eoc->type == eoc_type::ACTIVATION ) {
-                eoc->activate( d );
-            } else {
-                debugmsg( "Must use an activation eoc for a mutation process.  If you don't want the effect_on_condition to happen on its own (without the mutation being activated), remove the recurrence min and max.  Otherwise, create a non-recurring effect_on_condition for this mutation with its condition and effects, then have a recurring one queue it." );
-            }
+            eoc->activate_activation_only( d, "a mutation process", "mutation being activated", "mutation" );
         }
     }
 }
@@ -313,19 +327,14 @@ void suffer::while_underwater( Character &you )
     if( !you.has_flag( json_flag_GILLS ) ) {
         you.oxygen--;
     }
-    if( you.oxygen < 12 && you.worn_with_flag( flag_REBREATHER ) ) {
+    if( you.oxygen < 12 && ( you.worn_with_flag( flag_REBREATHER ) ||
+                             ( you.worn_with_flag( flag_SCBA_ON ) && you.has_item_with_flag( flag_SCBA_TANK_ON ) ) ) ) {
         you.oxygen += 12;
     }
     if( you.oxygen <= 5 ) {
-        if( you.has_bionic( bio_gills ) ) {
-            if( you.get_power_level() >= bio_gills->power_trigger ) {
-                you.oxygen += 5;
-                you.mod_power_level( -bio_gills->power_trigger );
-            } else {
-                you.add_msg_if_player( m_bad,
-                                       _( "You don't have enough bionic power for activation of your Respirator, so you're drowning!" ) );
-                you.apply_damage( nullptr, bodypart_id( "torso" ), rng( 1, 4 ) );
-            }
+        if( you.has_bionic( bio_gills ) && you.get_power_level() >= bio_gills->power_trigger ) {
+            you.oxygen += 5;
+            you.mod_power_level( -bio_gills->power_trigger );
         } else {
             you.add_msg_if_player( m_bad, _( "You're drowning!" ) );
             you.apply_damage( nullptr, bodypart_id( "torso" ), rng( 1, 4 ) );
@@ -376,6 +385,12 @@ void suffer::while_grabbed( Character &you )
     if( crowd < crush_grabs_req ) {
         return;
     }
+
+    // if you don't need to breathe, you can't suffocate from being crushed
+    if( you.has_flag( json_flag_SUFFOCATION_IMMUNE ) ) {
+        return;
+    }
+
     // Getting crushed against the wall counts as a monster
     if( impassable_ter ) {
         you.add_msg_if_player( m_bad, _( "You're crushed against the walls!" ) );
@@ -400,7 +415,7 @@ void suffer::while_grabbed( Character &you )
             g->cancel_activity_or_ignore_query( distraction_type::oxygen, _( "You're suffocating!" ) );
         }
         // your characters chest is being crushed and you are dying
-        you.apply_damage( nullptr, you.get_random_body_part_of_type( body_part_type::type::torso ), rng( 1,
+        you.apply_damage( nullptr, you.get_random_body_part_of_type( bp_type::torso ), rng( 1,
                           4 ) );
     } else if( you.oxygen <= 15 ) {
         you.add_msg_if_player( m_bad, _( "You can't breathe with all this weight!" ) );
@@ -442,11 +457,18 @@ void suffer::from_addictions( Character &you )
 
 void suffer::while_awake( Character &you, const int current_stim )
 {
-    if( you.weight_carried() > 4 * you.weight_capacity() ) {
+    // The purpose of reapplying the effects for 2 turns is to prevent the application message from appearing every turn.
+    if( you.weight_carried() > you.max_pickup_capacity() ) {
         if( you.has_effect( effect_downed ) ) {
             you.add_effect( effect_downed, 1_turns, false, 0, true );
         } else {
             you.add_effect( effect_downed, 2_turns, false, 0, true );
+        }
+    } else if( you.weight_carried() > you.weight_capacity() ) {
+        if( you.has_effect( effect_overburdened ) ) {
+            you.add_effect( effect_overburdened, 1_turns, false, 0, true );
+        } else {
+            you.add_effect( effect_overburdened, 2_turns, false, 0, true );
         }
     }
 
@@ -548,7 +570,7 @@ void suffer::from_chemimbalance( Character &you )
         you.mod_thirst( 5 * rng( 1, 3 ) );
     }
     if( one_turn_in( 6_hours ) ) {
-        you.add_msg_if_player( m_good, _( "You feel sleepy all of a sudden." ) );
+        you.add_msg_if_player( m_bad, _( "You feel sleepy all of a sudden." ) );
         you.mod_sleepiness( 10 * rng( 2, 4 ) );
     }
     if( one_turn_in( 8_hours ) ) {
@@ -605,8 +627,8 @@ void suffer::from_asthma( Character &you, const int current_stim )
 
     map &here = get_map();
     if( you.in_sleep_state() && !you.has_effect( effect_narcosis ) ) {
-        inventory map_inv;
-        map_inv.form_from_map( you.pos(), 2, &you );
+        temp_crafting_inventory map_inv;
+        map_inv.form_from_map( you.pos_bub(), 2, &you );
         // check if an inhaler is somewhere near
         bool nearby_use = auto_use || oxygenator || map_inv.has_charges( itype_inhaler, 1 ) ||
                           map_inv.has_charges( itype_oxygen_tank, 1 ) ||
@@ -690,7 +712,7 @@ void suffer::from_asthma( Character &you, const int current_stim )
 
 void suffer::in_sunlight( Character &you )
 {
-    const tripoint position = you.pos();
+    const tripoint_bub_ms position = you.pos_bub();
 
     if( !g->is_in_sunlight( position ) ) {
         return;
@@ -707,7 +729,8 @@ void suffer::in_sunlight( Character &you )
         const bool has_hat = you.wearing_something_on( bodypart_id( "head" ) );
         const float weather_factor = std::min( incident_sun_irradiance( get_weather().weather_id,
                                                calendar::turn ) / irradiance::moderate, 1.f );
-        const int player_local_temp = units::to_fahrenheit( get_weather().get_temperature( position ) );
+        const int player_local_temp = units::to_fahrenheit( get_weather().get_temperature(
+                                          position ) );
         const int flux = ( player_local_temp - 65 ) / 2;
         if( !has_hat ) {
             sunlight_nutrition += ( 100 + flux ) * weather_factor;
@@ -720,13 +743,14 @@ void suffer::in_sunlight( Character &you )
             you.vitamin_mod( vitamin_vitC, 1 );
         }
     }
-    if( you.has_flag( json_flag_SUNBURN ) ) {
+    if( you.has_flag( json_flag_SUNBURN ) && !you.has_effect( effect_sunscreen ) ) {
         suffer::from_sunburn( you, true );
     }
 
     // Albinism and datura have the same effects and do not stack with each other or sunburn.
-    if( !you.has_flag( json_flag_SUNBURN ) &&
-        ( you.has_flag( json_flag_ALBINO ) || you.has_effect( effect_datura ) ) ) {
+    if( ( !you.has_flag( json_flag_SUNBURN ) &&
+          ( you.has_flag( json_flag_ALBINO ) || you.has_effect( effect_datura ) ) ) &&
+        !you.has_effect( effect_sunscreen ) ) {
         suffer::from_sunburn( you, false );
     }
 
@@ -812,8 +836,14 @@ static float heavy_eff_chance( float exp )
 
 void suffer::from_sunburn( Character &you, bool severe )
 {
-    // Sunburn effects and albinism/datura occur about once per minute
-    if( !one_turn_in( 1_minutes ) ) {
+    // Sunburn effects and albinism/datura occur about once per minute unless you have the SUNBURN_SUPERNATURAL flag
+    if( !one_turn_in( 1_minutes ) && !you.has_flag( json_flag_SUNBURN_SUPERNATURAL ) ) {
+        return;
+    }
+
+    // If you have SUNBURN_SUPERNATURAL but some means of protection, you burn 75% slower
+    if( !one_turn_in( 4_seconds ) && you.has_flag( json_flag_SUNBURN_SUPERNATURAL ) &&
+        you.has_flag( json_flag_SUNBURN_SUPERNATURAL_REDUCTION ) ) {
         return;
     }
 
@@ -867,8 +897,12 @@ void suffer::from_sunburn( Character &you, bool severe )
         bodypart_id bp = bp_exp.first;
         float exposure = bp_exp.second;
 
-        if( bp == bodypart_id( "eyes" ) ) {
-            // Sunglasses can keep the sun off the eyes.
+        if( you.has_flag( json_flag_SUNBURN_SUPERNATURAL ) ) {
+            exposure = 1;
+        }
+
+        if( bp == bodypart_id( "eyes" ) && !you.has_flag( json_flag_SUNBURN_SUPERNATURAL ) ) {
+            // Sunglasses can keep the sun off the eyes. SUNBURN_SUPERNATURAL ignores clothing
             if( you.has_flag( json_flag_GLARE_RESIST )
                 || you.worn_with_flag( flag_SUN_GLASSES )
                 || you.worn_with_flag( flag_BLIND ) ) {
@@ -876,7 +910,8 @@ void suffer::from_sunburn( Character &you, bool severe )
             }
             // If no UV-/glare-protection gear is worn the eyes should be treated as unprotected
             exposure = 1.0;
-        } else if( ( you.get_wielded_item() && you.get_wielded_item()->has_flag( flag_RAIN_PROTECT ) )
+        } else if( !you.has_flag( json_flag_SUNBURN_SUPERNATURAL ) && ( ( you.get_wielded_item() &&
+                   you.get_wielded_item()->has_flag( flag_RAIN_PROTECT ) )
                    || ( ( bp == body_part_hand_l || bp == body_part_hand_r )
                         && you.worn_with_flag( flag_POCKETS )
                         && you.can_use_pockets() )
@@ -885,7 +920,7 @@ void suffer::from_sunburn( Character &you, bool severe )
                         && you.can_use_hood() )
                    || ( bp == body_part_mouth
                         && you.worn_with_flag( flag_COLLAR )
-                        && you.can_use_collar() ) ) {
+                        && you.can_use_collar() ) ) ) {
             // Eyes suffer even in the presence of the checks in this branch!
             // Umbrellas can keep the sun off all bodyparts
             // Pockets can keep the sun off your hands if you don't wield a too large item
@@ -1037,7 +1072,7 @@ void suffer::from_other_mutations( Character &you )
     const tripoint_bub_ms position = you.pos_bub();
     if( you.has_trait( trait_SHARKTEETH ) && one_turn_in( 24_hours ) ) {
         you.add_msg_if_player( m_neutral, _( "You shed a tooth!" ) );
-        here.spawn_item( position, "bone", 1 );
+        here.spawn_item( position, itype_bone, 1 );
     }
 
     if( you.has_trait( trait_WINGS_INSECT_active ) ) {
@@ -1114,15 +1149,6 @@ void suffer::from_other_mutations( Character &you )
             const translation smokin_hot_fiyah =
                 SNIPPET.random_from_category( "pyromania_withdrawal" ).value_or( translation() );
             you.add_msg_if_player( m_bad, "%s", smokin_hot_fiyah );
-        }
-    }
-    if( you.has_trait( trait_KILLER ) && !you.has_morale( morale_killer_has_killed ) &&
-        calendar::once_every( 2_hours ) ) {
-        you.add_morale( morale_killer_need_to_kill, -1, -30, 24_hours, 24_hours );
-        if( calendar::once_every( 4_hours ) ) {
-            const translation snip = SNIPPET.random_from_category( "killer_withdrawal" ).value_or(
-                                         translation() );
-            you.add_msg_if_player( m_bad, "%s", snip );
         }
     }
 }
@@ -1625,7 +1651,7 @@ void suffer::from_artifact_resonance( Character &you, int amt )
             } else if( rng_outcome == 2 ) {
                 you.add_msg_player_or_npc( m_bad, _( "The air folds and distorts around you." ),
                                            _( "The air folds and distorts around <npcname>." ) );
-                teleport::teleport( you );
+                teleport::teleport_creature( you );
             } else if( rng_outcome == 3 ) {
                 you.add_msg_player_or_npc( m_bad, _( "You're bombarded with radioactive energy!" ),
                                            _( "<npcname> is bombarded with radioactive energy!" ) );
@@ -1638,12 +1664,13 @@ void suffer::from_artifact_resonance( Character &you, int amt )
             if( rng_outcome == 1  && !you.in_vehicle ) {
                 you.add_msg_player_or_npc( m_bad, _( "You suddenly shift slightly." ),
                                            _( "<npcname> suddenly shifts slightly." ) );
-                teleport::teleport( you, 1, 1, true, false );
+                teleport::teleport_creature( you, 1, 1, true, false );
             } else if( rng_outcome == 2 ) {
                 you.add_msg_player_or_npc( m_bad,
                                            _( "You hear a painfully loud grinding noise from your location." ),
                                            _( "A painfully loud grinding noise suddenly blares from the location of <npcname>." ) );
-                sounds::sound( you.pos(), 5000, sounds::sound_t::movement, _( "A horribly loud grinding sound!" ),
+                sounds::sound( you.pos_bub(), 5000, sounds::sound_t::movement,
+                               _( "A horribly loud grinding sound!" ),
                                true, "misc", "scraping" );
             } else if( rng_outcome == 3 ) {
                 you.add_msg_player_or_npc( m_bad,
@@ -1684,7 +1711,7 @@ void Character::suffer()
         process_bionic( bio );
     }
 
-    for( const trait_id &mut_id : get_mutations() ) {
+    for( const trait_id &mut_id : get_functioning_mutations() ) {
         if( calendar::once_every( 1_seconds ) &&
             enchantment_cache->modify_value( enchant_vals::mod::WEAKNESS_TO_WATER,
                                              0 ) != 0 ) {
@@ -1788,11 +1815,6 @@ bool Character::irradiate( float rads, bool bypass )
             }
 
             it->irradiation += delta;
-
-            // If in inventory (not worn), don't print anything.
-            if( inv->has_item( *it ) ) {
-                continue;
-            }
 
             // If the color hasn't changed, don't print anything.
             const std::string &col_before = rad_badge_color( before ).first;
@@ -1957,7 +1979,7 @@ void Character::drench( int saturation, const body_part_set &flags, bool ignore_
     const int torso_wetness = get_part_wetness( bodypart_id( "torso" ) );
     if( torso_wetness >= get_part_drench_capacity( bodypart_id( "torso" ) ) / 2.0 &&
         has_effect( effect_masked_scent ) &&
-        get_value( "waterproof_scent" ).empty() ) {
+        !maybe_get_value( "waterproof_scent" ) ) {
         add_msg_if_player( m_info, _( "The water washes away the scent." ) );
         restore_scent();
     }

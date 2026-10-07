@@ -1,22 +1,95 @@
+#include <cmath>
+#include <cstddef>
+#include <functional>
+#include <list>
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "activity_actor.h"
+#include "activity_actor_definitions.h"
 #include "avatar.h"
 #include "calendar.h"
 #include "cata_catch.h"
+#include "cata_scope_helpers.h"
+#include "character.h"
+#include "character_attire.h"
+#include "character_id.h"
 #include "character_martial_arts.h"
+#include "clone_ptr.h"
+#include "computer.h"
 #include "coordinates.h"
+#include "creature.h"
+#include "damage.h"
+#include "debug.h"
+#include "dialogue.h"
+#include "dialogue_helpers.h"
 #include "effect_on_condition.h"
+#include "enums.h"
+#include "field_type.h"
 #include "game.h"
-#include "make_static.h"
+#include "global_vars.h"
+#include "item.h"
+#include "item_location.h"
+#include "itype.h"
+#include "line.h"
+#include "magic.h"
+#include "map.h"
 #include "map_helpers.h"
-#include "mutation.h"
+#include "map_helpers_tests.h"
+#include "map_iterator.h"
+#include "map_selector.h"
+#include "mapdata.h"
+#include "math_parser_diag_value.h"
+#include "memory_fast.h"
+#include "messages.h"
+#include "monster.h"
+#include "npc.h"
 #include "overmapbuffer.h"
-#include "timed_event.h"
+#include "pimpl.h"
+#include "player_activity.h"
 #include "player_helpers.h"
 #include "point.h"
+#include "ret_val.h"
+#include "rng.h"
+#include "stomach.h"
+#include "talker.h"
+#include "timed_event.h"
+#include "type_id.h"
+#include "units.h"
+#include "value_ptr.h"
+
+#if defined(LOCALIZE)
+#include "translation_manager.h"
+#endif
+
+class recipe;
 
 static const activity_id ACT_ADD_VARIABLE_COMPLETE( "ACT_ADD_VARIABLE_COMPLETE" );
 static const activity_id ACT_ADD_VARIABLE_DURING( "ACT_ADD_VARIABLE_DURING" );
 static const activity_id ACT_GENERIC_EOC( "ACT_GENERIC_EOC" );
 
+static const damage_type_id damage_bash( "bash" );
+static const damage_type_id damage_bullet( "bullet" );
+
+static const effect_on_condition_id
+effect_on_condition_EOC_MARLOSS_BERRY_CONSUME( "EOC_MARLOSS_BERRY_CONSUME" );
+static const effect_on_condition_id
+effect_on_condition_EOC_MARLOSS_CONSUME( "EOC_MARLOSS_CONSUME" );
+static const effect_on_condition_id
+effect_on_condition_EOC_MARLOSS_GAIN_COMPONENT( "EOC_MARLOSS_GAIN_COMPONENT" );
+static const effect_on_condition_id
+effect_on_condition_EOC_MARLOSS_GEL_CONSUME( "EOC_MARLOSS_GEL_CONSUME" );
+static const effect_on_condition_id
+effect_on_condition_EOC_MARLOSS_REPEAT_CONSUMPTION( "EOC_MARLOSS_REPEAT_CONSUMPTION" );
+static const effect_on_condition_id
+effect_on_condition_EOC_MARLOSS_SEED_CONSUME( "EOC_MARLOSS_SEED_CONSUME" );
+static const effect_on_condition_id
+effect_on_condition_EOC_MARLOSS_WINE_CONSUME( "EOC_MARLOSS_WINE_CONSUME" );
+static const effect_on_condition_id
+effect_on_condition_EOC_MYCUS_CONSUME( "EOC_MYCUS_CONSUME" );
 static const effect_on_condition_id
 effect_on_condition_EOC_TEST_PURIFIABILITY_FALSE( "EOC_TEST_PURIFIABILITY_FALSE" );
 static const effect_on_condition_id
@@ -34,6 +107,10 @@ static const effect_on_condition_id effect_on_condition_EOC_attack_test( "EOC_at
 static const effect_on_condition_id
 effect_on_condition_EOC_combat_mutator_test( "EOC_combat_mutator_test" );
 static const effect_on_condition_id
+effect_on_condition_EOC_compare_string_match_all_test( "EOC_compare_string_match_all_test" );
+static const effect_on_condition_id
+effect_on_condition_EOC_compare_string_test( "EOC_compare_string_test" );
+static const effect_on_condition_id
 effect_on_condition_EOC_increment_var_var( "EOC_increment_var_var" );
 static const effect_on_condition_id
 effect_on_condition_EOC_item_activate_test( "EOC_item_activate_test" );
@@ -45,8 +122,6 @@ static const effect_on_condition_id
 effect_on_condition_EOC_item_teleport_test( "EOC_item_teleport_test" );
 static const effect_on_condition_id
 effect_on_condition_EOC_jmath_test( "EOC_jmath_test" );
-static const effect_on_condition_id
-effect_on_condition_EOC_loc_relative_test( "EOC_loc_relative_test" );
 static const effect_on_condition_id effect_on_condition_EOC_map_test( "EOC_map_test" );
 static const effect_on_condition_id
 effect_on_condition_EOC_martial_art_test_1( "EOC_martial_art_test_1" );
@@ -54,8 +129,6 @@ static const effect_on_condition_id
 effect_on_condition_EOC_martial_art_test_2( "EOC_martial_art_test_2" );
 static const effect_on_condition_id
 effect_on_condition_EOC_math_addiction_check( "EOC_math_addiction_check" );
-static const effect_on_condition_id
-effect_on_condition_EOC_math_addiction_setup( "EOC_math_addiction_setup" );
 static const effect_on_condition_id
 effect_on_condition_EOC_math_armor( "EOC_math_armor" );
 static const effect_on_condition_id
@@ -131,6 +204,11 @@ static const effect_on_condition_id
 effect_on_condition_run_eocs_talker_mixes( "run_eocs_talker_mixes" );
 static const effect_on_condition_id
 effect_on_condition_run_eocs_talker_mixes_loc( "run_eocs_talker_mixes_loc" );
+static const effect_on_condition_id
+effect_on_condition_run_eocs_variable_types( "run_eocs_variable_types" );
+
+static const efftype_id effect_narcosis( "narcosis" );
+static const efftype_id effect_sleep( "sleep" );
 
 static const flag_id json_flag_FILTHY( "FILTHY" );
 
@@ -138,12 +216,25 @@ static const furn_str_id furn_f_cardboard_box( "f_cardboard_box" );
 static const furn_str_id furn_test_f_eoc( "test_f_eoc" );
 
 static const itype_id itype_backpack( "backpack" );
+static const itype_id itype_hammer( "hammer" );
+static const itype_id itype_marloss_berry( "marloss_berry" );
+static const itype_id itype_marloss_gel( "marloss_gel" );
+static const itype_id itype_marloss_seed( "marloss_seed" );
+static const itype_id itype_mycus_fruit( "mycus_fruit" );
+static const itype_id itype_mycus_juice( "mycus_juice" );
+static const itype_id itype_shotgun_s( "shotgun_s" );
 static const itype_id itype_sword_wood( "sword_wood" );
+static const itype_id itype_test_eoc_armor_suit( "test_eoc_armor_suit" );
 static const itype_id itype_test_glock( "test_glock" );
 static const itype_id itype_test_knife_combat( "test_knife_combat" );
+static const itype_id itype_test_whiskey_caffenated( "test_whiskey_caffenated" );
+static const itype_id itype_wine_marloss( "wine_marloss" );
+static const itype_id itype_wine_mycus( "wine_mycus" );
 
 static const matype_id style_aikido( "style_aikido" );
 static const matype_id style_none( "style_none" );
+
+static const morale_type morale_marloss( "morale_marloss" );
 
 static const mtype_id mon_triffid( "mon_triffid" );
 static const mtype_id mon_zombie( "mon_zombie" );
@@ -158,7 +249,16 @@ static const spell_id spell_test_eoc_spell( "test_eoc_spell" );
 
 static const ter_str_id ter_t_dirt( "t_dirt" );
 static const ter_str_id ter_t_grass( "t_grass" );
+static const ter_str_id ter_t_marloss( "t_marloss" );
 
+static const trait_id trait_MARLOSS( "MARLOSS" );
+static const trait_id trait_MARLOSS_AVOID( "MARLOSS_AVOID" );
+static const trait_id trait_MARLOSS_BLUE( "MARLOSS_BLUE" );
+static const trait_id trait_MARLOSS_YELLOW( "MARLOSS_YELLOW" );
+static const trait_id trait_M_DEPENDENT( "M_DEPENDENT" );
+static const trait_id trait_THRESH_LUPINE( "THRESH_LUPINE" );
+static const trait_id trait_THRESH_MARLOSS( "THRESH_MARLOSS" );
+static const trait_id trait_THRESH_MYCUS( "THRESH_MYCUS" );
 static const trait_id trait_process_mutation( "process_mutation" );
 static const trait_id trait_process_mutation_two( "process_mutation_two" );
 static const trait_id trait_purifiability_first( "purifiability_first" );
@@ -178,7 +278,7 @@ void check_ter_in_radius( tripoint_abs_ms const &center, int range, ter_id const
 {
     map tm;
     tm.load( project_to<coords::sm>( center - point{ range, range } ), false, false );
-    tripoint_bub_ms const center_local = tm.bub_from_abs( center );
+    tripoint_bub_ms const center_local = tm.get_bub( center );
     for( tripoint_bub_ms p : tm.points_in_radius( center_local, range ) ) {
         if( trig_dist( center_local, p ) <= range ) {
             REQUIRE( tm.ter( p ) == ter );
@@ -193,29 +293,209 @@ void check_ter_in_line( tripoint_abs_ms const &first, tripoint_abs_ms const &sec
     tripoint_abs_ms const orig = coord_min( first, second );
     tm.load( project_to<coords::sm>( orig ), false, false );
     for( tripoint_abs_ms p : line_to( first, second ) ) {
-        REQUIRE( tm.ter( tm.bub_from_abs( p ) ) == ter );
+        REQUIRE( tm.ter( tm.get_bub( p ) ) == ter );
     }
+}
+
+void set_marloss_context( dialogue &d, const std::string &color, const std::string &addiction,
+                          const std::string &other_addiction_1,
+                          const std::string &other_addiction_2 )
+{
+    d.set_value( "marloss_color", color );
+    d.set_value( "marloss_addiction", addiction );
+    d.set_value( "marloss_other_addiction_1", other_addiction_1 );
+    d.set_value( "marloss_other_addiction_2", other_addiction_2 );
 }
 
 } // namespace
 
+TEST_CASE( "marloss_and_mycus_consumption_eocs", "[eoc][marloss]" )
+{
+    clear_avatar();
+    clear_map_without_vision();
+    effect_on_conditions::clear( get_avatar() );
+    on_out_of_scope reset_character( []() {
+        effect_on_conditions::clear( get_avatar() );
+        // Clear sleep before resetting the character, which includes feeding them.
+        get_avatar().clear_effects();
+        clear_avatar();
+    } );
+    avatar &you = get_avatar();
+    dialogue d( get_talker_for( you ), nullptr );
+
+    SECTION( "first_marloss_component" ) {
+        set_marloss_context( d, "MARLOSS", "marloss_r", "marloss_b", "marloss_y" );
+        effect_on_condition_EOC_MARLOSS_GAIN_COMPONENT->activate( d );
+        CHECK( you.has_trait( trait_MARLOSS ) );
+    }
+
+    SECTION( "another_marloss_component" ) {
+        you.set_mutation( trait_MARLOSS );
+        set_marloss_context( d, "MARLOSS_BLUE", "marloss_b", "marloss_r", "marloss_y" );
+        effect_on_condition_EOC_MARLOSS_GAIN_COMPONENT->activate( d );
+        CHECK( you.has_trait( trait_MARLOSS ) );
+        CHECK( you.has_trait( trait_MARLOSS_BLUE ) );
+    }
+
+    SECTION( "complete_marloss_components" ) {
+        you.set_mutation( trait_MARLOSS );
+        you.set_mutation( trait_MARLOSS_BLUE );
+        set_marloss_context( d, "MARLOSS_YELLOW", "marloss_y", "marloss_r", "marloss_b" );
+        effect_on_condition_EOC_MARLOSS_GAIN_COMPONENT->activate( d );
+        CHECK( you.has_trait( trait_THRESH_MARLOSS ) );
+        CHECK_FALSE( you.has_trait( trait_MARLOSS ) );
+        CHECK_FALSE( you.has_trait( trait_MARLOSS_BLUE ) );
+        CHECK_FALSE( you.has_trait( trait_MARLOSS_YELLOW ) );
+        CHECK( get_map().ter( you.pos_bub() ).id() == ter_t_marloss );
+        CHECK_FALSE( you.has_effect( effect_sleep ) );
+        // Keep normal sleep processing from immediately waking the rested test avatar.
+        you.add_effect( effect_narcosis, 1_turns );
+        effect_on_conditions::process_effect_on_conditions( you );
+        CHECK( you.get_effect_dur( effect_sleep ) == 40_minutes - you.get_int() * 30_seconds );
+    }
+
+    SECTION( "marloss_rejection_at_another_threshold" ) {
+        you.set_mutation( trait_THRESH_LUPINE );
+        you.set_mutation( trait_MARLOSS );
+        set_marloss_context( d, "MARLOSS_BLUE", "marloss_b", "marloss_r", "marloss_y" );
+        effect_on_condition_EOC_MARLOSS_GAIN_COMPONENT->activate( d );
+        CHECK( you.has_trait( trait_MARLOSS_AVOID ) );
+        CHECK_FALSE( you.has_trait( trait_MARLOSS ) );
+        CHECK_FALSE( you.has_trait( trait_MARLOSS_BLUE ) );
+        CHECK_FALSE( you.has_effect( effect_sleep ) );
+        // Keep normal sleep processing from immediately waking the rested test avatar.
+        you.add_effect( effect_narcosis, 1_turns );
+        effect_on_conditions::process_effect_on_conditions( you );
+        CHECK( you.stomach.contains() == 0_ml );
+        CHECK( you.get_effect_dur( effect_sleep ) == 10_hours - you.get_int() * 1_minutes );
+    }
+
+    SECTION( "marloss_avoid_prevents_component_effects" ) {
+        you.set_mutation( trait_MARLOSS_AVOID );
+        d.set_value( "marloss_item", "marloss_berry" );
+        set_marloss_context( d, "MARLOSS", "marloss_r", "marloss_b", "marloss_y" );
+        effect_on_condition_EOC_MARLOSS_CONSUME->activate( d );
+        CHECK_FALSE( you.has_trait( trait_MARLOSS ) );
+    }
+
+    SECTION( "marloss_consume_dispatches_repeat_consumption" ) {
+        you.set_mutation( trait_MARLOSS );
+        you.set_hunger( 100 );
+        d.set_value( "marloss_item", "marloss_berry" );
+        set_marloss_context( d, "MARLOSS", "marloss_r", "marloss_b", "marloss_y" );
+
+        effect_on_condition_EOC_MARLOSS_CONSUME->activate( d );
+
+        CHECK( you.get_hunger() == -10 );
+        CHECK( you.has_morale( morale_marloss ) == 100 );
+    }
+
+    SECTION( "repeat_marloss_consumption" ) {
+        you.set_hunger( 100 );
+        set_marloss_context( d, "MARLOSS", "marloss_r", "marloss_b", "marloss_y" );
+
+        effect_on_condition_EOC_MARLOSS_REPEAT_CONSUMPTION->activate( d );
+
+        CHECK( you.get_hunger() == -10 );
+        CHECK( you.has_morale( morale_marloss ) == 100 );
+        CHECK_FALSE( you.maybe_get_value( "marloss_spores_spawned" ) );
+    }
+
+    SECTION( "mycus_consumption_activity_finishes_before_sleep" ) {
+        you.set_mutation( trait_THRESH_MARLOSS );
+        item fruit( itype_mycus_fruit );
+        REQUIRE( you.can_eat( fruit ).success() );
+        you.activity = player_activity( consume_activity_actor( fruit ) );
+
+        // Exercise the real actor: synchronous sleep used to destroy it inside
+        // consume(), before finish() could read reprompt_consume_menu.
+        you.activity.actor->finish( you.activity, you );
+        CHECK( you.activity.is_null() );
+        CHECK( you.has_trait( trait_THRESH_MYCUS ) );
+        CHECK_FALSE( you.has_effect( effect_sleep ) );
+
+        // Keep normal sleep processing from immediately waking the rested test avatar.
+        you.add_effect( effect_narcosis, 1_turns );
+        effect_on_conditions::process_effect_on_conditions( you );
+        CHECK( you.get_effect_dur( effect_sleep ) == 5_hours - you.get_int() * 1_minutes );
+    }
+
+    SECTION( "mycus_after_assimilation" ) {
+        you.set_mutation( trait_THRESH_MYCUS );
+        you.set_mutation( trait_M_DEPENDENT );
+        effect_on_condition_EOC_MYCUS_CONSUME->activate( d );
+        CHECK( you.get_painkiller() == 5 );
+        CHECK( you.get_stim() == 5 );
+    }
+}
+
+TEST_CASE( "marloss_refusal_prevents_consumption", "[eoc][marloss][can_eat]" )
+{
+    avatar you;
+    you.set_body();
+    const itype_id food_id = GENERATE( itype_marloss_berry, itype_marloss_seed,
+                                       itype_marloss_gel, itype_wine_marloss );
+    const trait_id refusal_trait = GENERATE( trait_MARLOSS_AVOID, trait_THRESH_MYCUS );
+    item food( food_id );
+    CAPTURE( food_id, refusal_trait );
+
+    REQUIRE( you.can_eat( food ).success() );
+    you.set_mutation( refusal_trait );
+    CHECK( you.can_eat( food ).value() == INEDIBLE_MUTATION );
+    CHECK_FALSE( you.will_eat( food ).success() );
+
+    const int charges = food.charges;
+    const int calories = you.stomach.get_calories();
+    const int morale = you.get_morale_level();
+    CHECK( you.consume( food, /*force=*/true ) == trinary::NONE );
+    CHECK( food.charges == charges );
+    CHECK( you.stomach.get_calories() == calories );
+    CHECK( you.get_morale_level() == morale );
+    CHECK( you.addictions.empty() );
+
+    // The restriction is on Marloss, not Mycus food.
+    CHECK( you.can_eat( item( itype_mycus_fruit ) ).success() );
+    standard_npc other;
+    CHECK_FALSE( other.can_eat( food ).success() );
+}
+
+TEST_CASE( "marloss_consumables_reference_consumption_eocs", "[eoc][marloss]" )
+{
+    const std::vector<std::pair<itype_id, effect_on_condition_id>> expected = {
+        { itype_marloss_berry, effect_on_condition_EOC_MARLOSS_BERRY_CONSUME },
+        { itype_marloss_seed, effect_on_condition_EOC_MARLOSS_SEED_CONSUME },
+        { itype_marloss_gel, effect_on_condition_EOC_MARLOSS_GEL_CONSUME },
+        { itype_mycus_fruit, effect_on_condition_EOC_MYCUS_CONSUME },
+        { itype_mycus_juice, effect_on_condition_EOC_MYCUS_CONSUME },
+        { itype_wine_marloss, effect_on_condition_EOC_MARLOSS_WINE_CONSUME },
+        { itype_wine_mycus, effect_on_condition_EOC_MYCUS_CONSUME }
+    };
+
+    for( const auto &[item_id, eoc_id] : expected ) {
+        const cata::value_ptr<islot_comestible> &comestible = item::find_type( item_id )->comestible;
+        REQUIRE( comestible );
+        REQUIRE( comestible->consumption_eocs.size() == 1 );
+        CHECK( comestible->consumption_eocs.front() == eoc_id );
+    }
+}
+
 TEST_CASE( "EOC_teleport", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
-    tripoint_abs_ms before = get_avatar().get_location();
+    clear_map_without_vision();
+    tripoint_abs_ms before = get_avatar().pos_abs();
     dialogue newDialog( get_talker_for( get_avatar() ), nullptr );
     effect_on_condition_EOC_teleport_test->activate( newDialog );
-    tripoint_abs_ms after = get_avatar().get_location();
+    tripoint_abs_ms after = get_avatar().pos_abs();
 
-    CHECK( before + tripoint_south_east == after );
+    CHECK( before + tripoint::south_east == after );
 }
 
 TEST_CASE( "EOC_beta_elevate", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
-    npc &n = spawn_npc( get_avatar().pos_bub().xy() + point_south, "thug" );
+    clear_map_without_vision();
+    npc &n = spawn_npc( get_avatar().pos_bub().xy() + point::south, "thug" );
 
     REQUIRE( n.hp_percentage() > 0 );
 
@@ -232,15 +512,15 @@ TEST_CASE( "EOC_math_integration", "[eoc][math_parser]" )
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
-    REQUIRE( globvars.get_global_value( "math_test" ).empty() );
-    REQUIRE( globvars.get_global_value( "math_test_result" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "math_test" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "math_test_result" ) );
     calendar::turn = calendar::start_of_cataclysm;
 
     CHECK_FALSE( effect_on_condition_EOC_math_test_greater_increment->test_condition( d ) );
     effect_on_condition_EOC_math_test_greater_increment->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "math_test" ) ) == Approx( -1 ) );
+    CHECK( globvars.get_global_value( "math_test" ) == -1 );
     effect_on_condition_EOC_math_switch_math->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "math_test_result" ) ) == Approx( 1 ) );
+    CHECK( globvars.get_global_value( "math_test_result" ) == 1 );
     CHECK( effect_on_condition_EOC_math_duration->recurrence.evaluate( d ) == 1_turns );
     calendar::turn += 1_days;
 
@@ -250,16 +530,16 @@ TEST_CASE( "EOC_math_integration", "[eoc][math_parser]" )
     CHECK( effect_on_condition_EOC_math_test_equals_assign->test_condition( d ) );
     CHECK( effect_on_condition_EOC_math_test_inline_condition->test_condition( d ) );
     effect_on_condition_EOC_math_test_equals_assign->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "math_test" ) ) == Approx( 9 ) );
+    CHECK( globvars.get_global_value( "math_test" ) == 9 );
     effect_on_condition_EOC_math_switch_math->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "math_test_result" ) ) == Approx( 2 ) );
+    CHECK( globvars.get_global_value( "math_test_result" ) == 2 );
     CHECK( effect_on_condition_EOC_math_duration->recurrence.evaluate( d ) == 2_turns );
 
     CHECK( effect_on_condition_EOC_math_test_greater_increment->test_condition( d ) );
     effect_on_condition_EOC_math_test_greater_increment->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "math_test" ) ) == Approx( 10 ) );
+    CHECK( globvars.get_global_value( "math_test" ) == 10 );
     effect_on_condition_EOC_math_switch_math->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "math_test_result" ) ) == Approx( 3 ) );
+    CHECK( globvars.get_global_value( "math_test_result" ) == 3 );
     CHECK( effect_on_condition_EOC_math_duration->recurrence.evaluate( d ) == 3_turns );
 
     int const stam_pre = get_avatar().get_stamina();
@@ -269,34 +549,34 @@ TEST_CASE( "EOC_math_integration", "[eoc][math_parser]" )
     get_avatar().set_pain( 0 );
     get_avatar().set_stamina( 9000 );
     effect_on_condition_EOC_math_weighted_list->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "weighted_var" ) ) == Approx( -999 ) );
+    CHECK( globvars.get_global_value( "weighted_var" ) == -999 );
     get_avatar().set_pain( 9000 );
     get_avatar().set_stamina( 0 );
     effect_on_condition_EOC_math_weighted_list->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "weighted_var" ) ) == Approx( 1 ) );
+    CHECK( globvars.get_global_value( "weighted_var" ) == 1 );
 }
 
 TEST_CASE( "EOC_jmath", "[eoc][math_parser]" )
 {
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
-    REQUIRE( globvars.get_global_value( "blorgy" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "blorgy" ) );
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     effect_on_condition_EOC_jmath_test->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "blorgy" ) ) == Approx( 7 ) );
+    CHECK( globvars.get_global_value( "blorgy" ) == 7 );
 }
 
 TEST_CASE( "EOC_diag_with_vars", "[eoc][math_parser]" )
 {
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
-    REQUIRE( globvars.get_global_value( "myskill_math" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "myskill_math" ) );
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     effect_on_condition_EOC_math_diag_w_vars->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "myskill_math" ) ) == Approx( 0 ) );
+    CHECK( globvars.get_global_value( "myskill_math" ) == 0 );
     get_avatar().set_skill_level( skill_survival, 3 );
     effect_on_condition_EOC_math_diag_w_vars->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "myskill_math" ) ) == Approx( 3 ) );
+    CHECK( globvars.get_global_value( "myskill_math" ) == 3 );
 }
 
 TEST_CASE( "EOC_transform_radius", "[eoc][timed_event]" )
@@ -305,8 +585,8 @@ TEST_CASE( "EOC_transform_radius", "[eoc][timed_event]" )
     constexpr int eoc_range = 5;
     constexpr time_duration delay = 30_seconds;
     clear_avatar();
-    clear_map();
-    tripoint_abs_ms const start = get_avatar().get_location();
+    clear_map_without_vision();
+    tripoint_abs_ms const start = get_avatar().pos_abs();
     dialogue newDialog( get_talker_for( get_avatar() ), nullptr );
     check_ter_in_radius( start, eoc_range, ter_t_grass );
     effect_on_condition_EOC_TEST_TRANSFORM_RADIUS->activate( newDialog );
@@ -325,17 +605,22 @@ TEST_CASE( "EOC_transform_radius", "[eoc][timed_event]" )
 
 TEST_CASE( "EOC_transform_line", "[eoc][timed_event]" )
 {
+    map &here = get_map();
     clear_avatar();
-    clear_map();
-    standard_npc npc( "Mr. Testerman" );
-    std::optional<tripoint> const dest = random_point( get_map(), []( tripoint const & p ) {
-        return p.xy() != get_avatar().pos().xy();
+    clear_map_without_vision();
+    shared_ptr_fast<npc> guy = make_shared_fast<npc>();
+    overmap_buffer.insert_npc( guy );
+    npc &npc = *guy;
+    clear_character( npc );
+    std::optional<tripoint_bub_ms> const dest = random_point( here, [](
+    tripoint_bub_ms const & p ) {
+        return p.xy() != get_avatar().pos_bub().xy();
     } );
     REQUIRE( dest.has_value() );
-    npc.setpos( { dest.value().xy(), get_avatar().pos().z } );
+    npc.setpos( here, { dest.value().xy(), get_avatar().posz() } );
 
-    tripoint_abs_ms const start = get_avatar().get_location();
-    tripoint_abs_ms const end = npc.get_location();
+    tripoint_abs_ms const start = get_avatar().pos_abs();
+    tripoint_abs_ms const end = npc.pos_abs();
     dialogue newDialog( get_talker_for( get_avatar() ), get_talker_for( npc ) );
     check_ter_in_line( start, end, ter_t_grass );
     effect_on_condition_EOC_TEST_TRANSFORM_LINE->activate( newDialog );
@@ -345,29 +630,29 @@ TEST_CASE( "EOC_transform_line", "[eoc][timed_event]" )
 TEST_CASE( "EOC_activity_finish", "[eoc][timed_event]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
     get_avatar().assign_activity( ACT_ADD_VARIABLE_COMPLETE, 10 );
 
     complete_activity( get_avatar() );
 
-    CHECK( stoi( get_avatar().get_value( "activitiy_incrementer" ) ) == 1 );
+    CHECK( get_avatar().get_value( "activitiy_incrementer" ) == 1 );
 }
 
 TEST_CASE( "EOC_combat_mutator_test", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
     item weapon( itype_test_knife_combat );
     get_avatar().set_wielded_item( weapon );
-    npc &n = spawn_npc( get_avatar().pos_bub().xy() + point_south, "thug" );
+    npc &n = spawn_npc( get_avatar().pos_bub().xy() + point::south, "thug" );
 
     dialogue d( get_talker_for( get_avatar() ), get_talker_for( n ) );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
-    REQUIRE( globvars.get_global_value( "key3" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key3" ) );
     CHECK( effect_on_condition_EOC_combat_mutator_test->activate( d ) );
     CHECK( globvars.get_global_value( "key1" ) == "RAPID_TEST" );
     CHECK( globvars.get_global_value( "key2" ) == "Rapid Strike Test" );
@@ -377,13 +662,13 @@ TEST_CASE( "EOC_combat_mutator_test", "[eoc]" )
 TEST_CASE( "EOC_alive_test", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
     CHECK( effect_on_condition_EOC_alive_test->activate( d ) );
     CHECK( globvars.get_global_value( "key1" ) == "alive" );
 }
@@ -391,8 +676,8 @@ TEST_CASE( "EOC_alive_test", "[eoc]" )
 TEST_CASE( "EOC_attack_test", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
-    npc &n = spawn_npc( get_avatar().pos_bub().xy() + point_south, "thug" );
+    clear_map_without_vision();
+    npc &n = spawn_npc( get_avatar().pos_bub().xy() + point::south, "thug" );
 
     dialogue newDialog( get_talker_for( get_avatar() ), get_talker_for( n ) );
     CHECK( effect_on_condition_EOC_attack_test->activate( newDialog ) );
@@ -401,57 +686,59 @@ TEST_CASE( "EOC_attack_test", "[eoc]" )
 TEST_CASE( "EOC_context_test", "[eoc][math_parser]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "simple_global" ).empty() );
-    REQUIRE( globvars.get_global_value( "nested_simple_global" ).empty() );
-    REQUIRE( globvars.get_global_value( "non_nested_simple_global" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "simple_global" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "nested_simple_global" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "non_nested_simple_global" ) );
     CHECK( effect_on_condition_EOC_math_test_context->activate( d ) );
-    CHECK( std::stod( globvars.get_global_value( "simple_global" ) ) == Approx( 12 ) );
-    CHECK( std::stod( globvars.get_global_value( "nested_simple_global" ) ) == Approx(
-               7 ) );
+    CHECK( globvars.get_global_value( "simple_global" ) == 12 );
+    CHECK( globvars.get_global_value( "nested_simple_global" ) == 7 );
     // shouldn't be passed back up
-    CHECK( std::stod( globvars.get_global_value( "non_nested_simple_global" ) ) == Approx(
-               0 ) );
+    CHECK( globvars.get_global_value( "non_nested_simple_global" ) == 0 );
 
     // value shouldn't exist in the original dialogue
-    CHECK( d.get_value( "simple" ).empty() );
+    CHECK( !d.maybe_get_value( "simple" ) );
 }
 
 TEST_CASE( "EOC_option_test", "[eoc][math_parser]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
 
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
-    REQUIRE( globvars.get_global_value( "key3" ).empty() );
+    // Key1: Test getting option(string type) and setting into string var
+    // Key2: Test getting option from math-type assignment
+    // Key3: Test checking option as a condition
+    // Checked values should not default to 0/0.0 as undefined globals may return that value, and thus could "fail silently"
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key3" ) );
     CHECK( effect_on_condition_EOC_options_tests->activate( d ) );
     CHECK( globvars.get_global_value( "key1" ) == "ALWAYS" );
-    CHECK( globvars.get_global_value( "key2" ) == "4" );
-    CHECK( globvars.get_global_value( "key3" ) == "1" );
+    CHECK( globvars.get_global_value( "key2" ) == 10 );
+    CHECK( globvars.get_global_value( "key3" ) == 1 );
 }
 
 TEST_CASE( "EOC_mutator_test", "[eoc][math_parser]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
     CHECK( effect_on_condition_EOC_mutator_test->activate( d ) );
     CHECK( globvars.get_global_value( "key1" ) == "zombie" );
     CHECK( globvars.get_global_value( "key2" ) == "zombie" );
@@ -460,127 +747,129 @@ TEST_CASE( "EOC_mutator_test", "[eoc][math_parser]" )
 TEST_CASE( "EOC_math_addiction", "[eoc][math_parser]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
+    avatar &a = get_avatar();
 
-    dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
+    item test_whiskey( itype_test_whiskey_caffenated );
+
+    dialogue d( get_talker_for( a ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key_add_intensity" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_add_turn" ).empty() );
-    CHECK( effect_on_condition_EOC_math_addiction_setup->activate( d ) );
-    // Finish drinking
-    complete_activity( get_avatar() );
+    REQUIRE( !globvars.maybe_get_global_value( "key_add_intensity" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_add_turn" ) );
+
+    a.consume( test_whiskey );
 
     CHECK( effect_on_condition_EOC_math_addiction_check->activate( d ) );
 
-    CHECK( globvars.get_global_value( "key_add_intensity" ) == "1" );
-    CHECK( globvars.get_global_value( "key_add_turn" ) == "3600" );
+    CHECK( globvars.get_global_value( "key_add_intensity" ) == 1 );
+    CHECK( globvars.get_global_value( "key_add_turn" ) == 3600 );
 }
 
 TEST_CASE( "EOC_math_armor", "[eoc][math_parser]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
     avatar &a = get_avatar();
-    a.worn.wear_item( a, item( "test_eoc_armor_suit" ), false, true, true );
+    a.worn.wear_item( a, item( itype_test_eoc_armor_suit ), false, true, true );
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
-    REQUIRE( globvars.get_global_value( "key3" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key3" ) );
     CHECK( effect_on_condition_EOC_math_armor->activate( d ) );
-    CHECK( std::stod( globvars.get_global_value( "key1" ) ) == Approx( 4 ) );
-    CHECK( std::stod( globvars.get_global_value( "key2" ) ) == Approx( 9 ) );
-    CHECK( std::stod( globvars.get_global_value( "key3" ) ) == Approx( 0 ) );
+    CHECK( globvars.get_global_value( "key1" ) == 4 );
+    CHECK( globvars.get_global_value( "key2" ) == 9 );
+    CHECK( globvars.get_global_value( "key3" ) == 0 );
 }
 
 TEST_CASE( "EOC_math_field", "[eoc][math_parser]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
     get_map().add_field( get_avatar().pos_bub(), fd_blood, 3 );
-    get_map().add_field( get_avatar().pos_bub() + point_south, fd_blood_insect, 3 );
+    get_map().add_field( get_avatar().pos_bub() + point::south, fd_blood_insect, 3 );
 
-    REQUIRE( globvars.get_global_value( "key_field_strength" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_field_strength_north" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key_field_strength" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_field_strength_north" ) );
     CHECK( effect_on_condition_EOC_math_field->activate( d ) );
-    CHECK( globvars.get_global_value( "key_field_strength" ) == "3" );
-    CHECK( globvars.get_global_value( "key_field_strength_north" ) == "3" );
+    CHECK( globvars.get_global_value( "key_field_strength" ) == 3 );
+    CHECK( globvars.get_global_value( "key_field_strength_north" ) == 3 );
 }
 
 TEST_CASE( "EOC_math_item", "[eoc][math_parser]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key_item_count" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_charge_count" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key_item_count" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_charge_count" ) );
     CHECK( effect_on_condition_EOC_math_item_count->activate( d ) );
-    CHECK( globvars.get_global_value( "key_item_count" ) == "2" );
-    CHECK( globvars.get_global_value( "key_charge_count" ) == "32" );
+    CHECK( globvars.get_global_value( "key_item_count" ).dbl() == 2 );
+    CHECK( globvars.get_global_value( "key_charge_count" ).dbl() == 32 );
 }
 
 TEST_CASE( "EOC_math_proficiency", "[eoc][math_parser]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key_total_time_required" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_time_spent_50" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_percent_50" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_percent_50_turn" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_permille_50" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_permille_50_turn" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_time_left_50" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_time_left_50_turn" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key_total_time_required" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_time_spent_50" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_percent_50" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_percent_50_turn" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_permille_50" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_permille_50_turn" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_time_left_50" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_time_left_50_turn" ) );
     CHECK( effect_on_condition_EOC_math_proficiency->activate( d ) );
-    CHECK( globvars.get_global_value( "key_total_time_required" ) == "86400" );
-    CHECK( globvars.get_global_value( "key_time_spent_50" ) == "50" );
-    CHECK( globvars.get_global_value( "key_percent_50" ) == "50" );
-    CHECK( globvars.get_global_value( "key_percent_50_turn" ) == "43200" );
-    CHECK( globvars.get_global_value( "key_permille_50" ) == "50" );
-    CHECK( globvars.get_global_value( "key_permille_50_turn" ) == "4320" );
-    CHECK( globvars.get_global_value( "key_time_left_50" ) == "50" );
-    CHECK( globvars.get_global_value( "key_time_left_50_turn" ) == "86350" );
+    CHECK( globvars.get_global_value( "key_total_time_required" ) == 86400 );
+    CHECK( globvars.get_global_value( "key_time_spent_50" ) == 50 );
+    CHECK( globvars.get_global_value( "key_percent_50" ) == 50 );
+    CHECK( globvars.get_global_value( "key_percent_50_turn" ) == 43200 );
+    CHECK( globvars.get_global_value( "key_permille_50" ) == 50 );
+    CHECK( globvars.get_global_value( "key_permille_50_turn" ) == 4320 );
+    CHECK( globvars.get_global_value( "key_time_left_50" ) == 50 );
+    CHECK( globvars.get_global_value( "key_time_left_50_turn" ) == 86350 );
 }
 
 TEST_CASE( "EOC_math_spell", "[eoc][math_parser]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key_spell_level" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_highest_spell_level" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_school_level_test_trait" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_spell_count" ).empty() );
-    REQUIRE( globvars.get_global_value( "key_spell_count_test_trait" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key_spell_level" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_highest_spell_level" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_school_level_test_trait" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_spell_count" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key_spell_count_test_trait" ) );
     CHECK( effect_on_condition_EOC_math_spell->activate( d ) );
-    CHECK( globvars.get_global_value( "key_spell_level" ) == "1" );
-    CHECK( globvars.get_global_value( "key_highest_spell_level" ) == "10" );
-    CHECK( globvars.get_global_value( "key_school_level_test_trait" ) == "1" );
-    CHECK( globvars.get_global_value( "key_spell_count" ) == "2" );
-    CHECK( globvars.get_global_value( "key_spell_count_test_trait" ) == "1" );
+    CHECK( globvars.get_global_value( "key_spell_level" ) == 1 );
+    CHECK( globvars.get_global_value( "key_highest_spell_level" ) == 10 );
+    CHECK( globvars.get_global_value( "key_school_level_test_trait" ) == 1 );
+    CHECK( globvars.get_global_value( "key_spell_count" ) == 2 );
+    CHECK( globvars.get_global_value( "key_spell_count_test_trait" ) == 1 );
 
     get_avatar().magic->evaluate_opens_spellbook_data();
 
@@ -590,7 +879,7 @@ TEST_CASE( "EOC_math_spell", "[eoc][math_parser]" )
 TEST_CASE( "EOC_mutation_test", "[eoc][mutations]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
@@ -601,37 +890,33 @@ TEST_CASE( "EOC_mutation_test", "[eoc][mutations]" )
     globvars.clear_global_values();
     me.toggle_trait( trait_process_mutation_two );
     me.activate_mutation( trait_process_mutation_two );
-    CHECK( std::stod( globvars.get_global_value( "test_val" ) ) == Approx(
-               1 ) );
+    CHECK( globvars.get_global_value( "test_val" ) == 1 );
     CHECK( globvars.get_global_value( "context_test" ) == "process_mutation_two" );
 
     // test process
     globvars.clear_global_values();
     me.suffer();
-    CHECK( std::stod( globvars.get_global_value( "test_val" ) ) == Approx(
-               1 ) );
+    CHECK( globvars.get_global_value( "test_val" ) == 1 );
     CHECK( globvars.get_global_value( "context_test" ) == "process_mutation_two" );
 
     // test deactivate
     globvars.clear_global_values();
     me.deactivate_mutation( trait_process_mutation_two );
-    CHECK( std::stod( globvars.get_global_value( "test_val" ) ) == Approx(
-               1 ) );
+    CHECK( globvars.get_global_value( "test_val" ) == 1 );
     CHECK( globvars.get_global_value( "context_test" ) == "process_mutation_two" );
 
     // more complex test
     globvars.clear_global_values();
     me.toggle_trait( trait_process_mutation );
     effect_on_condition_EOC_activate_mutation_to_start_test->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "test_val" ) ) == Approx(
-               1 ) );
+    CHECK( globvars.get_global_value( "test_val" ) == 1 );
     CHECK( globvars.get_global_value( "context_test" ) == "process_mutation" );
 }
 
 TEST_CASE( "EOC_purifiability", "[eoc][mutations]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
     avatar &me = get_avatar();
 
     // Gain both traits
@@ -658,125 +943,129 @@ TEST_CASE( "EOC_purifiability", "[eoc][mutations]" )
 TEST_CASE( "EOC_monsters_nearby", "[eoc][math_parser]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
     avatar &a = get_avatar();
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    g->place_critter_at( mon_zombie, a.pos() + tripoint_east );
-    monster *friendo = g->place_critter_at( mon_zombie, a.pos() + tripoint{ 2, 0, 0 } );
-    g->place_critter_at( mon_triffid, a.pos() + tripoint{ 3, 0, 0 } );
-    g->place_critter_at( mon_zombie_tough, a.pos() + tripoint_north );
-    g->place_critter_at( mon_zombie_tough, a.pos() + tripoint{ 0, 2, 0 } );
-    g->place_critter_at( mon_zombie_tough, a.pos() + tripoint{ 0, 3, 0 } );
-    g->place_critter_at( mon_zombie_smoker, a.pos() + tripoint{ 10, 0, 0 } );
-    g->place_critter_at( mon_zombie_smoker, a.pos() + tripoint{ 11, 0, 0 } );
+    g->place_critter_at( mon_zombie, a.pos_bub() + tripoint::east );
+    monster *friendo = g->place_critter_at( mon_zombie, a.pos_bub() + tripoint{ 2, 0, 0 } );
+    g->place_critter_at( mon_triffid, a.pos_bub() + tripoint{ 3, 0, 0 } );
+    g->place_critter_at( mon_zombie_tough, a.pos_bub() + tripoint::north );
+    g->place_critter_at( mon_zombie_tough, a.pos_bub() + tripoint{ 0, 2, 0 } );
+    g->place_critter_at( mon_zombie_tough, a.pos_bub() + tripoint{ 0, 3, 0 } );
+    g->place_critter_at( mon_zombie_smoker, a.pos_bub() + tripoint{ 10, 0, 0 } );
+    g->place_critter_at( mon_zombie_smoker, a.pos_bub() + tripoint{ 11, 0, 0 } );
 
-    REQUIRE( globvars.get_global_value( "mons" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "mons" ) );
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     REQUIRE( effect_on_condition_EOC_mon_nearby_test->activate( d ) );
 
-    CHECK( std::stoi( globvars.get_global_value( "mons" ) ) == 8 );
-    CHECK( std::stoi( globvars.get_global_value( "triffs" ) ) == 1 );
-    CHECK( std::stoi( globvars.get_global_value( "group" ) ) == 4 );
-    CHECK( std::stoi( globvars.get_global_value( "zombs" ) ) == 2 );
-    CHECK( std::stoi( globvars.get_global_value( "zombs_friends" ) ) == 0 );
-    CHECK( std::stoi( globvars.get_global_value( "zombs_both" ) ) == 2 );
-    CHECK( std::stoi( globvars.get_global_value( "zplust" ) ) == 5 );
-    CHECK( std::stoi( globvars.get_global_value( "zplust_adj" ) ) == 2 );
-    CHECK( std::stoi( globvars.get_global_value( "smoks" ) ) == 1 );
+    CHECK( globvars.get_global_value( "mons" ) == 8 );
+    CHECK( globvars.get_global_value( "triffs" ) == 1 );
+    CHECK( globvars.get_global_value( "group" ) == 4 );
+    CHECK( globvars.get_global_value( "zombs" ) == 2 );
+    CHECK( globvars.get_global_value( "zombs_friends" ) == 0 );
+    CHECK( globvars.get_global_value( "zombs_both" ) == 2 );
+    CHECK( globvars.get_global_value( "zplust" ).dbl() == 5 );
+    CHECK( globvars.get_global_value( "zplust_adj" ).dbl() == 2 );
+    CHECK( globvars.get_global_value( "smoks" ) == 1 );
 
     friendo->make_friendly();
     REQUIRE( effect_on_condition_EOC_mon_nearby_test->activate( d ) );
-    CHECK( std::stoi( globvars.get_global_value( "zombs" ) ) == 1 );
-    CHECK( std::stoi( globvars.get_global_value( "zombs_friends" ) ) == 1 );
-    CHECK( std::stoi( globvars.get_global_value( "zombs_both" ) ) == 2 );
+    CHECK( globvars.get_global_value( "zombs" ) == 1 );
+    CHECK( globvars.get_global_value( "zombs_friends" ) == 1 );
+    CHECK( globvars.get_global_value( "zombs_both" ) == 2 );
 }
 
 TEST_CASE( "EOC_activity_ongoing", "[eoc][timed_event]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
     get_avatar().assign_activity( ACT_ADD_VARIABLE_DURING, 300 );
 
     complete_activity( get_avatar() );
 
     // been going for 3 whole seconds should have incremented 3 times
-    CHECK( stoi( get_avatar().get_value( "activitiy_incrementer" ) ) == 3 );
+    CHECK( get_avatar().get_value( "activitiy_incrementer" ) == 3 );
 }
 
 TEST_CASE( "EOC_stored_condition_test", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
 
-    d.set_value( "context", "0" );
+    d.set_value( "context", 0 );
 
     // running with a value of 0 will have the conditional evaluate to 0
     CHECK( effect_on_condition_EOC_stored_condition_test->activate( d ) );
-    CHECK( std::stod( globvars.get_global_value( "key1" ) ) == Approx( 0 ) );
-    CHECK( std::stod( globvars.get_global_value( "key2" ) ) == Approx( 0 ) );
-    CHECK( std::stod( d.get_value( "context" ) ) == Approx( 0 ) );
+    CHECK( globvars.get_global_value( "key1" ) == 0 );
+    CHECK( globvars.get_global_value( "key2" ) == 0 );
+    CHECK( d.get_value( "context" ) == 0 );
 
     // try again with a different value
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
 
-    d.set_value( "context", "10" );
+    d.set_value( "context", 10 );
 
     // running with a value greater than 1 will have the conditional evaluate to 1
     CHECK( effect_on_condition_EOC_stored_condition_test->activate( d ) );
-    CHECK( std::stod( globvars.get_global_value( "key1" ) ) == Approx( 1 ) );
-    CHECK( std::stod( globvars.get_global_value( "key2" ) ) == Approx( 1 ) );
-    CHECK( std::stod( d.get_value( "context" ) ) == Approx( 10 ) );
+    CHECK( globvars.get_global_value( "key1" ) == 1 );
+    CHECK( globvars.get_global_value( "key2" ) == 1 );
+    CHECK( d.get_value( "context" ) == 10 );
 
 }
 
 TEST_CASE( "dialogue_copy", "[eoc]" )
 {
+    map &here = get_map();
+
     standard_npc dude;
     dialogue d( get_talker_for( get_avatar() ), get_talker_for( &dude ) );
     dialogue d_copy( d );
-    d_copy.set_value( "suppress", "1" );
+    d_copy.set_value( "suppress", 1 );
     CHECK( d_copy.actor( false )->get_character() != nullptr );
     CHECK( d_copy.actor( true )->get_character() != nullptr );
 
-    item hammer( "hammer" ) ;
-    item_location hloc( map_cursor( tripoint_bub_ms( tripoint_zero ) ), &hammer );
-    computer comp( "test_computer", 0, tripoint_zero );
+    item hammer( itype_hammer );
+    item_location hloc( map_cursor( tripoint_bub_ms::zero ), &hammer );
+    computer comp( "test_computer", 0, here, tripoint_bub_ms::zero );
     dialogue d2( get_talker_for( hloc ), get_talker_for( comp ) );
     dialogue d2_copy( d2 );
-    d2_copy.set_value( "suppress", "1" );
+    d2_copy.set_value( "suppress", 1 );
     CHECK( d2_copy.actor( false )->get_item() != nullptr );
     CHECK( d2_copy.actor( true )->get_computer() != nullptr );
 
     monster zombie( mon_zombie );
     dialogue d3( get_talker_for( zombie ), std::make_unique<talker>() );
     dialogue d3_copy( d3 );
-    d3_copy.set_value( "suppress", "1" );
+    d3_copy.set_value( "suppress", 1 );
     CHECK( d3_copy.actor( false )->get_monster() != nullptr );
     CHECK( d3_copy.actor( true )->get_character() == nullptr );
 }
 
 TEST_CASE( "EOC_meta_test", "[eoc]" )
 {
+    map &here = get_map();
+
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
     standard_npc dude;
     monster zombie( mon_zombie );
-    item hammer( "hammer" ) ;
-    item_location hloc( map_cursor( tripoint_bub_ms( tripoint_zero ) ), &hammer );
-    computer comp( "test_computer", 0, tripoint_zero );
+    item hammer( itype_hammer );
+    item_location hloc( map_cursor( tripoint_bub_ms::zero ), &hammer );
+    computer comp( "test_computer", 0, here, tripoint_bub_ms::zero );
 
     dialogue d_empty( std::make_unique<talker>(), std::make_unique<talker>() );
     dialogue d_avatar( get_talker_for( get_avatar() ), std::make_unique<talker>() );
@@ -796,86 +1085,85 @@ TEST_CASE( "EOC_meta_test", "[eoc]" )
 
     CHECK( effect_on_condition_EOC_meta_test_talker_type->activate( d_avatar ) );
     CHECK( globvars.get_global_value( "key_avatar" ) == "yes" );
-    CHECK( globvars.get_global_value( "key_npc" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "key_npc" ) );
     CHECK( globvars.get_global_value( "key_character" ) == "yes" );
-    CHECK( globvars.get_global_value( "key_monster" ).empty() );
-    CHECK( globvars.get_global_value( "key_item" ).empty() );
-    CHECK( globvars.get_global_value( "key_furniture" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "key_monster" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_item" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_furniture" ) );
 
     globvars.clear_global_values();
 
     CHECK( effect_on_condition_EOC_meta_test_talker_type->activate( d_npc ) );
-    CHECK( globvars.get_global_value( "key_avatar" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "key_avatar" ) );
     CHECK( globvars.get_global_value( "key_npc" ) == "yes" );
     CHECK( globvars.get_global_value( "key_character" ) == "yes" );
-    CHECK( globvars.get_global_value( "key_monster" ).empty() );
-    CHECK( globvars.get_global_value( "key_item" ).empty() );
-    CHECK( globvars.get_global_value( "key_furniture" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "key_monster" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_item" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_furniture" ) );
 
     globvars.clear_global_values();
 
     CHECK( effect_on_condition_EOC_meta_test_talker_type->activate( d_monster ) );
-    CHECK( globvars.get_global_value( "key_avatar" ).empty() );
-    CHECK( globvars.get_global_value( "key_npc" ).empty() );
-    CHECK( globvars.get_global_value( "key_character" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "key_avatar" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_npc" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_character" ) );
     CHECK( globvars.get_global_value( "key_monster" ) == "yes" );
-    CHECK( globvars.get_global_value( "key_item" ).empty() );
-    CHECK( globvars.get_global_value( "key_furniture" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "key_item" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_furniture" ) );
 
     globvars.clear_global_values();
 
     CHECK( effect_on_condition_EOC_meta_test_talker_type->activate( d_item ) );
-    CHECK( globvars.get_global_value( "key_avatar" ).empty() );
-    CHECK( globvars.get_global_value( "key_npc" ).empty() );
-    CHECK( globvars.get_global_value( "key_character" ).empty() );
-    CHECK( globvars.get_global_value( "key_monster" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "key_avatar" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_npc" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_character" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_monster" ) );
     CHECK( globvars.get_global_value( "key_item" ) == "yes" );
-    CHECK( globvars.get_global_value( "key_furniture" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "key_furniture" ) );
 
     globvars.clear_global_values();
 
     CHECK( effect_on_condition_EOC_meta_test_talker_type->activate( d_furniture ) );
-    CHECK( globvars.get_global_value( "key_avatar" ).empty() );
-    CHECK( globvars.get_global_value( "key_npc" ).empty() );
-    CHECK( globvars.get_global_value( "key_character" ).empty() );
-    CHECK( globvars.get_global_value( "key_monster" ).empty() );
-    CHECK( globvars.get_global_value( "key_item" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "key_avatar" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_npc" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_character" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_monster" ) );
+    CHECK( !globvars.maybe_get_global_value( "key_item" ) );
     CHECK( globvars.get_global_value( "key_furniture" ) == "yes" );
 }
 
 TEST_CASE( "EOC_increment_var_var", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
 
     CHECK( effect_on_condition_EOC_increment_var_var->activate( d ) );
-    CHECK( std::stod( globvars.get_global_value( "key1" ) ) == Approx( 5 ) );
-    CHECK( std::stod( globvars.get_global_value( "key2" ) ) == Approx( 10 ) );
-    CHECK( std::stod( globvars.get_global_value( "global_u" ) ) == Approx( 6 ) );
-    CHECK( std::stod( globvars.get_global_value( "global_context" ) ) == Approx( 4 ) );
-    CHECK( std::stod( globvars.get_global_value( "global_nested" ) ) == Approx( 2 ) );
+    CHECK( globvars.get_global_value( "key1" ) == 5 );
+    CHECK( globvars.get_global_value( "key2" ) == 10 );
+    CHECK( globvars.get_global_value( "global_u" ) == 6 );
+    CHECK( globvars.get_global_value( "global_context" ) == 4 );
 }
 
 TEST_CASE( "EOC_string_var_var", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
     standard_npc dude;
     dialogue d( get_talker_for( get_avatar() ), get_talker_for( &dude ) );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
-    REQUIRE( globvars.get_global_value( "key3" ).empty() );
-    REQUIRE( globvars.get_global_value( "key4" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key3" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key4" ) );
 
     CHECK( effect_on_condition_EOC_string_var_var->activate( d ) );
     CHECK( globvars.get_global_value( "key1" ) == "Works_global" );
@@ -887,105 +1175,105 @@ TEST_CASE( "EOC_string_var_var", "[eoc]" )
 TEST_CASE( "EOC_run_with_test", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
-    REQUIRE( globvars.get_global_value( "key3" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key3" ) );
 
     CHECK( effect_on_condition_EOC_run_with_test->activate( d ) );
-    CHECK( std::stod( globvars.get_global_value( "key1" ) ) == Approx( 1 ) );
-    CHECK( std::stod( globvars.get_global_value( "key2" ) ) == Approx( 2 ) );
-    CHECK( std::stod( globvars.get_global_value( "key3" ) ) == Approx( 3 ) );
+    CHECK( globvars.get_global_value( "key1" ) ==  1 );
+    CHECK( globvars.get_global_value( "key2" ) ==  2 );
+    CHECK( globvars.get_global_value( "key3" ) ==  3 );
 
     // value shouldn't exist in the original dialogue
-    CHECK( d.get_value( "key" ).empty() );
-    CHECK( d.get_value( "key2" ).empty() );
-    CHECK( d.get_value( "key3" ).empty() );
+    CHECK( !d.maybe_get_value( "key1" ) );
+    CHECK( !d.maybe_get_value( "key2" ) );
+    CHECK( !d.maybe_get_value( "key3" ) );
 }
 
 TEST_CASE( "EOC_run_until_test", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
 
     CHECK( effect_on_condition_EOC_run_until_test->activate( d ) );
-    CHECK( std::stod( globvars.get_global_value( "key1" ) ) == Approx( 10000 ) );
+    CHECK( globvars.get_global_value( "key1" ) == 10000 );
 }
 
 TEST_CASE( "EOC_run_with_test_expects", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
-    REQUIRE( globvars.get_global_value( "key3" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key3" ) );
 
     CHECK( capture_debugmsg_during( [&]() {
         effect_on_condition_EOC_run_with_test_expects_fail->activate( d );
     } ) == "Missing required variables: key1, key2, key3, " );
-    CHECK( globvars.get_global_value( "key1" ).empty() );
-    CHECK( globvars.get_global_value( "key2" ).empty() );
-    CHECK( globvars.get_global_value( "key3" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "key1" ) );
+    CHECK( !globvars.maybe_get_global_value( "key2" ) );
+    CHECK( !globvars.maybe_get_global_value( "key3" ) );
 
     globvars.clear_global_values();
 
     effect_on_condition_EOC_run_with_test_expects_pass->activate( d );
-    CHECK( std::stod( globvars.get_global_value( "key1" ) ) == Approx( 1 ) );
-    CHECK( std::stod( globvars.get_global_value( "key2" ) ) == Approx( 2 ) );
-    CHECK( std::stod( globvars.get_global_value( "key3" ) ) == Approx( 3 ) );
+    CHECK( globvars.get_global_value( "key1" ) == 1 );
+    CHECK( globvars.get_global_value( "key2" ) == 2 );
+    CHECK( globvars.get_global_value( "key3" ) == 3 );
 }
 
 TEST_CASE( "EOC_run_with_test_queue", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
-    REQUIRE( globvars.get_global_value( "key3" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key3" ) );
 
     CHECK( effect_on_condition_EOC_run_with_test_queued->activate( d ) );
 
     set_time( calendar::turn + 2_seconds );
     effect_on_conditions::process_effect_on_conditions( get_avatar() );
 
-    CHECK( std::stod( globvars.get_global_value( "key1" ) ) == Approx( 1 ) );
-    CHECK( std::stod( globvars.get_global_value( "key2" ) ) == Approx( 2 ) );
-    CHECK( std::stod( globvars.get_global_value( "key3" ) ) == Approx( 3 ) );
+    CHECK( globvars.get_global_value( "key1" ) == 1 );
+    CHECK( globvars.get_global_value( "key2" ) == 2 );
+    CHECK( globvars.get_global_value( "key3" ) == 3 );
 
     // value shouldn't exist in the original dialogue
-    CHECK( d.get_value( "key" ).empty() );
-    CHECK( d.get_value( "key2" ).empty() );
-    CHECK( d.get_value( "key3" ).empty() );
+    CHECK( !d.maybe_get_value( "key" ) );
+    CHECK( !d.maybe_get_value( "key2" ) );
+    CHECK( !d.maybe_get_value( "key3" ) );
 }
 
 TEST_CASE( "EOC_run_inv_test", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
-    tripoint_abs_ms pos_before = get_avatar().get_location();
-    tripoint_abs_ms pos_after = pos_before + tripoint_south_east;
+    tripoint_abs_ms pos_before = get_avatar().pos_abs();
+    tripoint_abs_ms pos_after = pos_before + tripoint::south_east;
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
 
@@ -1084,11 +1372,11 @@ TEST_CASE( "EOC_run_inv_test", "[eoc]" )
 
     // Activate test for item
     CHECK( effect_on_condition_EOC_item_activate_test->activate( d ) );
-    CHECK( get_map().furn( get_map().bub_from_abs( pos_after ) ) == furn_f_cardboard_box );
+    CHECK( get_map().furn( get_map().get_bub( pos_after ) ) == furn_f_cardboard_box );
 
     // Teleport test for item
     CHECK( effect_on_condition_EOC_item_teleport_test->activate( d ) );
-    CHECK( get_map().i_at( get_map().bub_from_abs( pos_after ) ).size() == 3 );
+    CHECK( get_map().i_at( get_map().get_bub( pos_after ) ).size() == 3 );
 
     // Math function test for armor
     CHECK( effect_on_condition_EOC_armor_math_test->activate( d ) );
@@ -1096,10 +1384,10 @@ TEST_CASE( "EOC_run_inv_test", "[eoc]" )
     const item &check_item = get_avatar().worn.i_at( 0 );
 
     REQUIRE( check_item.typeId() == itype_backpack );
-    CHECK( std::stod( get_avatar().get_value( "key1" ) ) == Approx( 27 ) );
-    CHECK( std::stod( get_avatar().get_value( "key2" ) ) == Approx( 2 ) );
-    CHECK( std::stod( check_item.get_var( "key1" ) ) == Approx( 27 ) );
-    CHECK( std::stod( check_item.get_var( "key2" ) ) == Approx( 2 ) );
+    CHECK( get_avatar().get_value( "key1" ) == 27 );
+    CHECK( get_avatar().get_value( "key2" ) == 2 );
+    CHECK( check_item.get_value( "key1" ) == 27 );
+    CHECK( check_item.get_value( "key2" ) == 2 );
 }
 
 TEST_CASE( "math_weapon_damage", "[eoc]" )
@@ -1118,29 +1406,29 @@ TEST_CASE( "math_weapon_damage", "[eoc]" )
     for( damage_type const &dt : damage_type::get_all() ) {
         total_damage += myweapon.damage_melee( dt.id );
     }
-    int const bash_damage = myweapon.damage_melee( STATIC( damage_type_id( "bash" ) ) );
+    int const bash_damage = myweapon.damage_melee( damage_bash );
     int const gun_damage = myweapon.gun_damage().total_damage();
-    int const bullet_damage = myweapon.gun_damage().type_damage( STATIC( damage_type_id( "bullet" ) ) );
+    int const bullet_damage = myweapon.gun_damage().type_damage( damage_bullet );
 
     CAPTURE( myweapon.typeId().c_str() );
-    CHECK( std::stoi( globvars.get_global_value( "mymelee" ) ) ==  total_damage );
-    CHECK( std::stoi( globvars.get_global_value( "mymelee_bash" ) ) == bash_damage );
-    CHECK( std::stoi( globvars.get_global_value( "mygun" ) ) == gun_damage );
-    CHECK( std::stoi( globvars.get_global_value( "mygun_bullet" ) ) == bullet_damage );
+    CHECK( globvars.get_global_value( "mymelee" ) ==  total_damage );
+    CHECK( globvars.get_global_value( "mymelee_bash" ) == bash_damage );
+    CHECK( globvars.get_global_value( "mygun" ) == gun_damage );
+    CHECK( globvars.get_global_value( "mygun_bullet" ) == bullet_damage );
 }
 
 TEST_CASE( "EOC_event_test", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
-    REQUIRE( globvars.get_global_value( "key2" ).empty() );
-    REQUIRE( globvars.get_global_value( "key3" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key3" ) );
 
     // character_casts_spell
     spell temp_spell( spell_test_eoc_spell );
@@ -1149,24 +1437,24 @@ TEST_CASE( "EOC_event_test", "[eoc]" )
 
     CHECK( globvars.get_global_value( "key1" ) == "test_eoc_spell" );
     CHECK( globvars.get_global_value( "key2" ) == "test_trait" );
-    CHECK( globvars.get_global_value( "key3" ) == "5" );
-    CHECK( globvars.get_global_value( "key4" ) == "150" );
-    CHECK( globvars.get_global_value( "key5" ) == "100" );
-    CHECK( globvars.get_global_value( "key6" ) == "45" );
+    CHECK( globvars.get_global_value( "key3" ) == 5 );
+    CHECK( globvars.get_global_value( "key4" ) == 150 );
+    CHECK( globvars.get_global_value( "key5" ) == 100 );
+    CHECK( globvars.get_global_value( "key6" ) == 45 );
 
     // character_starts_activity
     globvars.clear_global_values();
     get_avatar().assign_activity( ACT_GENERIC_EOC, 1 );
 
     CHECK( globvars.get_global_value( "key1" ) == "ACT_GENERIC_EOC" );
-    CHECK( globvars.get_global_value( "key2" ) == "0" );
+    CHECK( globvars.get_global_value( "key2" ) == 0 );
     CHECK( globvars.get_global_value( "key3" ) == "activity start" );
 
     // character_finished_activity
     get_avatar().cancel_activity();
 
     CHECK( globvars.get_global_value( "key1" ) == "ACT_GENERIC_EOC" );
-    CHECK( globvars.get_global_value( "key2" ) == "1" );
+    CHECK( globvars.get_global_value( "key2" ) == 1 );
     CHECK( globvars.get_global_value( "key3" ) == "activity finished" );
 
     // character_wields_item
@@ -1187,15 +1475,17 @@ TEST_CASE( "EOC_event_test", "[eoc]" )
 
 TEST_CASE( "EOC_combat_event_test", "[eoc]" )
 {
+    map &here = get_map();
+
     size_t loop;
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
     clear_avatar();
     clear_npcs();
-    clear_map();
+    clear_map_without_vision();
 
     // character_melee_attacks_character
-    npc &npc_dst_melee = spawn_npc( get_avatar().pos_bub().xy() + point_south, "thug" );
+    npc &npc_dst_melee = spawn_npc( get_avatar().pos_bub().xy() + point::south, "thug" );
     item weapon_item( itype_test_knife_combat );
     get_avatar().wield( weapon_item );
     get_avatar().melee_attack( npc_dst_melee, false );
@@ -1208,8 +1498,9 @@ TEST_CASE( "EOC_combat_event_test", "[eoc]" )
     CHECK( globvars.get_global_value( "victim_name" ) == npc_dst_melee.get_name() );
 
     // character_melee_attacks_monster
-    clear_map();
-    monster &mon_dst_melee = spawn_test_monster( "mon_zombie", get_avatar().pos_bub() + tripoint_east );
+    clear_map_without_vision();
+    monster &mon_dst_melee = spawn_test_monster( "mon_zombie",
+                             get_avatar().pos_bub() + tripoint::east );
     get_avatar().melee_attack( mon_dst_melee, false );
 
     CHECK( get_avatar().get_value( "test_event_last_event" ) ==
@@ -1220,15 +1511,14 @@ TEST_CASE( "EOC_combat_event_test", "[eoc]" )
     CHECK( globvars.get_global_value( "victim_type" ) == "mon_zombie" );
 
     // character_ranged_attacks_character
-    const tripoint_bub_ms target_pos = get_avatar().pos_bub() + point_east;
-    clear_map();
+    const tripoint_bub_ms target_pos = get_avatar().pos_bub() + point::east;
+    clear_map_without_vision();
     npc &npc_dst_ranged = spawn_npc( target_pos.xy(), "thug" );
     for( loop = 0; loop < 1000; loop++ ) {
-        get_avatar().set_body();
-        arm_shooter( get_avatar(), "shotgun_s" );
+        arm_shooter( get_avatar(), itype_shotgun_s );
         get_avatar().recoil = 0;
-        get_avatar().fire_gun( target_pos, 1, *get_avatar().get_wielded_item() );
-        if( !npc_dst_ranged.get_value( "test_event_last_event" ).empty() ) {
+        get_avatar().fire_gun( here, target_pos, 1, *get_avatar().get_wielded_item() );
+        if( npc_dst_ranged.maybe_get_value( "test_event_last_event" ) ) {
             break;
         }
     }
@@ -1241,14 +1531,13 @@ TEST_CASE( "EOC_combat_event_test", "[eoc]" )
     CHECK( globvars.get_global_value( "victim_name" ) == npc_dst_ranged.get_name() );
 
     // character_ranged_attacks_monster
-    clear_map();
+    clear_map_without_vision();
     monster &mon_dst_ranged = spawn_test_monster( "mon_zombie", target_pos );
     for( loop = 0; loop < 1000; loop++ ) {
-        get_avatar().set_body();
-        arm_shooter( get_avatar(), "shotgun_s" );
+        arm_shooter( get_avatar(), itype_shotgun_s );
         get_avatar().recoil = 0;
-        get_avatar().fire_gun( mon_dst_ranged.pos_bub(), 1, *get_avatar().get_wielded_item() );
-        if( !mon_dst_ranged.get_value( "test_event_last_event" ).empty() ) {
+        get_avatar().fire_gun( here, mon_dst_ranged.pos_bub(), 1, *get_avatar().get_wielded_item() );
+        if( mon_dst_ranged.maybe_get_value( "test_event_last_event" ) ) {
             break;
         }
     }
@@ -1261,31 +1550,31 @@ TEST_CASE( "EOC_combat_event_test", "[eoc]" )
     CHECK( globvars.get_global_value( "victim_type" ) == "mon_zombie" );
 
     // character_kills_monster
-    clear_map();
+    clear_map_without_vision();
     monster &victim = spawn_test_monster( "mon_zombie", target_pos );
-    victim.die( &get_avatar() );
+    victim.die( &here, &get_avatar() );
 
     CHECK( get_avatar().get_value( "test_event_last_event" ) == "character_kills_monster" );
     CHECK( globvars.get_global_value( "victim_type" ) == "mon_zombie" );
-    CHECK( globvars.get_global_value( "test_exp" ) == "4" );
+    CHECK( globvars.get_global_value( "test_exp" ) == 4 );
 }
 
 TEST_CASE( "EOC_spell_exp", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key1" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key1" ) );
 
     get_avatar().magic->learn_spell( "test_eoc_spell", get_avatar(), true );
 
     CHECK( effect_on_condition_EOC_math_spell_xp->activate( d ) );
 
-    CHECK( globvars.get_global_value( "key1" ) == "1000" );
+    CHECK( globvars.get_global_value( "key1" ) == 1000 );
 }
 
 TEST_CASE( "EOC_recipe_test", "[eoc]" )
@@ -1297,14 +1586,14 @@ TEST_CASE( "EOC_recipe_test", "[eoc]" )
     globvars.clear_global_values();
 
     REQUIRE_FALSE( get_avatar().knows_recipe( r ) );
-    REQUIRE( globvars.get_global_value( "fail_var" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "fail_var" ) );
 
     CHECK( effect_on_condition_EOC_recipe_test_1->activate( d ) );
-    CHECK( globvars.get_global_value( "fail_var" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "fail_var" ) );
     CHECK( get_avatar().knows_recipe( r ) );
 
     CHECK( effect_on_condition_EOC_recipe_test_2->activate( d ) );
-    CHECK( globvars.get_global_value( "fail_var" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "fail_var" ) );
     CHECK_FALSE( get_avatar().knows_recipe( r ) );
 }
 
@@ -1313,56 +1602,24 @@ TEST_CASE( "EOC_map_test", "[eoc]" )
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     map &m = get_map();
-    const tripoint_abs_ms start = get_avatar().get_location();
-    const tripoint_bub_ms tgt = m.bub_from_abs( start + tripoint_north );
+    const tripoint_abs_ms start = get_avatar().pos_abs();
+    const tripoint_bub_ms tgt = m.get_bub( start + tripoint::north );
     m.furn_set( tgt, furn_test_f_eoc );
     m.furn( tgt )->examine( get_avatar(), tgt );
 
     CHECK( globvars.get_global_value( "this" ) == "test_f_eoc" );
-    CHECK( globvars.get_global_value( "pos" ) == m.getglobal( tgt ).to_string() );
+    CHECK( globvars.get_global_value( "pos" ) == m.get_abs( tgt ) );
 
-    const tripoint_bub_ms target_pos = get_avatar().pos_bub() + point_east * 10;
+    const tripoint_bub_ms target_pos = get_avatar().pos_bub() + point::east * 10;
     npc &npc_dst = spawn_npc( target_pos.xy(), "thug" );
     dialogue d( get_talker_for( get_avatar() ), get_talker_for( npc_dst ) );
 
     CHECK( effect_on_condition_EOC_map_test->activate( d ) );
-    CHECK( globvars.get_global_value( "key_distance_loc" ) == "14" );
-    CHECK( globvars.get_global_value( "key_distance_npc" ) == "10" );
-}
-
-TEST_CASE( "EOC_loc_relative_test", "[eoc]" )
-{
-    global_variables &globvars = get_globals();
-    globvars.clear_global_values();
-    clear_avatar();
-    clear_map();
-
-    map &m = get_map();
-    g->place_player( tripoint_zero );
-
-    const tripoint_abs_ms start = get_avatar().get_location();
-    const tripoint_bub_ms tgt = m.bub_from_abs( start + tripoint_north );
-    m.furn_set( tgt, furn_test_f_eoc );
-    m.furn( tgt )->examine( get_avatar(), tgt );
-
-    const tripoint_bub_ms target_pos = get_avatar().pos_bub() + point_east * 10;
-    npc &npc_dst = spawn_npc( target_pos.xy(), "thug" );
-    dialogue d( get_talker_for( get_avatar() ), get_talker_for( npc_dst ) );
-
-    CHECK( effect_on_condition_EOC_loc_relative_test->activate( d ) );
-    tripoint_abs_ms tmp_abs_a = tripoint_abs_ms( tripoint::from_string(
-                                    globvars.get_global_value( "map_test_loc_a" ) ) );
-    tripoint_abs_ms tmp_abs_b = tripoint_abs_ms( tripoint::from_string(
-                                    globvars.get_global_value( "map_test_loc_b" ) ) );
-    CHECK( m.bub_from_abs( tmp_abs_a ) == tripoint_bub_ms( 70, 70, 0 ) );
-    CHECK( m.bub_from_abs( tmp_abs_b ) == tripoint_bub_ms( 70, 60, 0 ) );
-
-    globvars.clear_global_values();
-    clear_avatar();
-    clear_map();
+    CHECK( globvars.get_global_value( "key_distance_loc" ) == 14 );
+    CHECK( globvars.get_global_value( "key_distance_npc" ) == 10 );
 }
 
 TEST_CASE( "EOC_martial_art_test", "[eoc]" )
@@ -1370,15 +1627,15 @@ TEST_CASE( "EOC_martial_art_test", "[eoc]" )
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
 
     REQUIRE_FALSE( get_avatar().has_martialart( style_aikido ) );
-    REQUIRE( globvars.get_global_value( "fail_var" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "fail_var" ) );
 
     CHECK( effect_on_condition_EOC_martial_art_test_1->activate( d ) );
-    CHECK( globvars.get_global_value( "fail_var" ).empty() );
+    CHECK( !globvars.maybe_get_global_value( "fail_var" ) );
     CHECK( get_avatar().has_martialart( style_aikido ) );
 
     get_avatar().martial_arts_data->set_style( style_aikido );
@@ -1395,14 +1652,14 @@ TEST_CASE( "EOC_martial_art_test", "[eoc]" )
 TEST_CASE( "EOC_string_test", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "key3" ).empty() );
-    REQUIRE( globvars.get_global_value( "key4" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "key3" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "key4" ) );
 
     CHECK( effect_on_condition_EOC_string_test->activate( d ) );
     CHECK( globvars.get_global_value( "key3" ) == "<global_val:key1> <global_val:key2>" );
@@ -1414,21 +1671,59 @@ TEST_CASE( "EOC_string_test", "[eoc]" )
     CHECK( get_avatar().get_value( "key3" ) == "nest4" );
 }
 
-TEST_CASE( "EOC_run_eocs", "[eoc]" )
+TEST_CASE( "EOC_compare_string_test", "[eoc]" )
 {
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
 
     dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
     global_variables &globvars = get_globals();
     globvars.clear_global_values();
 
-    REQUIRE( globvars.get_global_value( "run_eocs_1" ).empty() );
-    REQUIRE( globvars.get_global_value( "run_eocs_2" ).empty() );
-    REQUIRE( globvars.get_global_value( "run_eocs_3" ).empty() );
-    REQUIRE( globvars.get_global_value( "run_eocs_5" ).empty() );
-    REQUIRE( globvars.get_global_value( "test_global_key_M" ).empty() );
-    REQUIRE( globvars.get_global_value( "test_global_key_N" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "eoc_compare_string_test_1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "eoc_compare_string_test_2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "eoc_compare_string_test_3" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "eoc_compare_string_test_4" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "eoc_compare_string_test_5" ) );
+
+    CHECK( effect_on_condition_EOC_compare_string_test->activate( d ) );
+
+    CHECK( globvars.get_global_value( "eoc_compare_string_test_1" ) == 1 );
+    CHECK( globvars.get_global_value( "eoc_compare_string_test_2" ) == 1 );
+    CHECK( globvars.get_global_value( "eoc_compare_string_test_3" ) == 1 );
+    CHECK( globvars.get_global_value( "eoc_compare_string_test_4" ) == 1 );
+    CHECK( globvars.get_global_value( "eoc_compare_string_test_5" ) == 1 );
+
+    REQUIRE( !globvars.maybe_get_global_value( "eoc_compare_string_match_all_test_1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "eoc_compare_string_match_all_test_2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "eoc_compare_string_match_all_test_3" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "eoc_compare_string_match_all_test_4" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "eoc_compare_string_match_all_test_5" ) );
+
+    CHECK( effect_on_condition_EOC_compare_string_match_all_test->activate( d ) );
+
+    CHECK( globvars.get_global_value( "eoc_compare_string_match_all_test_1" ) == 1 );
+    CHECK( globvars.get_global_value( "eoc_compare_string_match_all_test_2" ) == 1 );
+    CHECK( globvars.get_global_value( "eoc_compare_string_match_all_test_3" ) == 1 );
+    CHECK( globvars.get_global_value( "eoc_compare_string_match_all_test_4" ) == 1 );
+    CHECK( globvars.get_global_value( "eoc_compare_string_match_all_test_5" ) == 1 );
+}
+
+TEST_CASE( "EOC_run_eocs", "[eoc]" )
+{
+    clear_avatar();
+    clear_map_without_vision();
+
+    dialogue d( get_talker_for( get_avatar() ), std::make_unique<talker>() );
+    global_variables &globvars = get_globals();
+    globvars.clear_global_values();
+
+    REQUIRE( !globvars.maybe_get_global_value( "run_eocs_1" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "run_eocs_2" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "run_eocs_3" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "run_eocs_5" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "test_global_key_M" ) );
+    REQUIRE( !globvars.maybe_get_global_value( "test_global_key_N" ) );
 
     CHECK( effect_on_condition_run_eocs_1->activate( d ) );
     CHECK( effect_on_condition_run_eocs_2->activate( d ) );
@@ -1436,39 +1731,35 @@ TEST_CASE( "EOC_run_eocs", "[eoc]" )
     CHECK( effect_on_condition_run_eocs_5->activate( d ) );
     CHECK( effect_on_condition_run_eocs_7->activate( d ) );
 
-    CHECK( std::stod( globvars.get_global_value( "run_eocs_1" ) ) == Approx( 2 ) );
-    CHECK( std::stod( globvars.get_global_value( "run_eocs_2" ) ) == Approx( 20 ) );
-    CHECK( std::stod( globvars.get_global_value( "run_eocs_5" ) ) == Approx( 4 ) );
+    CHECK( globvars.get_global_value( "run_eocs_1" ) == 2 );
+    CHECK( globvars.get_global_value( "run_eocs_2" ) == 20 );
+    CHECK( globvars.get_global_value( "run_eocs_5" ) == 4 );
 
     set_time( calendar::turn + 1_seconds );
     effect_on_conditions::process_effect_on_conditions( get_avatar() );
-    REQUIRE( globvars.get_global_value( "run_eocs_3" ).empty() );
+    REQUIRE( !globvars.maybe_get_global_value( "run_eocs_3" ) );
     set_time( calendar::turn + 1_seconds );
     effect_on_conditions::process_effect_on_conditions( get_avatar() );
-    CHECK( std::stod( globvars.get_global_value( "run_eocs_3" ) ) == Approx( 2 ) );
+    CHECK( globvars.get_global_value( "run_eocs_3" )  == 2 );
 
     set_time( calendar::turn + 8_seconds );
     effect_on_conditions::process_effect_on_conditions( get_avatar() );
-    CHECK( globvars.get_global_value( "test_global_key_M" ) == "test_context_value_M" );
-    CHECK( globvars.get_global_value( "test_global_key_N" ) == "test_context_value_N" );
+    CHECK( globvars.get_global_value( "test_global_key_M" ).str() == "test_context_value_M" );
+    CHECK( globvars.get_global_value( "test_global_key_N" ).str() == "test_context_value_N" );
 
     globvars.clear_global_values();
     avatar &u = get_avatar();
     clear_avatar();
-    clear_map();
+    clear_map_without_vision();
     clear_npcs();
-    shared_ptr_fast<npc> guy = make_shared_fast<npc>();
-    guy->normalize();
-    overmap_buffer.insert_npc( guy );
-    guy->spawn_at_precise( u.get_location() + tripoint_east );
-    g->load_npcs();
-    tripoint_abs_ms mon_loc = u.get_location() + tripoint_west;
-    monster *zombie = g->place_critter_at( mon_zombie, get_map().bub_from_abs( mon_loc ) );
+    npc &guy = spawn_npc( u.pos_bub().xy() + point::east, "thug" );
+    tripoint_abs_ms mon_loc = u.pos_abs() + tripoint::west;
+    monster *zombie = g->place_critter_at( mon_zombie, get_map().get_bub( mon_loc ) );
     REQUIRE( zombie != nullptr );
 
-    item hammer( "hammer" );
-    item_location hammer_loc( map_cursor{ guy->get_location() }, &hammer );
-    dialogue d2( get_talker_for( *guy ), get_talker_for( hammer_loc ) );
+    item hammer( itype_hammer );
+    item_location hammer_loc( map_cursor{ guy.pos_abs() }, &hammer );
+    dialogue d2( get_talker_for( guy ), get_talker_for( hammer_loc ) );
     talker *alpha_talker = d2.actor( false );
     talker *beta_talker = d2.actor( true );
 
@@ -1485,10 +1776,10 @@ TEST_CASE( "EOC_run_eocs", "[eoc]" )
     CHECK( globvars.get_global_value( "beta_name" ) == alpha_talker->get_name() );
 
     d2.set_value( "alpha_var", "avatar" );
-    d2.set_value( "beta_var", std::to_string( guy->getID().get_value() ) );
+    d2.set_value( "beta_var", std::to_string( guy.getID().get_value() ) );
     CHECK( effect_on_condition_run_eocs_talker_mixes->activate( d2 ) );
     CHECK( globvars.get_global_value( "alpha_name" ) == get_avatar().get_name() );
-    CHECK( globvars.get_global_value( "beta_name" ) == guy->get_name() );
+    CHECK( globvars.get_global_value( "beta_name" ) == guy.get_name() );
 
     d2.set_value( "alpha_var", std::string{} );
     d2.set_value( "beta_var", std::string{} );
@@ -1496,7 +1787,27 @@ TEST_CASE( "EOC_run_eocs", "[eoc]" )
     CHECK( globvars.get_global_value( "alpha_name" ) == "mixin fail alpha" );
     CHECK( globvars.get_global_value( "beta_name" ) == "mixin fail beta" );
 
-    d2.set_value( "alpha_var", mon_loc.to_string() );
+    d2.set_value( "alpha_var", mon_loc );
     CHECK( effect_on_condition_run_eocs_talker_mixes_loc->activate( d2 ) );
     CHECK( globvars.get_global_value( "alpha_name" ) == zombie->get_name() );
+
+#if defined(LOCALIZE)
+    on_out_of_scope reset_loc( []() {
+        set_language( "en" );
+    } );
+    set_language( "ru" );
+    TranslationManager::GetInstance().LoadDocuments( { "./data/mods/TEST_DATA/lang/mo/ru/LC_MESSAGES/TEST_DATA.mo" } );
+#endif
+    dialogue d3( std::make_unique<talker>(), std::make_unique<talker>() );
+    effect_on_condition_run_eocs_variable_types->activate( d3 );
+    CHECK( globvars.get_global_value( "dbl_val" ) == 8 );
+    CHECK( globvars.get_global_value( "str_val" ) == "blorg" );
+#if defined(LOCALIZE)
+    CHECK( globvars.get_global_value( "i18n_val" ) == "батарейка" );
+#endif
+    CHECK( globvars.get_global_value( "tripoint_val" ) == tripoint_abs_ms( 0, 10, 0 ) );
+    CHECK( globvars.get_global_value( "math_val" ) == 3 );
+    CHECK( std::isinf( globvars.get_global_value( "inf_val" ).dbl() ) );
+    CHECK( std::isnan( globvars.get_global_value( "nan_val" ).dbl() ) );
+    CHECK( globvars.get_global_value( "copied_val" ) == "BLORG" );
 }

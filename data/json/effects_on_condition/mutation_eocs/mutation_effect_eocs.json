@@ -13,7 +13,7 @@
     "condition": {
       "and": [
         { "compare_string": [ "BEAK", { "context_val": "trait" } ] },
-        { "math": [ "u_vitamin('mutagen_bird')", ">", "u_vitamin('mutagen_cephalopod')" ] }
+        { "math": [ "u_vitamin('mutagen_bird') > u_vitamin('mutagen_cephalopod')" ] }
       ]
     },
     "effect": [ { "u_learn_recipe": "prac_unmute_bird" }, { "u_add_trait": "MUTE_BIRD" } ]
@@ -26,7 +26,7 @@
     "condition": {
       "and": [
         { "compare_string": [ "BEAK", { "context_val": "trait" } ] },
-        { "math": [ "u_vitamin('mutagen_bird')", "<", "u_vitamin('mutagen_cephalopod')" ] }
+        { "math": [ "u_vitamin('mutagen_bird') < u_vitamin('mutagen_cephalopod')" ] }
       ]
     },
     "effect": [ { "u_learn_recipe": "prac_unmute_ceph" }, { "u_add_trait": "MUTE_CEPH" } ]
@@ -65,7 +65,7 @@
   {
     "type": "effect_on_condition",
     "id": "EOC_UNMUTE_BIRD",
-    "condition": { "math": [ "u_progress_unmute_bird", ">=", "7" ] },
+    "condition": { "math": [ "u_progress_unmute_bird >= 7" ] },
     "effect": [
       { "u_lose_trait": "MUTE_BIRD" },
       { "u_add_trait": "MUTE_BIRD_OK" },
@@ -73,7 +73,7 @@
       { "u_forget_recipe": "prac_unmute_bird" }
     ],
     "false_effect": [
-      { "math": [ "u_progress_unmute_bird", "++" ] },
+      { "math": [ "u_progress_unmute_bird++" ] },
       {
         "u_message": "Restricting your range to the apes' feels demeaning, and you decide to take a break before you start plucking out your feathers in frustration."
       }
@@ -82,7 +82,7 @@
   {
     "type": "effect_on_condition",
     "id": "EOC_UNMUTE_CEPH",
-    "condition": { "math": [ "u_progress_unmute_ceph", ">=", "7" ] },
+    "condition": { "math": [ "u_progress_unmute_ceph >= 7" ] },
     "effect": [
       { "u_lose_trait": "MUTE_CEPH" },
       { "u_add_trait": "MUTE_CEPH_OK" },
@@ -92,7 +92,7 @@
       { "u_forget_recipe": "prac_unmute_ceph" }
     ],
     "false_effect": [
-      { "math": [ "u_progress_unmute_ceph", "++" ] },
+      { "math": [ "u_progress_unmute_ceph++" ] },
       {
         "u_message": "Draw air into your mantle, close your throat, rehearse your sentence, exhale and contort your beak just so."
       }
@@ -101,7 +101,7 @@
   {
     "type": "effect_on_condition",
     "id": "EOC_UNMUTE_GASTROPOD",
-    "condition": { "math": [ "u_progress_unmute_gastropod", ">=", "10" ] },
+    "condition": { "math": [ "u_progress_unmute_gastropod >= 10" ] },
     "effect": [
       { "u_lose_trait": "MUTE_GASTROPOD" },
       { "u_add_trait": "MUTE_GASTROPOD_OK" },
@@ -111,7 +111,7 @@
       { "u_forget_recipe": "prac_unmute_gastropod" }
     ],
     "false_effect": [
-      { "math": [ "u_progress_unmute_gastropod", "++" ] },
+      { "math": [ "u_progress_unmute_gastropod++" ] },
       {
         "u_message": "If you rub your tongue against your palate like this is makes a `th` - or at least, a `thrksrkkk`, but it's a start.  Ignore the taste of blood, there's work to be done."
       }
@@ -120,7 +120,7 @@
   {
     "type": "effect_on_condition",
     "id": "EOC_UNMUTE_INSECT",
-    "condition": { "math": [ "u_progress_unmute_insect", ">=", "7" ] },
+    "condition": { "math": [ "u_progress_unmute_insect >= 7" ] },
     "effect": [
       { "u_lose_trait": "MUTE_INSECT" },
       { "u_add_trait": "MUTE_INSECT_OK" },
@@ -130,7 +130,7 @@
       { "u_forget_recipe": "prac_unmute_insect" }
     ],
     "false_effect": [
-      { "math": [ "u_progress_unmute_insect", "++" ] },
+      { "math": [ "u_progress_unmute_insect++" ] },
       {
         "u_message": "You have all these new moving parts in your not-mouth, but they are struggling under the strain you put them under."
       }
@@ -139,7 +139,7 @@
   {
     "type": "effect_on_condition",
     "id": "EOC_UNMUTE_SLIME",
-    "condition": { "math": [ "u_progress_unmute_slime", ">=", "15" ] },
+    "condition": { "math": [ "u_progress_unmute_slime >= 15" ] },
     "effect": [
       { "u_lose_trait": "MUTE_SLIME" },
       { "u_add_trait": "MUTE_SLIME_OK" },
@@ -149,7 +149,7 @@
       { "u_forget_recipe": "prac_unmute_slime" }
     ],
     "false_effect": [
-      { "math": [ "u_progress_unmute_slime", "++" ] },
+      { "math": [ "u_progress_unmute_slime++" ] },
       {
         "u_message": "Do you need teeth, lungs?  You fall back into your resting shape in exasperation.  This will take long."
       }
@@ -175,8 +175,8 @@
       { "u_lose_trait": "MUTE_BIRD_OK" },
       { "u_lose_trait": "MUTE_CEPH" },
       { "u_lose_trait": "MUTE_CEPH_OK" },
-      { "math": [ "u_progress_unmute_bird", "=", "0" ] },
-      { "math": [ "u_progress_unmute_ceph", "=", "0" ] },
+      { "math": [ "u_progress_unmute_bird = 0" ] },
+      { "math": [ "u_progress_unmute_ceph = 0" ] },
       {
         "u_message": "You grasp at the base of your beak and feel the familiar contours of your old mouth.  You give it a try and your voice sounds almost like before."
       }
@@ -208,7 +208,53 @@
       { "u_lose_trait": "MUTE_GASTROPOD" },
       { "u_lose_trait": "MUTE_GASTROPOD_OK" },
       { "u_message": "You cough up a lot of off-color blood, but you swear in your own old voice again afterwards." },
-      { "math": [ "u_progress_unmute_gastropod", "=", "0" ] }
+      { "math": [ "u_progress_unmute_gastropod = 0" ] }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "EOC_MUTE_DEXTEROUS_PAWS_GAIN",
+    "eoc_type": "EVENT",
+    "required_event": "gains_mutation",
+    "condition": {
+      "or": [
+        { "compare_string": [ "PAWS_LITTLE", { "context_val": "trait" } ] },
+        { "compare_string": [ "PAWS_RAT", { "context_val": "trait" } ] }
+      ]
+    },
+    "effect": [ { "u_learn_recipe": "prac_dextrous_paws" } ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "EOC_DEXTROUS_PAWS_RESULTS",
+    "condition": { "math": [ "u_progress_dextrous_paws_usage >= 10" ] },
+    "effect": [
+      { "u_message": "You tie the last knot and look at it with satisfaction.  You've got it all figured out now." },
+      { "u_forget_recipe": "prac_dextrous_paws" }
+    ],
+    "false_effect": [
+      { "math": [ "u_progress_dextrous_paws_usage++" ] },
+      {
+        "u_message": "The thumb goes *there* and your fingers go like *this*.  You won't do any delicate work but you're getting there."
+      }
+    ]
+  },
+  {
+    "type": "effect_on_condition",
+    "id": "EOC_DEXTROUS_PAWS_LOSE",
+    "eoc_type": "EVENT",
+    "required_event": "loses_mutation",
+    "//": "If we lose either trait check if we end up in a mute state via the queued EoC",
+    "condition": {
+      "or": [
+        { "compare_string": [ "PAWS_LITTLE", { "context_val": "trait" } ] },
+        { "compare_string": [ "PAWS_RAT", { "context_val": "trait" } ] }
+      ]
+    },
+    "effect": [
+      { "u_forget_recipe": "prac_dextrous_paws" },
+      { "math": [ "u_progress_dextrous_paws_usage = 0" ] },
+      { "u_message": "You've got your old fingers back.  They feel almost hypermobile compared to before." }
     ]
   },
   {
@@ -440,7 +486,7 @@
     "id": "rashy_skin",
     "recurrence": [ "2 hour", "24 hours" ],
     "condition": { "and": [ { "u_has_trait": "SKIN_RASHY" }, { "not": { "u_has_effect": "formication" } } ] },
-    "effect": [ { "u_add_effect": "formication", "duration": "10 minutes", "target_part": "random" } ]
+    "effect": [ { "u_add_effect": "formication", "duration": "10 minutes", "target_part": "RANDOM" } ]
   },
   {
     "type": "effect_on_condition",
@@ -585,46 +631,35 @@
         "target_var": { "context_val": "radiation_mutation_category" },
         "parse_tags": true
       },
-      { "u_mutate_category": { "context_val": "radiation_mutation_category" }, "use_vitamins": false }
+      {
+        "u_mutate_category": { "context_val": "radiation_mutation_category" },
+        "use_vitamins": false,
+        "true_random": true
+      }
     ]
   },
   {
     "type": "snippet",
     "category": "<radiation_category>",
+    "//": "Radiation will only mutate you inside your class ie Mammalia",
     "text": [
-      { "text": "CHIMERA" },
-      { "text": "INSECT" },
-      { "text": "ALPHA" },
-      { "text": "URSINE" },
-      { "text": "CHIROPTERAN" },
-      { "text": "BIRD" },
-      { "text": "MEDICAL" },
-      { "text": "LUPINE" },
-      { "text": "RAT" },
-      { "text": "SLIME" },
-      { "text": "PLANT" },
-      { "text": "BATRACHIAN" },
-      { "text": "RAPTOR" },
-      { "text": "MOUSE" },
-      { "text": "CEPHALOPOD" },
-      { "text": "ELFA" },
-      { "text": "FISH" },
-      { "text": "HUMAN" },
-      { "text": "RABBIT" },
-      { "text": "GASTROPOD" },
-      { "text": "BEAST" },
-      { "text": "FELINE" },
-      { "text": "CATTLE" },
-      { "text": "LIZARD" },
-      { "text": "TROGLOBITE" },
-      { "text": "CRUSTACEAN" }
+      { "text": { "str": "URSINE", "//~": "NO_I18N" } },
+      { "text": { "str": "CHIROPTERAN", "//~": "NO_I18N" } },
+      { "text": { "str": "LUPINE", "//~": "NO_I18N" } },
+      { "text": { "str": "RAT", "//~": "NO_I18N" } },
+      { "text": { "str": "MOUSE", "//~": "NO_I18N" } },
+      { "text": { "str": "HUMAN", "//~": "NO_I18N" } },
+      { "text": { "str": "RABBIT", "//~": "NO_I18N" } },
+      { "text": { "str": "FELINE", "//~": "NO_I18N" } },
+      { "text": { "str": "CATTLE", "//~": "NO_I18N" } },
+      { "text": { "str": "TROGLOBITE", "//~": "NO_I18N" } }
     ]
   },
   {
     "type": "effect_on_condition",
     "id": "EOC_ink_grand_spray",
     "//": "will cast 'ink_gland_spray' spell when player has stored ink charges",
-    "condition": { "math": [ "u_effect_intensity('ink_gland_ink')", ">", "1" ] },
+    "condition": { "math": [ "u_effect_intensity('ink_gland_ink') > 1" ] },
     "effect": [
       { "u_cast_spell": { "id": "ink_gland_spray" } },
       { "u_message": "Your ink glands spray some ink into your attacker's eyes!", "type": "good" },
@@ -644,13 +679,13 @@
       "and": [
         { "u_has_trait": "INK_GLANDS" },
         { "not": { "u_has_effect": "ink_gland_ink", "intensity": 4 } },
-        { "math": [ "u_calories('format': 'percent')", ">", "33" ] },
-        { "math": [ "u_val('instant_thirst')", "<", "240" ] }
+        { "math": [ "u_calories('format': 'percent') > 33" ] },
+        { "math": [ "u_val('instant_thirst') < 240" ] }
       ]
     },
     "effect": [
-      { "math": [ "u_calories()", "-=", "47" ] },
-      { "math": [ "u_val('thirst')", "+=", "4" ] },
+      { "math": [ "u_calories() -= 47" ] },
+      { "math": [ "u_val('thirst') += 4" ] },
       {
         "u_add_effect": "ink_gland_ink",
         "duration": "PERMANENT",
@@ -669,16 +704,6 @@
   },
   {
     "type": "effect_on_condition",
-    "id": "EOC_insect_wings_shutoff",
-    "recurrence": [ "1 seconds", "1 seconds" ],
-    "condition": { "and": [ { "math": [ "u_val('stamina')", "<", "3000" ] }, { "u_has_trait": "WINGS_INSECT_active" } ] },
-    "effect": [
-      { "u_activate_trait": "WINGS_INSECT_active" },
-      { "u_message": "You don't have the stamina to keep buzzing.", "type": "bad" }
-    ]
-  },
-  {
-    "type": "effect_on_condition",
     "id": "EOC_social1_bonus",
     "recurrence": [ "10 minutes", "30 minutes" ],
     "//": "Alcohol and sedatives prevent the bad effects of these EOCs.  Antidepressants prevent (but don't remove) both the good and bad effects, keeping you at a baseline state.",
@@ -686,13 +711,12 @@
       "and": [
         { "u_has_flag": "SOCIAL1" },
         { "not": { "u_has_effect": "took_prozac" } },
-        { "math": [ "u_characters_nearby('radius': 30)", ">", "0" ] },
+        { "math": [ "u_characters_nearby('radius': 30) > 0" ] },
         { "not": { "u_has_effect": "narcosis" } }
       ]
     },
     "effect": [
-      { "u_lose_effect": "social_dissatisfied" },
-      { "u_lose_effect": "social_satisfied" },
+      { "u_lose_effect": [ "social_dissatisfied", "social_satisfied" ] },
       { "u_add_effect": "social_satisfied", "duration": "2 hours" }
     ]
   },
@@ -704,13 +728,12 @@
       "and": [
         { "u_has_flag": "SOCIAL2" },
         { "not": { "u_has_effect": "took_prozac" } },
-        { "math": [ "u_characters_nearby('radius': 30, 'attitude': 'allies')", ">", "0" ] },
+        { "math": [ "u_characters_nearby('radius': 30, 'attitude': 'allies') > 0" ] },
         { "not": { "u_has_effect": "narcosis" } }
       ]
     },
     "effect": [
-      { "u_lose_effect": "social_dissatisfied" },
-      { "u_lose_effect": "social_satisfied" },
+      { "u_lose_effect": [ "social_dissatisfied", "social_satisfied" ] },
       { "u_add_effect": "social_satisfied", "duration": "6 hours" }
     ]
   },
@@ -721,7 +744,7 @@
     "condition": {
       "and": [
         { "u_has_flag": "SOCIAL2" },
-        { "math": [ "u_characters_nearby('radius': 30, 'attitude': 'allies')", "==", "0" ] },
+        { "math": [ "u_characters_nearby('radius': 30, 'attitude': 'allies') == 0" ] },
         { "not": { "u_has_effect": "took_prozac" } },
         { "not": { "u_has_effect": "valium" } },
         { "not": { "u_has_effect": "took_xanax" } },
@@ -747,13 +770,12 @@
       "and": [
         { "u_has_flag": "ASOCIAL1" },
         { "not": { "u_has_effect": "took_prozac" } },
-        { "math": [ "u_characters_nearby('radius': 30)", "==", "0" ] },
+        { "math": [ "u_characters_nearby('radius': 30) == 0" ] },
         { "not": { "u_has_effect": "narcosis" } }
       ]
     },
     "effect": [
-      { "u_lose_effect": "asocial_dissatisfied" },
-      { "u_lose_effect": "asocial_satisfied" },
+      { "u_lose_effect": [ "asocial_dissatisfied", "asocial_satisfied" ] },
       { "u_add_effect": "asocial_satisfied", "duration": "2 hours" }
     ]
   },
@@ -764,7 +786,7 @@
     "condition": {
       "and": [
         { "u_has_flag": "ASOCIAL2" },
-        { "math": [ "u_characters_nearby('radius': 30)", "==", "0" ] },
+        { "math": [ "u_characters_nearby('radius': 30) == 0" ] },
         { "not": { "u_has_effect": "took_prozac" } },
         { "not": { "u_has_effect": "narcosis" } }
       ]
@@ -782,7 +804,7 @@
         { "not": { "u_has_effect": "valium" } },
         { "not": { "u_has_effect": "took_xanax" } },
         { "not": { "u_has_effect": "drunk" } },
-        { "math": [ "u_characters_nearby('radius': 30)", ">", "0" ] },
+        { "math": [ "u_characters_nearby('radius': 30) > 0" ] },
         { "not": { "u_has_effect": "narcosis" } }
       ]
     },
@@ -806,7 +828,7 @@
         { "or": [ { "u_has_effect": "social_dissatisfied" }, { "u_has_effect": "social_dissatisfied" } ] }
       ]
     },
-    "effect": [ { "u_lose_effect": "asocial_dissatisfied" }, { "u_lose_effect": "social_dissatisfied" } ]
+    "effect": [ { "u_lose_effect": [ "asocial_dissatisfied", "social_dissatisfied" ] } ]
   },
   {
     "type": "effect_on_condition",

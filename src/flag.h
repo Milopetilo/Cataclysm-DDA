@@ -11,8 +11,41 @@
 #include "translation.h"
 #include "type_id.h"
 
+#include <cstdint>
+
 class JsonObject;
 template <typename T> class generic_factory;
+
+// Bit positions for the flags that drive item::stacks_with.
+// Reload-safe: positions are compile-time constants, not int_ids.
+enum class hot_flag_bit : uint64_t {
+    REMOVED_STOCK      = 1ULL << 0,
+    DIAMOND            = 1ULL << 1,
+    FIT                = 1ULL << 2,
+    VARSIZE            = 1ULL << 3,
+    MUSHY              = 1ULL << 4,
+    DIRTY              = 1ULL << 5,
+    HIDDEN_POISON      = 1ULL << 6,
+    HIDDEN_HALLU       = 1ULL << 7,
+    IRRADIATED         = 1ULL << 8,
+    INEDIBLE           = 1ULL << 9,
+    NO_PACKED          = 1ULL << 10,
+    NO_STERILE         = 1ULL << 11,
+    USE_UPS            = 1ULL << 12,
+    LOC_CITY           = 1ULL << 13,
+    ITEM_BROKEN        = 1ULL << 14,
+    CORPSE             = 1ULL << 15,
+    NO_DROP            = 1ULL << 16,
+    REDUCED_WEIGHT     = 1ULL << 17,
+    FIELD_DRESS        = 1ULL << 18,
+    FIELD_DRESS_FAILED = 1ULL << 19,
+    GIBBED             = 1ULL << 20,
+    SKINNED            = 1ULL << 21,
+    QUARTERED          = 1ULL << 22,
+};
+
+// Returns the hot bit for f, or 0 if f is not in the hot set.
+uint64_t hot_bit_for( const flag_id &f ) noexcept;
 
 extern const flag_id flag_NULL;
 extern const flag_id flag_ABLATIVE_LARGE;
@@ -69,7 +102,10 @@ extern const flag_id flag_CAMERA_PRO;
 extern const flag_id flag_CANNIBAL;
 extern const flag_id flag_CANT_HEAL_EVERYONE;
 extern const flag_id flag_CANT_WEAR;
+extern const flag_id flag_CAN_USE_IN_DARK;
+extern const flag_id flag_CARNIVORE_DIET;
 extern const flag_id flag_CARNIVORE_OK;
+extern const flag_id flag_CASELESS_ROUNDS;
 extern const flag_id flag_CASING;
 extern const flag_id flag_CATTLE;
 extern const flag_id flag_CHALLENGE;
@@ -89,12 +125,14 @@ extern const flag_id flag_COOKED;
 extern const flag_id flag_CORROSIVE;
 extern const flag_id flag_CORPSE;
 extern const flag_id flag_CRUTCHES;
+extern const flag_id flag_CRYOGENIC_ROT;
 extern const flag_id flag_CUSTOM_EXPLOSION;
 extern const flag_id flag_CUT_HARVEST;
 extern const flag_id flag_CUT_IMMUNE;
 extern const flag_id flag_DANGEROUS;
 extern const flag_id flag_DEAF;
 extern const flag_id flag_DECAYS_IN_AIR;
+extern const flag_id flag_DESTROY_ON_CHARGE_USE;
 extern const flag_id flag_DIAMOND;
 extern const flag_id flag_DIG_TOOL;
 extern const flag_id flag_DIMENSIONAL_ANCHOR;
@@ -104,14 +142,18 @@ extern const flag_id flag_DROP_ACTION_ONLY_IF_LIQUID;
 extern const flag_id flag_DURABLE_MELEE;
 extern const flag_id flag_EATEN_COLD;
 extern const flag_id flag_EATEN_HOT;
+extern const flag_id flag_E_COPIABLE;
 extern const flag_id flag_EDIBLE_FROZEN;
 extern const flag_id flag_EFFECT_IMPEDING;
 extern const flag_id flag_EFFECT_LIMB_DISABLE_CONDITIONAL_FLAGS;
 extern const flag_id flag_EFFECT_LIMB_SCORE_MOD;
 extern const flag_id flag_EFFECT_LIMB_SCORE_MOD_LOCAL;
+extern const flag_id flag_E_FILE_COLLECTION;
 extern const flag_id flag_ELECTRIC_IMMUNE;
 extern const flag_id flag_ELECTRONIC;
 extern const flag_id flag_ENERGY_SHIELD;
+extern const flag_id flag_E_STORABLE;
+extern const flag_id flag_E_STORABLE_EXCLUSIVE;
 extern const flag_id flag_ETHEREAL_ITEM;
 extern const flag_id flag_EXO_ARM_PLATE;
 extern const flag_id flag_EXO_BOOT_PLATE;
@@ -128,7 +170,7 @@ extern const flag_id flag_EXO_TORSO_PLATE;
 extern const flag_id flag_EXO_UNDERLAYER;
 extern const flag_id flag_FAKE_MILL;
 extern const flag_id flag_FAKE_SMOKE;
-extern const flag_id flag_FANCY;
+extern const flag_id flag_FAULT_ON_COMPLETION;
 extern const flag_id flag_FELINE;
 extern const flag_id flag_FERTILIZER;
 extern const flag_id flag_FIELD_DRESS;
@@ -159,6 +201,7 @@ extern const flag_id flag_FROZEN;
 extern const flag_id flag_FUNGAL_VECTOR;
 extern const flag_id flag_GAS_DISCOUNT;
 extern const flag_id flag_GAS_PROOF;
+extern const flag_id flag_GENE_TECH;
 extern const flag_id flag_GIBBED;
 extern const flag_id flag_GNV_EFFECT;
 extern const flag_id flag_HARVEST_SEEDS;
@@ -179,7 +222,6 @@ extern const flag_id flag_IN_CBM;
 extern const flag_id flag_INTEGRATED;
 extern const flag_id flag_IRRADIATED;
 extern const flag_id flag_IRREMOVABLE;
-extern const flag_id flag_IR_EFFECT;
 extern const flag_id flag_IS_ARMOR;
 extern const flag_id flag_IS_PET_ARMOR;
 extern const flag_id flag_IS_UPS;
@@ -207,12 +249,14 @@ extern const flag_id flag_MOUNTED_GUN;
 extern const flag_id flag_MOUSE;
 extern const flag_id flag_MUNDANE;
 extern const flag_id flag_MUSHY;
+extern const flag_id flag_MWS_PORTAL_STORM_DATA;
 extern const flag_id flag_MYCUS_OK;
 extern const flag_id flag_NANOFAB_REPAIR;
 extern const flag_id flag_NANOFAB_TEMPLATE;
 extern const flag_id flag_NANOFAB_TEMPLATE_SINGLE_USE;
 extern const flag_id flag_NATURAL_WEAPON;
 extern const flag_id flag_NEEDS_NO_LUBE;
+extern const flag_id flag_NEEDS_SUNLIGHT;
 extern const flag_id flag_NEEDS_UNFOLD;
 extern const flag_id flag_NEGATIVE_MONOTONY_OK;
 extern const flag_id flag_NEVER_JAMS;
@@ -229,6 +273,7 @@ extern const flag_id flag_NO_REPAIR;
 extern const flag_id flag_NO_SALVAGE;
 extern const flag_id flag_NO_STERILE;
 extern const flag_id flag_NO_TAKEOFF;
+extern const flag_id flag_NO_TEMP;
 extern const flag_id flag_NO_TURRET;
 extern const flag_id flag_NO_UNLOAD;
 extern const flag_id flag_NO_UNWIELD;
@@ -239,7 +284,6 @@ extern const flag_id flag_NPC_SAFE;
 extern const flag_id flag_NPC_THROWN;
 extern const flag_id flag_NPC_THROW_NOW;
 extern const flag_id flag_NUTRIENT_OVERRIDE;
-extern const flag_id flag_ONLY_ONE;
 extern const flag_id flag_ORGANIC;
 extern const flag_id flag_OUTER;
 extern const flag_id flag_OVERSIZE;
@@ -248,6 +292,8 @@ extern const flag_id flag_PAIN_IMMUNE;
 extern const flag_id flag_PALS_SMALL;
 extern const flag_id flag_PALS_MEDIUM;
 extern const flag_id flag_PALS_LARGE;
+extern const flag_id flag_PAPR_BLOWER;
+extern const flag_id flag_PAPR_MASK;
 extern const flag_id flag_PARTIAL_DEAF;
 extern const flag_id flag_PERFECT_LOCKPICK;
 extern const flag_id flag_PERPETUAL;
@@ -258,6 +304,7 @@ extern const flag_id flag_POLEARM;
 extern const flag_id flag_POWERARMOR_COMPATIBLE;
 extern const flag_id flag_POWERED;
 extern const flag_id flag_PREDATOR_FUN;
+extern const flag_id flag_PRESERVE_SPAWN_LOC;
 extern const flag_id flag_PRIMITIVE_RANGED_WEAPON;
 extern const flag_id flag_PROCESSING;
 extern const flag_id flag_PROCESSING_RESULT;
@@ -265,7 +312,7 @@ extern const flag_id flag_PSEUDO;
 extern const flag_id flag_PSEUDOPOD_GRASP;
 extern const flag_id flag_PSYSHIELD_PARTIAL;
 extern const flag_id flag_PULPED;
-extern const flag_id flag_PUMP_ACTION;
+extern const flag_id flag_PUMP_RAIL;
 extern const flag_id flag_PUMP_RAIL_COMPATIBLE;
 extern const flag_id flag_QUARTERED;
 extern const flag_id flag_RABBIT;
@@ -302,10 +349,16 @@ extern const flag_id flag_REQUIRES_BALANCE;
 extern const flag_id flag_REQUIRES_TINDER;
 extern const flag_id flag_RESTRICT_HANDS;
 extern const flag_id flag_REVIVE_SPECIAL;
+extern const flag_id flag_ROBOFAC_LENS_ACCESSORY;
+extern const flag_id flag_ROBOFAC_LENS_HELMET;
 extern const flag_id flag_ROLLER_INLINE;
 extern const flag_id flag_ROLLER_ONE;
 extern const flag_id flag_ROLLER_QUAD;
 extern const flag_id flag_SAFECRACK;
+extern const flag_id flag_SCBA;
+extern const flag_id flag_SCBA_ON;
+extern const flag_id flag_SCBA_TANK;
+extern const flag_id flag_SCBA_TANK_ON;
 extern const flag_id flag_SEMITANGIBLE;
 extern const flag_id flag_SHRUB;
 extern const flag_id flag_SINGLE_USE;
@@ -315,7 +368,6 @@ extern const flag_id flag_SLEEP_AID;
 extern const flag_id flag_SLEEP_AID_CONTAINER;
 extern const flag_id flag_SLEEP_IGNORE;
 extern const flag_id flag_SLOW_WIELD;
-extern const flag_id flag_SMOKABLE;
 extern const flag_id flag_SMOKED;
 extern const flag_id flag_SOLARPACK;
 extern const flag_id flag_SOLARPACK_ON;
@@ -332,7 +384,6 @@ extern const flag_id flag_STR_DRAW;
 extern const flag_id flag_STR_RELOAD;
 extern const flag_id flag_STURDY;
 extern const flag_id flag_SUN_GLASSES;
-extern const flag_id flag_SUPER_FANCY;
 extern const flag_id flag_SWIM_GOGGLES;
 extern const flag_id flag_TACK;
 extern const flag_id flag_TANGLE;
@@ -351,7 +402,6 @@ extern const flag_id flag_TRADER_KEEP_EQUIPPED;
 extern const flag_id flag_TWO_WAY_RADIO;
 extern const flag_id flag_UNBREAKABLE;
 extern const flag_id flag_UNBREAKABLE_MELEE;
-extern const flag_id flag_UNDERFED;
 extern const flag_id flag_UNDERSIZE;
 extern const flag_id flag_UNDERWATER_GUN;
 extern const flag_id flag_UNRECOVERABLE;

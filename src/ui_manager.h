@@ -2,7 +2,9 @@
 #ifndef CATA_SRC_UI_MANAGER_H
 #define CATA_SRC_UI_MANAGER_H
 
+#include <stddef.h>
 #include <functional>
+#include <memory>
 
 #include "cuboid_rectangle.h"
 #include "point.h"
@@ -46,7 +48,7 @@ class window;
  *         // Clear UI area
  *         werase( win );
  *         // Print things
- *         mvwprintw( win, point_zero, "Hello World!" );
+ *         mvwprintw( win, point::zero, "Hello World!" );
  *         // Record the cursor position for screen readers and IME preview to
  *         // correctly function on curses
  *         ui.record_cursor( win );
@@ -117,7 +119,7 @@ class ui_adaptor
          * exiting from other UIs, so do call this function in the resizing
          * callback and ensure `win` contains all the space you will be drawing
          * to. Transparency is not supported. If `win` is null, the function has
-         * the same effect as `position( point_zero, point_zero )`
+         * the same effect as `position( point::zero, point::zero )`
          **/
         void position_from_window( const catacurses::window &win );
         /**
@@ -230,6 +232,7 @@ class ui_adaptor
         static void redraw();
         static void redraw_invalidated();
         static void screen_resized();
+        static size_t ui_stack_size();
     private:
         static void invalidation_consistency_and_optimization();
 

@@ -1,24 +1,38 @@
 #include "itype.h"
 
-#include <cstdlib>
+#include <algorithm>
+#include <cmath>
+#include <iterator>
 #include <utility>
 
 #include "ammo.h"
 #include "cata_utility.h"
 #include "character.h"
 #include "debug.h"
+#include "generic_factory.h"
 #include "item.h"
-#include "make_static.h"
+#include "item_group.h"
+#include "map.h"
+#include "material.h"
 #include "recipe.h"
 #include "ret_val.h"
+#include "subbodypart.h"
 #include "translations.h"
+#include "units_utility.h"
 
-struct tripoint;
+static const flag_id json_flag_CAN_HAVE_CHARGES( "CAN_HAVE_CHARGES" );
 
 std::string gunmod_location::name() const
 {
     // Yes, currently the name is just the translated id.
     return _( _id );
+}
+
+void gun_modifier_data::deserialize( const JsonObject &jo )
+{
+    mandatory( jo, false, "name", name_ );
+    mandatory( jo, false, "amount", qty_ );
+    optional( jo, false, "flags", flags_ );
 }
 
 std::string islot_book::recipe_with_description_t::name() const
@@ -72,6 +86,38 @@ std::string enum_to_string<itype_variant_kind>( itype_variant_kind data )
 }
 } // namespace io
 
+std::list<itype_id> islot_comestible::get_seasonings() const
+{
+    std::list<itype_id> ret;
+    for( const item_group_id &group : seasonings ) {
+        for( const itype *seasoning : item_group::every_possible_item_from( group ) ) {
+            ret.push_back( seasoning->id );
+        }
+    }
+    return ret;
+}
+
+const material_type &itype::get_base_material() const
+{
+    const material_type *m = &material_id::NULL_ID().obj();
+    int portion = 0;
+    for( const std::pair<const material_id, int> &mat : materials ) {
+        if( mat.second > portion ) {
+            portion = mat.second;
+            m = &mat.first.obj();
+        }
+    }
+    // Material portions all equal / not specified. Select first material.
+    if( portion == 1 ) {
+        return *default_mat;
+    }
+    return *m;
+}
+
+struct fuel_explosion_data itype::get_explosion_data() const {
+    return get_base_material().get_fuel_data().explosion_data;
+}
+
 std::string itype::get_item_type_string() const
 {
     if( tool ) {
@@ -90,6 +136,23 @@ std::string itype::get_item_type_string() const
         return "AMMO";
     }
     return "misc";
+}
+
+std::string itype::item_measure_prefix( unsigned int quantity ) const
+{
+    if( display_type == item_display_type::BY_WEIGHT ) {
+        return weight_to_string( weight * quantity, true, true );
+    } else if( display_type == item_display_type::BY_VOLUME ) {
+        units::volume volume_per_charge = volume;
+        if( count_by_charges() && stack_size > 0 ) {
+            volume_per_charge = volume / stack_size;
+        }
+        return vol_to_string( volume_per_charge * quantity, true, true );
+    } else if( display_type == item_display_type::BY_LENGTH ) {
+        // Note: item::length() has some special cases where this might not work well!
+        return length_to_string( longest_side * quantity, true );
+    }
+    return std::to_string( quantity );
 }
 
 std::string itype::nname( unsigned int quantity ) const
@@ -113,24 +176,24 @@ int itype::damage_level( int damage ) const
     return std::clamp( 1 + 4 * damage / damage_max(), 0, 5 );
 }
 
-bool itype::has_any_quality( const std::string_view quality ) const
+bool itype::has_any_quality( std::string_view quality ) const
 {
     return std::any_of( qualities.begin(),
-    qualities.end(), [&quality]( const std::pair<quality_id, int> &e ) {
+    qualities.end(), [&quality]( const auto & e ) {
         return lcmatch( e.first->name, quality );
     } ) || std::any_of( charged_qualities.begin(),
-    charged_qualities.end(), [&quality]( const std::pair<quality_id, int> &e ) {
+    charged_qualities.end(), [&quality]( const auto & e ) {
         return lcmatch( e.first->name, quality );
     } );
 }
 
 int itype::charges_default() const
 {
-    if( tool ) {
+    if( tool && tool->def_charges > 0 ) {
         return tool->def_charges;
-    } else if( comestible ) {
+    } else if( comestible && comestible->def_charges > 0 ) {
         return comestible->def_charges;
-    } else if( ammo ) {
+    } else if( ammo && ammo->def_charges > 0 ) {
         return ammo->def_charges;
     }
     return count_by_charges() ? 1 : 0;
@@ -182,7 +245,18 @@ const use_function *itype::get_use( const std::string &iuse_name ) const
     return iter != use_methods.end() ? &iter->second : nullptr;
 }
 
-int itype::tick( Character *p, item &it, const tripoint &pos ) const
+bool itype::has_tick( const std::string &iuse_name ) const
+{
+    return get_tick( iuse_name ) != nullptr;
+}
+
+const use_function *itype::get_tick( const std::string &iuse_name ) const
+{
+    const auto iter = tick_action.find( iuse_name );
+    return iter != tick_action.end() ? &iter->second : nullptr;
+}
+
+int itype::tick( Character *p, item &it, const tripoint_bub_ms &pos ) const
 {
     int charges_to_use = 0;
     for( const auto &method : tick_action ) {
@@ -192,19 +266,31 @@ int itype::tick( Character *p, item &it, const tripoint &pos ) const
     return charges_to_use;
 }
 
-std::optional<int> itype::invoke( Character *p, item &it, const tripoint &pos ) const
+std::optional<int> itype::invoke( Character *p, item &it, const tripoint_bub_ms &pos ) const
+{
+    return itype::invoke( p, it, &get_map(), pos );
+}
+
+std::optional<int> itype::invoke( Character *p, item &it, map *here,
+                                  const tripoint_bub_ms &pos ) const
 {
     if( !has_use() ) {
         return 0;
     }
     if( use_methods.find( "transform" ) != use_methods.end() ) {
-        return invoke( p, it, pos, "transform" );
+        return invoke( p, it, here, pos, "transform" );
     } else {
-        return invoke( p, it, pos, use_methods.begin()->first );
+        return invoke( p, it, here, pos, use_methods.begin()->first );
     }
 }
 
-std::optional<int> itype::invoke( Character *p, item &it, const tripoint &pos,
+std::optional<int> itype::invoke( Character *p, item &it, const tripoint_bub_ms &pos,
+                                  const std::string &iuse_name ) const
+{
+    return itype::invoke( p, it, &get_map(), pos, iuse_name );
+}
+
+std::optional<int> itype::invoke( Character *p, item &it, map *here, const tripoint_bub_ms &pos,
                                   const std::string &iuse_name ) const
 {
     const use_function *use = get_use( iuse_name );
@@ -214,7 +300,7 @@ std::optional<int> itype::invoke( Character *p, item &it, const tripoint &pos,
         return 0;
     }
     if( p ) {
-        const auto ret = use->can_call( *p, it, pos );
+        const auto ret = use->can_call( *p, it, here, pos );
 
         if( !ret.success() ) {
             p->add_msg_if_player( m_info, ret.str() );
@@ -222,7 +308,7 @@ std::optional<int> itype::invoke( Character *p, item &it, const tripoint &pos,
         }
     }
 
-    return use->call( p, it, pos );
+    return use->call( p, it, here, pos );
 }
 
 std::string gun_type_type::name() const
@@ -244,7 +330,7 @@ bool itype::can_have_charges() const
     if( gun && gun->clip > 0 ) {
         return true;
     }
-    if( has_flag( STATIC( flag_id( "CAN_HAVE_CHARGES" ) ) ) ) {
+    if( has_flag( json_flag_CAN_HAVE_CHARGES ) ) {
         return true;
     }
     return false;
@@ -258,6 +344,16 @@ bool itype::is_basic_component() const
         }
     }
     return false;
+}
+
+const std::vector<std::pair<flag_id, time_duration>> &islot_seed::get_growth_stages() const
+{
+    return growth_stages;
+}
+
+units::temperature islot_seed::get_growth_temp() const
+{
+    return growth_temp;
 }
 
 int islot_armor::avg_env_resist() const
@@ -344,7 +440,7 @@ bool armor_portion_data::should_consolidate( const armor_portion_data &l,
 int armor_portion_data::calc_encumbrance( units::mass weight, bodypart_id bp ) const
 {
     // this function takes some fixed points for mass to encumbrance and interpolates them to get results for head encumbrance
-    // TODO: Generalize this for other body parts (either with a modifier or seperated point graphs)
+    // TODO: Generalize this for other body parts (either with a modifier or separated point graphs)
     // TODO: Handle distributed weight
 
     int encumbrance = 0;
@@ -358,7 +454,7 @@ int armor_portion_data::calc_encumbrance( units::mass weight, bodypart_id bp ) c
         return 100;
     }
 
-    // get the bound bellow our given weight
+    // get the bound below our given weight
     --itt;
 
     std::map<units::mass, int>::iterator next_itt = std::next( itt );
@@ -389,7 +485,7 @@ int armor_portion_data::calc_encumbrance( units::mass weight, bodypart_id bp ) c
     // modify by flat
     encumbrance += additional_encumbrance;
 
-    // cap encumbrance at at least 1
+    // cap encumbrance at least 1
     return std::max( encumbrance, 1 );
 }
 
@@ -423,6 +519,19 @@ const itype_id &itype::tool_slot_first_ammo() const
     return itype_id::NULL_ID();
 }
 
+std::set<std::string> itype::all_variant_names() const
+{
+    std::set<std::string> ret;
+
+    for( const itype_variant_data &var : variants ) {
+        if( var.weight > 0 ) {
+            ret.insert( var.alt_name.translated() );
+        }
+    }
+
+    return ret;
+}
+
 int islot_ammo::dispersion_considering_length( units::length barrel_length ) const
 {
 
@@ -436,4 +545,52 @@ int islot_ammo::dispersion_considering_length( units::length barrel_length ) con
                                   static_cast<float>( b.dispersion_modifier ) );
     }
     return multi_lerp( lerp_points, barrel_length.value() ) + dispersion;
+}
+
+bool item_melee_damage::handle_proportional( const JsonValue &jval )
+{
+    if( jval.test_object() ) {
+        item_melee_damage rhs;
+        rhs.default_value = 1.0f;
+        rhs.deserialize( jval.get_object() );
+        for( const std::pair<const damage_type_id, float> &dt : rhs.damage_map ) {
+            const auto iter = damage_map.find( dt.first );
+            if( iter != damage_map.end() ) {
+                iter->second *= dt.second;
+                // For maintaining legacy behaviour (when melee damage used ints)
+                iter->second = std::floor( iter->second );
+            }
+        }
+        return true;
+    }
+    jval.throw_error( "invalid damage map for item melee damage" );
+    return false;
+}
+
+item_melee_damage &item_melee_damage::operator+=( const item_melee_damage &rhs )
+{
+    for( const std::pair<const damage_type_id, float> &dt : rhs.damage_map ) {
+        const auto iter = damage_map.find( dt.first );
+        if( iter != damage_map.end() ) {
+            iter->second += dt.second;
+            // For maintaining legacy behaviour (when melee damage used ints)
+            iter->second = std::floor( iter->second );
+        }
+    }
+    return *this;
+}
+
+void item_melee_damage::finalize()
+{
+    finalize_damage_map( damage_map, false, default_value );
+}
+
+void item_melee_damage::deserialize( const JsonObject &jo )
+{
+    damage_map = load_damage_map( jo );
+    //we can do this because items are always loaded after damage types
+    // ^this is not true, objects are loaded as they are encountered, and in mod load order
+    // Being loaded in mod load order particularly is the risk here!
+    // FIXME: call finalize in the right place
+    finalize();
 }

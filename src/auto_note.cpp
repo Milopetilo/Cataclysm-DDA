@@ -1,19 +1,19 @@
 #include "auto_note.h"
 
 #include <cstddef>
+#include <functional>
 #include <iosfwd>
 #include <iterator>
 #include <string>
-#include <type_traits>
 
 #include "cata_utility.h"
 #include "color.h"
 #include "cursesdef.h"
 #include "filesystem.h"
-#include "flexbuffer_json-inl.h"
 #include "flexbuffer_json.h"
 #include "generic_factory.h"
 #include "input_context.h"
+#include "input_popup.h"
 #include "json.h"
 #include "map_extras.h"
 #include "options.h"
@@ -21,17 +21,18 @@
 #include "path_info.h"
 #include "point.h"
 #include "string_formatter.h"
-#include "string_input_popup.h"
 #include "translation.h"
 #include "translations.h"
-#include "ui.h"
+#include "ui_helpers.h"
 #include "ui_manager.h"
+#include "uilist.h"
+#include "worldfactory.h"
 
 namespace auto_notes
 {
 cata_path auto_note_settings::build_save_path() const
 {
-    return PATH_INFO::player_base_save_path_path() + ".ano.json";
+    return PATH_INFO::player_base_save_path() + ".ano.json";
 }
 
 void auto_note_settings::clear()
@@ -42,7 +43,8 @@ void auto_note_settings::clear()
 
 bool auto_note_settings::save( bool bCharacter )
 {
-    if( bCharacter && !file_exist( PATH_INFO::player_base_save_path() + ".sav" ) ) {
+    if( bCharacter && ( !file_exist( PATH_INFO::player_base_save_path() + ".sav" ) &&
+                        !file_exist( PATH_INFO::player_base_save_path() + ".sav" + zzip_suffix ) ) ) {
         return true;
     }
     cata_path sGlobalFile = PATH_INFO::autonote();
@@ -163,7 +165,7 @@ void auto_note_settings::default_initialize()
     load( false );
 
     for( const map_extra &extra : MapExtras::mapExtraFactory().get_all() ) {
-        if( has_auto_note_enabled( extra.id, false ) && extra.autonote ) {
+        if( has_auto_note_enabled( extra.id, false ) && extra.visibility != map_extra_visibility::none ) {
             character_autoNoteEnabled.insert( extra.id );
         }
     }
@@ -245,7 +247,7 @@ auto_note_manager_gui::auto_note_manager_gui()
     for( const map_extra &extra : MapExtras::mapExtraFactory().get_all() ) {
         // Ignore all extras that have autonote disabled in the JSON.
         // This filters out lots of extras users shouldn't see (like "normal")
-        if( !extra.autonote ) {
+        if( extra.visibility == map_extra_visibility::none ) {
             continue;
         }
 
@@ -305,21 +307,8 @@ void auto_note_manager_gui::show()
 
     ui_adaptor ui;
     ui.on_screen_resize( [&]( ui_adaptor & ui ) {
-        iContentHeight = FULL_SCREEN_HEIGHT - 2 - iHeaderHeight;
-
-        const point iOffset( TERMX > FULL_SCREEN_WIDTH ? ( TERMX - FULL_SCREEN_WIDTH ) / 2 : 0,
-                             TERMY > FULL_SCREEN_HEIGHT ? ( TERMY - FULL_SCREEN_HEIGHT ) / 2 : 0 );
-
-        w_border = catacurses::newwin( FULL_SCREEN_HEIGHT, FULL_SCREEN_WIDTH,
-                                       iOffset );
-
-        w_header = catacurses::newwin( iHeaderHeight, FULL_SCREEN_WIDTH - 2,
-                                       iOffset + point_south_east );
-
-        w = catacurses::newwin( iContentHeight, FULL_SCREEN_WIDTH - 2,
-                                iOffset + point( 1, iHeaderHeight + 1 ) );
-
-        ui.position_from_window( w_border );
+        ui_helpers::full_screen_window( ui, &w, &w_border, &w_header, nullptr,
+                                        &iContentHeight, 1, iHeaderHeight, 0 );
     } );
     ui.mark_resize();
 
@@ -415,7 +404,7 @@ void auto_note_manager_gui::show()
                         _( "<Tab> to change pages." ) );
 
         // Clear table
-        mvwrectf( w, point_zero, c_black, ' ', 79, iContentHeight );
+        mvwrectf( w, point::zero, c_black, ' ', 79, iContentHeight );
         mvwvline( w, point( 51, 0 ), c_light_gray, LINE_XOXO, iContentHeight );
         mvwvline( w, point( 60, 0 ), c_light_gray, LINE_XOXO, iContentHeight );
         int cacheSize = bCharacter ? char_cacheSize : global_cacheSize;
@@ -510,16 +499,13 @@ void auto_note_manager_gui::show()
             entry.second = false;
             ( bCharacter ? charwasChanged : globalwasChanged ) = true;
         } else if( action == "CHANGE_MAPEXTRA_CHARACTER" ) {
-            string_input_popup custom_symbol_popup;
-            custom_symbol_popup
-            .title( _( "Enter a map extra custom symbol (empty to unset):" ) )
-            .width( 2 )
-            .query_string();
+            string_input_popup_imgui custom_symbol_popup( 0 );
+            custom_symbol_popup.set_label( _( "Enter a map extra custom symbol (empty to unset):" ) );
+            custom_symbol_popup.set_max_input_length( 1 );
+            const std::string &custom_symbol_str = custom_symbol_popup.query();
 
-            if( !custom_symbol_popup.canceled() ) {
-                const std::string &custom_symbol_str = custom_symbol_popup.text();
+            if( !custom_symbol_popup.cancelled() ) {
                 if( custom_symbol_str.empty() ) {
-
                     ( bCharacter ? char_custom_symbol_cache : global_custom_symbol_cache ).erase( currentItem );
                 } else {
                     uilist ui_colors;

@@ -5,7 +5,7 @@
     "name": "Test Category"
   },
   {
-    "type": "GENERIC",
+    "type": "ITEM",
     "id": "test_weapon1",
     "name": { "str": "test melee weapon 1" },
     "description": "Test melee weapon 1.",
@@ -17,7 +17,7 @@
     "symbol": ";"
   },
   {
-    "type": "GENERIC",
+    "type": "ITEM",
     "id": "test_weapon2",
     "name": { "str": "test melee weapon 2" },
     "description": "Test melee weapon 2.",
@@ -31,7 +31,8 @@
   },
   {
     "id": "reach_bow",
-    "type": "GUN",
+    "type": "ITEM",
+    "subtypes": [ "GUN" ],
     "symbol": "(",
     "color": "yellow",
     "name": { "str": "reach bow" },
@@ -39,7 +40,6 @@
     "price": "160 USD",
     "material": [ "steel" ],
     "flags": [ "REACH_ATTACK", "WATERPROOF_GUN", "NEVER_JAMS", "NO_TURRET" ],
-    "ammo_effects": [ "NEVER_MISFIRES" ],
     "skill": "archery",
     "ammo": [ "arrow" ],
     "weight": "340 g",

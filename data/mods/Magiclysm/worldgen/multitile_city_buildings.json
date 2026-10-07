@@ -4,7 +4,7 @@
     "id": "magic_shop",
     "locations": [ "land" ],
     "overmaps": [
-      { "point": [ 0, 0, 0 ], "overmap": "magic_shop_north", "camp": "healers_grey", "camp_name": "Healer's respite" },
+      { "point": [ 0, 0, 0 ], "overmap": "magic_shop_north" },
       { "point": [ 0, 0, 1 ], "overmap": "magic_shop_2ndfloor_north" },
       { "point": [ 0, 0, 2 ], "overmap": "magic_shop_roof_north" }
     ]
@@ -82,6 +82,15 @@
       { "point": [ 1, 0, 2 ], "overmap": "house_technomancer_6_north" },
       { "point": [ 0, 0, -1 ], "overmap": "house_technomancer_7_north" },
       { "point": [ 1, 0, -1 ], "overmap": "house_technomancer_8_north" }
+    ]
+  },
+  {
+    "type": "city_building",
+    "id": "house_elf_01",
+    "locations": [ "land" ],
+    "overmaps": [
+      { "point": [ 0, 0, 0 ], "overmap": "house_elf_01_north" },
+      { "point": [ 0, 0, 1 ], "overmap": "house_elf_01_roof_north" }
     ]
   }
 ]

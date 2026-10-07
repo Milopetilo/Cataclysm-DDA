@@ -1,14 +1,29 @@
+#include <algorithm>
+#include <functional>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "cata_catch.h"
 #include "item_factory.h"
 #include "itype.h"
+#include "type_id.h"
+#include "units.h"
+#include "value_ptr.h"
 
 static const ammotype ammo_battery( "battery" );
 static const flag_id json_flag_DEBUG_ONLY( "DEBUG_ONLY" );
 
+namespace
+{
 struct battery_chemistry_family {
     float max_energy_density_kj_kg;
     float max_energy_density_kj_l;
 };
+} // namespace
 
 // NOLINTBEGIN(cata-static-string_id-constants)
 static const std::map<itype_id, std::string> battery_to_chemistry = {
@@ -18,7 +33,8 @@ static const std::map<itype_id, std::string> battery_to_chemistry = {
     {itype_id( "heavy_plus_battery_cell" ), "LiON"},
     {itype_id( "folding_solar_panel_deployed" ), "LiON"},
     {itype_id( "folding_solar_panel_v2_deployed" ), "LiON"},
-
+    {itype_id( "power_station_portable" ), "LiON"},
+    {itype_id( "rm13_battery" ), "LiON"},
     {itype_id( "light_cell_rechargeable" ), "Nickel-Metal Hydride"},
 
     {itype_id( "light_battery_cell" ), "Lithium/Iron Disulfide"},
@@ -32,7 +48,7 @@ static const std::map<itype_id, std::string> battery_to_chemistry = {
     {itype_id( "battery_motorbike" ), "Lead-acid"},
     {itype_id( "battery_motorbike_small" ), "Lead-acid"},
 
-    // These are in a seperate group because the car batteries might
+    // These are in a separate group because the car batteries might
     // end up being switched to something different.
     {itype_id( "large_storage_battery" ), "LiON"},
     {itype_id( "medium_storage_battery" ), "LiON"},
@@ -71,7 +87,7 @@ static const std::map<itype_id, std::string> battery_to_chemistry = {
 // Zinc-Manganese Dioxide
 // https://en.wikipedia.org/wiki/Energy_density_Extended_Reference_Table
 
-// Lithium/Iron Disulfide gravimetric energy density is picked from enerizer documentation
+// Lithium/Iron Disulfide gravimetric energy density is picked from Energizer documentation
 // https://data.energizer.com/pdfs/lithiuml91l92_appman.pdf
 // Volumetric is a lower bound from this article (560 Wh/L), rounded up to 600
 // https://www.sciencedirect.com/science/article/abs/pii/S2590116819300104
@@ -112,7 +128,7 @@ static bool is_battery( const itype &type )
 
 TEST_CASE( "battery_density_check" )
 {
-    for( const itype *id : item_controller->find( is_battery ) ) {
+    for( const itype *id : Item_factory::find( is_battery ) ) {
         auto chemistry_name = battery_to_chemistry.find( id->get_id() );
         battery_chemistry_family chemistry;
         if( chemistry_name == battery_to_chemistry.end() ) {

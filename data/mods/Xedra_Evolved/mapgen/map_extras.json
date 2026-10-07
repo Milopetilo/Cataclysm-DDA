@@ -8,11 +8,11 @@
     "sym": "I",
     "min_max_zlevel": [ 0, 0 ],
     "color": "magenta_yellow",
-    "autonote": true
+    "autonote_visibility": "same_tile",
+    "flags": [ "CLASSIC" ]
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "corpse_blood_gibs_fae_3x3",
     "object": {
       "mapgensize": [ 3, 3 ],
@@ -22,7 +22,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_golden_monolith",
     "object": {
       "rows": [
@@ -64,7 +63,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "golden_monolith_nest",
     "object": {
       "mapgensize": [ 1, 1 ],
@@ -83,7 +81,7 @@
     "min_max_zlevel": [ -2, 0 ],
     "sym": "S",
     "color": "yellow",
-    "autonote": true
+    "autonote_visibility": "same_tile"
   },
   {
     "id": "mx_goblin_spider",
@@ -94,7 +92,8 @@
     "min_max_zlevel": [ -2, 0 ],
     "sym": "S",
     "color": "yellow",
-    "autonote": true
+    "autonote_visibility": "same_tile",
+    "flags": [ "CLASSIC" ]
   },
   {
     "id": "mx_trees_map_salamander",
@@ -105,11 +104,10 @@
     "min_max_zlevel": [ 0, 0 ],
     "sym": "E",
     "color": "green",
-    "autonote": true
+    "autonote_visibility": "same_tile"
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_trees_map_salamander",
     "object": {
       "rows": [
@@ -152,11 +150,10 @@
     "min_max_zlevel": [ 0, 0 ],
     "sym": "E",
     "color": "green",
-    "autonote": true
+    "autonote_visibility": "same_tile"
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_trees_map_sylph",
     "object": {
       "rows": [
@@ -199,11 +196,10 @@
     "min_max_zlevel": [ 0, 0 ],
     "sym": "E",
     "color": "green",
-    "autonote": true
+    "autonote_visibility": "same_tile"
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_trees_map_ierde",
     "object": {
       "rows": [
@@ -246,11 +242,11 @@
     "min_max_zlevel": [ 0, 0 ],
     "sym": "E",
     "color": "green",
-    "autonote": true
+    "autonote_visibility": "same_tile",
+    "flags": [ "MAN_MADE" ]
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_homelesscamp_homullus",
     "object": {
       "rows": [
@@ -314,11 +310,10 @@
     "min_max_zlevel": [ 0, 0 ],
     "sym": "E",
     "color": "light_green",
-    "autonote": true
+    "autonote_visibility": "details"
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_forest_pond_avore",
     "object": {
       "rows": [
@@ -386,11 +381,10 @@
     "min_max_zlevel": [ 0, 0 ],
     "sym": "E",
     "color": "light_green",
-    "autonote": true
+    "autonote_visibility": "same_tile"
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_forest_pond_salamander_avore",
     "object": {
       "rows": [
@@ -459,11 +453,10 @@
     "min_max_zlevel": [ 0, 0 ],
     "sym": "E",
     "color": "blue",
-    "autonote": true
+    "autonote_visibility": "same_tile"
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_pond_forest_undine",
     "object": {
       "rows": [
@@ -532,11 +525,10 @@
     "min_max_zlevel": [ 0, 0 ],
     "sym": "E",
     "color": "blue",
-    "autonote": true
+    "autonote_visibility": "same_tile"
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_pond_forest_undine_ierde",
     "object": {
       "rows": [
@@ -606,11 +598,11 @@
     "min_max_zlevel": [ 0, 0 ],
     "sym": "G",
     "color": "magenta",
-    "autonote": true
+    "autonote_visibility": "details",
+    "flags": [ "CLASSIC" ]
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_goblin_fruits",
     "object": {
       "rows": [
@@ -645,7 +637,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "goblin_fruit_plants",
     "object": {
       "mapgensize": [ 9, 9 ],
@@ -682,11 +673,11 @@
     "min_max_zlevel": [ 0, 0 ],
     "sym": "m",
     "color": "light_gray",
-    "autonote": false
+    "autonote_visibility": "none",
+    "flags": [ "CLASSIC" ]
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_ring_of_mushrooms",
     "object": {
       "rows": [
@@ -721,7 +712,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "mushroom_ring_chunk",
     "weight": 1000,
     "object": {
@@ -739,7 +729,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "mushroom_ring_chunk",
     "weight": 600,
     "object": {
@@ -758,7 +747,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "mushroom_ring_chunk",
     "weight": 750,
     "object": {
@@ -781,7 +769,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "mushroom_ring_chunk",
     "weight": 400,
     "object": {
@@ -805,7 +792,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "mushroom_ring_chunk",
     "weight": 500,
     "object": {
@@ -833,7 +819,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "mushroom_ring_chunk",
     "weight": 200,
     "object": {
@@ -862,7 +847,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "dreamwound_shadow",
     "object": {
       "mapgensize": [ 6, 6 ],
@@ -879,7 +863,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "nested_mapgen_id": "dreamwound_shadow_from_dreams",
     "object": {
       "mapgensize": [ 6, 6 ],
@@ -896,7 +879,6 @@
   },
   {
     "type": "mapgen",
-    "method": "json",
     "update_mapgen_id": "mx_dreamwound_shadow",
     "object": {
       "place_nested": [ { "chunks": [ "dreamwound_shadow" ], "x": [ 2, 17 ], "y": [ 2, 17 ] } ],
@@ -912,6 +894,180 @@
     "sym": "w",
     "min_max_zlevel": [ 0, 0 ],
     "color": "dark_gray_red",
-    "autonote": true
+    "autonote_visibility": "same_tile",
+    "flags": [ "CLASSIC" ]
+  },
+  {
+    "id": "mx_ozma_statue",
+    "type": "map_extra",
+    "name": { "str": "a statue surrounded by emerald poppies" },
+    "description": "A ruined statue surrounded by emerald poppies.",
+    "generator": { "generator_method": "update_mapgen", "generator_id": "mx_ozma_statue" },
+    "min_max_zlevel": [ 0, 0 ],
+    "sym": "m",
+    "color": "light_green",
+    "autonote_visibility": "none",
+    "flags": [ "CLASSIC" ]
+  },
+  {
+    "type": "mapgen",
+    "update_mapgen_id": "mx_ozma_statue",
+    "object": {
+      "rows": [
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        ",
+        "                        "
+      ],
+      "flags": [ "ALLOW_TERRAIN_UNDER_OTHER_DATA" ],
+      "place_nested": [ { "chunks": [ "poppy_ring_chunk" ], "x": [ 2, 8 ], "y": [ 2, 8 ] } ]
+    }
+  },
+  {
+    "type": "mapgen",
+    "nested_mapgen_id": "poppy_ring_chunk",
+    "weight": 1000,
+    "object": {
+      "mapgensize": [ 5, 5 ],
+      "rows": [
+        " S,S ",
+        "S,,,S",
+        ",,@,,",
+        "S,,,S",
+        " S,S "
+      ],
+      "terrain": { ",": [ [ "t_moss", 50 ], [ "t_grass", 25 ], [ "t_grass_dead", 25 ] ], " ": "t_null" },
+      "furniture": { "S": "f_ozma_poppy", "@": "f_statue_fae_ozymandius" },
+      "flags": [ "ERASE_ALL_BEFORE_PLACING_TERRAIN" ]
+    }
+  },
+  {
+    "type": "mapgen",
+    "nested_mapgen_id": "poppy_ring_chunk",
+    "weight": 600,
+    "object": {
+      "mapgensize": [ 5, 5 ],
+      "rows": [
+        " S,S ",
+        "S,,,S",
+        ",,@,,",
+        "S,,,S",
+        " S,S "
+      ],
+      "terrain": { ",": [ [ "t_moss", 50 ], [ "t_grass", 25 ], [ "t_grass_dead", 25 ] ], " ": "t_null" },
+      "furniture": { "S": "f_ozma_poppy", "@": "f_statue_fae_ozymandius" },
+      "flags": [ "ERASE_ALL_BEFORE_PLACING_TERRAIN" ],
+      "place_monster": [ { "group": "GROUP_CHANGELING_STRIKE_FORCE", "x": [ 0, 4 ], "y": [ 0, 4 ], "chance": 75, "repeat": [ 3, 5 ] } ]
+    }
+  },
+  {
+    "type": "mapgen",
+    "nested_mapgen_id": "poppy_ring_chunk",
+    "weight": 500,
+    "object": {
+      "mapgensize": [ 15, 15 ],
+      "rows": [
+        "      S,S      ",
+        "    S,,,,,S    ",
+        "  S,,,,,,,,,S  ",
+        "  ,,,,,,,,,,,  ",
+        " S,,,,,,,,,,,S ",
+        " ,,,,,,,,,,,,, ",
+        "S,,,,,,,,,,,,,S",
+        ",,,,,,,@,,,,,,,",
+        "S,,,,,,,,,,,,,S",
+        " ,,,,,,,,,,,,, ",
+        " S,,,,,,,,,,,S ",
+        "  ,,,,,,,,,,,  ",
+        "  S,,,,,,,,,S  ",
+        "    S,,,,,S    ",
+        "      S,S      "
+      ],
+      "terrain": { ",": [ [ "t_moss", 50 ], [ "t_grass", 25 ], [ "t_grass_dead", 25 ] ], " ": "t_null" },
+      "furniture": { "S": "f_ozma_poppy", "@": "f_statue_fae_ozymandius" },
+      "flags": [ "ERASE_ALL_BEFORE_PLACING_TERRAIN" ]
+    }
+  },
+  {
+    "type": "mapgen",
+    "nested_mapgen_id": "poppy_ring_chunk",
+    "weight": 200,
+    "object": {
+      "mapgensize": [ 15, 15 ],
+      "rows": [
+        "      S,S      ",
+        "    S,,,,,S    ",
+        "  S,,,,,,,,,S  ",
+        "  ,,,,,,,,,,,  ",
+        " S,,,,,,,,,,,S ",
+        " ,,,,,,,,,,,,, ",
+        "S,,,,,,,,,,,,,S",
+        ",,,,,,,@,,,,,,,",
+        "S,,,,,,,,,,,,,S",
+        " ,,,,,,,,,,,,, ",
+        " S,,,,,,,,,,,S ",
+        "  ,,,,,,,,,,,  ",
+        "  S,,,,,,,,,S  ",
+        "    S,,,,,S    ",
+        "      S,S      "
+      ],
+      "terrain": { ",": [ [ "t_moss", 50 ], [ "t_grass", 25 ], [ "t_grass_dead", 25 ] ], " ": "t_null" },
+      "furniture": { "S": "f_ozma_poppy", "@": "f_statue_fae_ozymandius" },
+      "flags": [ "ERASE_ALL_BEFORE_PLACING_TERRAIN" ],
+      "place_monster": [ { "group": "GROUP_CHANGELING_STRIKE_FORCE", "x": [ 0, 14 ], "y": [ 0, 14 ], "chance": 75, "repeat": [ 7, 15 ] } ]
+    }
+  },
+  {
+    "id": "mx_XE_XEDRA_mutagen_transport",
+    "type": "map_extra",
+    "name": { "str": "TCL Truck" },
+    "description": "A crashed Trans-Coast Logistics truck.",
+    "generator": { "generator_method": "update_mapgen", "generator_id": "mx_XE_XEDRA_mutagen_transport" },
+    "min_max_zlevel": [ 0, 0 ],
+    "sym": "T",
+    "color": "yellow",
+    "flags": [ "CLASSIC" ]
+  },
+  {
+    "type": "mapgen",
+    "update_mapgen_id": "mx_XE_XEDRA_mutagen_transport",
+    "object": {
+      "place_vehicles": [ { "vehicle": "armored_car_xedra_tcl", "x": 7, "y": 15, "chance": 100, "status": 1, "rotation": 0 } ],
+      "place_monster": [
+        { "monster": "mon_zombie_scientist", "x": 5, "y": 17 },
+        { "monster": "mon_zombie_labsecurity", "x": 3, "y": 15 },
+        { "monster": "mon_zombie_labsecurity", "x": 4, "y": 15 },
+        { "monster": "mon_zombie_labsecurity", "x": 7, "y": 13 },
+        { "monster": "mon_zombie_labsecurity", "x": [ 10, 15 ], "y": [ 3, 13 ] }
+      ],
+      "place_loot": [
+        { "item": "9mm_casing", "x": [ 6, 8 ], "y": [ 12, 13 ], "repeat": [ 4, 9 ], "chance": 100 },
+        { "item": "9mm_casing", "x": [ 10, 13 ], "y": [ 3, 13 ], "repeat": [ 8, 22 ], "chance": 100 }
+      ],
+      "place_fields": [
+        { "field": "fd_blood", "x": [ 6, 8 ], "y": [ 12, 13 ], "repeat": [ 3, 6 ] },
+        { "field": "fd_blood", "x": [ 12, 15 ], "y": [ 2, 4 ], "repeat": [ 5, 10 ] }
+      ]
+    }
   }
 ]

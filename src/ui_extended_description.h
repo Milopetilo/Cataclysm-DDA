@@ -2,10 +2,12 @@
 #ifndef CATA_SRC_UI_EXTENDED_DESCRIPTION_H
 #define CATA_SRC_UI_EXTENDED_DESCRIPTION_H
 
+#include <string>
+#include <vector>
+
 #include "cata_imgui.h"
 #include "coordinates.h"
 #include "input_context.h"
-#include "imgui/imgui.h"
 #include "output.h"
 
 enum class description_target : int {
@@ -16,7 +18,7 @@ enum class description_target : int {
     num_targets
 };
 
-void draw_extended_description( const std::vector<std::string> &description, uint64_t width );
+void draw_extended_description( const std::vector<std::string> &description, cataimgui::scroll &s );
 
 class extended_description_window : public cataimgui::window
 {
@@ -45,6 +47,8 @@ class extended_description_window : public cataimgui::window
         std::vector<std::string> furniture_description;
         std::vector<std::string> terrain_description;
         std::vector<std::string> veh_app_description;
+
+        cataimgui::scroll info_scroll = cataimgui::scroll::none;
 };
 
 #endif // CATA_SRC_UI_EXTENDED_DESCRIPTION_H

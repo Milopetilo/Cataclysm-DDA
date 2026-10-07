@@ -15,6 +15,7 @@ AMMO_TYPE_WHITELIST = {
     'atgm',  # Rocket
     'atlatl',
     'bolt_ballista',
+    'bone_dart',
     'barb',
     'battery',
     'BB',
@@ -26,6 +27,7 @@ AMMO_TYPE_WHITELIST = {
     'fishspear',
     'flammable',
     'gene_sting',
+    'nether_huntsman_javelin_ammo',
     'm235',  # Rocket
     'metal_rail',
     'nail',
@@ -47,6 +49,10 @@ SKILL_WHITELIST = {
 # This could go away if obsolete stuff were explicitly marked as such.
 ID_WHITELIST = {
     # Guns
+    'bone_dart_launcher',
+    'nl_destruction_ray',
+    'nl_turret_chem_thrower',
+    'nl_turret_phase_goo_thrower',
     'coilgun',
     'slamfire_shotgun',
     'slamfire_shotgun_d',
@@ -58,8 +64,10 @@ ID_WHITELIST = {
     'raging_judge',
     'american_180',
     'gene_sting_gun',
+    'nether_huntsman_arm',
     'ppsh',
     'af2011a1_38super',
+    'm26_mass',
     # Magazines
     'a180mag',
     'a180mag1',
@@ -92,10 +100,23 @@ def items_of_type(data, type):
         if 'type' not in i:
             dump = util.CDDAJSONWriter(i).dumps()
             print("json entry has no 'type' field: " + dump)
-
             sys.exit(1)
         if i['type'] == type:
             result.append(i)
+    return result
+
+
+def items_of_subtype(data, subtype):
+    result = []
+    for i in data:
+        if 'type' not in i:
+            dump = util.CDDAJSONWriter(i).dumps()
+            print("json entry has no 'type' field: " + dump)
+            sys.exit(1)
+        if i['type'] == "ITEM":
+            if 'subtypes' in i:
+                if subtype in i['subtypes']:
+                    result.append(i)
     return result
 
 
@@ -169,7 +190,7 @@ def main():
     gg_migrations = get_ids(items_of_type(gg_data, 'MIGRATION'))
     gg_blacklist = blacklisted_items(gg_data)
 
-    core_guns = items_of_type(core_data, 'GUN')
+    core_guns = items_of_subtype(core_data, 'GUN')
 
     def is_not_fake_item(i):
         return i.get('copy-from', '') != 'fake_item'
@@ -199,11 +220,11 @@ def main():
     core_guns = items_for_which_all_ancestors(
         core_guns, can_be_unwielded)
 
-    core_magazines = items_of_type(core_data, 'MAGAZINE')
+    core_magazines = items_of_subtype(core_data, 'MAGAZINE')
     core_magazines = items_for_which_all_ancestors(
         core_magazines, lacks_whitelisted_pocket)
 
-    core_ammo = items_of_type(core_data, 'AMMO')
+    core_ammo = items_of_subtype(core_data, 'AMMO')
 
     def is_not_whitelisted_ammo_type(i):
         return 'ammo_type' in i and i['ammo_type'] not in AMMO_TYPE_WHITELIST

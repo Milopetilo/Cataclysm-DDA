@@ -10,9 +10,9 @@
 
 #include "bodypart.h"
 #include "color.h"
-#include "coords_fwd.h"
+#include "coordinates.h"
 #include "point.h"
-#include "widget.h"
+#include "type_id.h"
 
 class Character;
 class Creature;
@@ -21,6 +21,7 @@ class mood_face;
 class time_point;
 class translation;
 class vehicle;
+enum class cardinal_direction : int;
 
 // These are the supported data variables for coloring bodygraphs.
 enum class bodygraph_var : int {
@@ -62,6 +63,11 @@ struct disp_overmap_cache {
         // Retrieve the cached widget string
         const std::string &get_val() const {
             return _om_wgt_str;
+        }
+
+        // Mark the cache as stale so it will be rebuilt on next access.
+        void invalidate() {
+            _center = tripoint_abs_omt::invalid;
         }
 };
 
@@ -126,6 +132,8 @@ std::string vehicle_azimuth_text( const Character &u );
 std::pair<std::string, nc_color> vehicle_cruise_text_color( const Character &u );
 // Vehicle percent of fuel remaining for currently running engine
 std::pair<std::string, nc_color> vehicle_fuel_percent_text_color( const Character &u );
+// Vehicle remaining battery percent
+std::pair<std::string, nc_color> vehicle_battery_percent_text_color( const Character &u );
 
 // Functions returning (text, color) pairs
 std::pair<translation, nc_color> weariness_text_color( size_t weariness );
@@ -159,6 +167,7 @@ std::pair<std::string, nc_color> power_balance_text_color( const avatar &u );
 
 std::pair<std::string, nc_color> safe_mode_text_color( bool classic_mode );
 std::pair<std::string, nc_color> wind_text_color( const Character &u );
+std::pair<std::string, nc_color> snow_depth_text_color( const Character &u );
 std::pair<std::string, nc_color> weather_text_color( const Character &u );
 
 // Get visible threats by cardinal direction - Already colorized
@@ -206,6 +215,9 @@ std::string weight_string( const Character &u );
 // Functions returning colorized string
 // gets the string that describes your health
 std::string health_string( const Character &u );
+
+// Force the overmap widget cache to rebuild on next access.
+void invalidate_overmap_cache();
 } // namespace display
 
 #endif // CATA_SRC_DISPLAY_H

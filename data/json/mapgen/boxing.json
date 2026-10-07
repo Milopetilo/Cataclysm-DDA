@@ -1,9 +1,7 @@
 [
   {
     "type": "mapgen",
-    "method": "json",
     "om_terrain": [ "gym" ],
-    "weight": 1000,
     "object": {
       "fill_ter": "t_floor",
       "rows": [
@@ -14,30 +12,30 @@
         "    ss,----,----,----,  ",
         "    ss,----,----,----,  ",
         "  ##++#######gggg#####  ",
-        "  #f................^#4 ",
+        "  #f..............§.^#4 ",
         "  #........?$$$$$$?.0#  ",
         "  #E.E.....$555555$..#  ",
         "  #E.E.....$555555$.0#  ",
         "  #E.E.....$555555$..#  ",
         "  #E.E.....?$$$$$$?.0#  ",
-        "  #..........bbbb....#  ",
+        "  #..........bbbb...§#  ",
         "  #...........CC....B#  ",
-        "  #.0.0.0...........B#  ",
+        "  #§0.0.0...........B#  ",
         "  #^.....^VV^..^BBBB^#  ",
         "  #||||||||||''||||||#  ",
         "  #LLLLLLLLL|..|fZZZ^#  ",
-        "  #BBBB.BBBB|..|.....p  ",
+        "  #BBBB.BBBB|..|§....p  ",
         "  #.........'..'.C.DCp  ",
         "  #+|+|i.|||||'|...DD#  ",
         "  #S|S|i.'_T|<.|XXXXX#  ",
         "  ####################  "
       ],
-      "palettes": [ "parametrized_walls_palette" ],
+      "palettes": [ "parametrized_linoleum_palette", "parametrized_walls_palette" ],
       "terrain": {
         " ": "t_region_groundcover_urban",
-        "T": "t_linoleum_white",
-        "S": "t_linoleum_white",
-        "_": "t_linoleum_white",
+        "T": { "param": "linoleum_color", "fallback": "t_linoleum_white" },
+        "S": { "param": "linoleum_color", "fallback": "t_linoleum_white" },
+        "_": { "param": "linoleum_color", "fallback": "t_linoleum_white" },
         "$": "t_fence_rope",
         "'": "t_door_c",
         "+": "t_door_glass_c",
@@ -68,6 +66,7 @@
         "^": "f_indoor_plant",
         "f": "f_trashcan"
       },
+      "items": { "T": { "item": "SUS_toilet", "chance": 50 } },
       "toilets": { "T": {  } },
       "vendingmachines": { "V": { "item_group": "vending_drink", "lootable": true } },
       "place_items": [
@@ -78,14 +77,13 @@
         { "item": "vending_drink", "x": [ 10, 11 ], "y": [ 16, 16 ], "chance": 70 }
       ],
       "place_monster": [ { "group": "GROUP_DOJO", "x": [ 0, 23 ], "y": [ 0, 23 ], "chance": 75, "repeat": [ 3, 8 ] } ],
-      "vehicles": { "Á": { "vehicle": "parking_garage_short", "chance": 20, "rotation": 90 } }
+      "vehicles": { "Á": { "vehicle": "parking_garage_short", "chance": 20, "rotation": 90 } },
+      "nested": { "§": { "chunks": [ "fire_extinguisher" ] } }
     }
   },
   {
     "type": "mapgen",
-    "method": "json",
     "om_terrain": "gym_roof",
-    "weight": 200,
     "object": {
       "fill_ter": "t_floor",
       "rows": [
@@ -104,14 +102,14 @@
         "  -..................-  ",
         "  -..................-  ",
         "  -...#######+####...-  ",
-        "  -...#_0________#...-  ",
+        "  -...#_0_______§#...-  ",
         "  -...#______ssst#...-  ",
         "  -...#_0____s___#...-  ",
         "  -...#______s__t#...-  ",
         "  -...#_0______tt#...-  ",
         "  -...#######_####...-  ",
         "  -........#___#4.X..-  ",
-        "  -....&.=.#_>_#...:.-  ",
+        "  -....&.=.#§>_#...:.-  ",
         "  ---------#####------  "
       ],
       "palettes": [ "roof_palette" ],
@@ -143,14 +141,13 @@
           "y": 8
         },
         { "chunks": [ [ "roof_4x4_survivor", 20 ], [ "null", 80 ] ], "x": 9, "y": 16 }
-      ]
+      ],
+      "nested": { "§": { "chunks": [ "fire_extinguisher" ] } }
     }
   },
   {
     "type": "mapgen",
-    "method": "json",
     "om_terrain": "gym_upper_roof",
-    "weight": 200,
     "object": {
       "fill_ter": "t_flat_roof",
       "rows": [

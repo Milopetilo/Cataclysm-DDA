@@ -1,7 +1,6 @@
 #include "game.h" // IWYU pragma: associated
 
 #include <algorithm>
-#include <initializer_list>
 #include <map>
 #include <string>
 #include <utility>
@@ -13,11 +12,12 @@
 #include "diary.h"
 #include "input_context.h"
 #include "output.h"
+#include "point.h"
 #include "scores_ui.h"
 #include "string_editor_window.h"
 #include "string_formatter.h"
 #include "translations.h"
-#include "ui.h"
+#include "uilist.h"
 #include "ui_manager.h"
 
 namespace
@@ -98,7 +98,7 @@ void mvwprintwa( const catacurses::window &win, point p, Ts... args )
              args...
          } ) {
         mvwprintw( win, p, string );
-        p += point_south;
+        p += point::south;
     }
 }
 
@@ -124,7 +124,7 @@ void draw_diary_border( catacurses::window &win )
     mvwhline( win,     point( 4, max.y - 0 ), '-', max.x - 4 - 4 + 1 );
 
     //top left corner
-    mvwprintwa( win, point_zero,
+    mvwprintwa( win, point::zero,
                 "    ",
                 ".-/|",
                 "||||",
@@ -211,7 +211,7 @@ void diary::show_diary_ui( diary *c_diary )
         w_changes = catacurses::newwin( max.y - 3, midx - 1, beg + point( 0, 3 ) );
         w_text = catacurses::newwin( max.y - 3, max.x - midx - 1, beg + point( 2 + midx, 3 ) );
         w_border = catacurses::newwin( max.y + 5, max.x + 9, beg + point( -4, -2 ) );
-        w_head = catacurses::newwin( 1, max.x, beg + point_south );
+        w_head = catacurses::newwin( 1, max.x, beg + point::south );
 
         ui.position_from_window( w_border );
     } );
@@ -226,11 +226,12 @@ void diary::show_diary_ui( diary *c_diary )
 
         print_list_scrollable( &w_changes, c_diary->get_change_list(), &selected[window_mode::CHANGE_WIN],
                                currwin == window_mode::CHANGE_WIN, false, report_color_error::yes );
-        print_list_scrollable( &w_text, c_diary->get_page_text(), &selected[window_mode::TEXT_WIN],
+        print_list_scrollable( &w_text, c_diary->get_desc_or_page_text( selected[window_mode::CHANGE_WIN] ),
+                               &selected[window_mode::TEXT_WIN],
                                currwin == window_mode::TEXT_WIN, false, report_color_error::no );
 
-        trim_and_print( w_head, point_south_east, getmaxx( w_head ) - 2, c_white,
-                        c_diary->get_head_text() );
+        trim_and_print( w_head, point::south_east, getmaxx( w_head ) - 2, c_white,
+                        c_diary->get_head_text( c_diary->get_page_ptr()->is_summary() ) );
 
         wnoutrefresh( w_border );
         wnoutrefresh( w_head );
@@ -311,8 +312,10 @@ void diary::show_diary_ui( diary *c_diary )
         draw_border( w_info );
         center_print( w_info, 0, c_light_gray, string_format( _( "Info" ) ) );
         if( currwin == window_mode::CHANGE_WIN || currwin == window_mode::TEXT_WIN ) {
-            fold_and_print( w_info, point_south_east, getmaxx( w_info ) - 2, c_white,
-                            c_diary->get_desc_map()[selected[window_mode::CHANGE_WIN]] );
+            if( !c_diary->get_page_ptr()->is_summary() ) {
+                fold_and_print( w_info, point::south_east, getmaxx( w_info ) - 2, c_white,
+                                c_diary->get_desc_map()[ selected[window_mode::CHANGE_WIN] ] );
+            }
         }
 
         wnoutrefresh( w_info );
@@ -341,7 +344,10 @@ void diary::show_diary_ui( diary *c_diary )
         } else if( navigate_ui_list( action, selected[currwin], 10,
                                      currwin == window_mode::PAGE_WIN ? c_diary->pages.size()
                                      : currwin == window_mode::CHANGE_WIN ? c_diary->change_list.size()
-                                     : text_to_list_scrollable( w_text, c_diary->get_page_text(), false ).size(), true ) ) {
+                                     : text_to_list_scrollable( w_text,
+                                             c_diary->get_desc_or_page_text( selected[window_mode::CHANGE_WIN] ),
+                                             false ).size(),
+                                     true ) ) {
             // size in navigate_ui_list above is redundant with print_list_scrollable's wrapping effect during redraw
             if( currwin == window_mode::PAGE_WIN ) {
                 selected[window_mode::CHANGE_WIN] = 0;
@@ -358,9 +364,9 @@ void diary::show_diary_ui( diary *c_diary )
             selected[window_mode::PAGE_WIN] = c_diary->pages.size() - 1;
             currwin = window_mode::PAGE_WIN;
         } else if( action == "VIEW_SCORES" ) {
-            show_scores_ui( g->achievements(), g->stats(), g->get_kill_tracker() );
+            show_scores_ui();
         } else if( action == "DELETE PAGE" ) {
-            if( !c_diary->pages.empty() ) {
+            if( c_diary->pages.size() > 1 ) {
                 if( query_yn( _( "Really delete Page?" ) ) ) {
                     c_diary->delete_page();
                     if( selected[window_mode::PAGE_WIN] >= static_cast<int>( c_diary->pages.size() ) ) {
@@ -382,6 +388,9 @@ void diary::show_diary_ui( diary *c_diary )
 
 void diary::edit_page_ui( const std::function<catacurses::window()> &create_window )
 {
+    if( get_page_ptr()->is_summary() ) {
+        return;
+    }
     // Modify the stored text so the new text is displayed after exiting from
     // the editor window and before confirming or canceling the y/n query.
     std::string &new_text = get_page_ptr()->m_text;

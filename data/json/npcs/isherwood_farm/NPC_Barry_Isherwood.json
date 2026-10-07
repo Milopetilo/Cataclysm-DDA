@@ -8,7 +8,7 @@
     "name_unique": "Barry Isherwood",
     "gender": "male",
     "attitude": 0,
-    "mission": 7,
+    "mission": "GUARD",
     "chat": "TALK_ISHERWOOD_BARRY_RESCUE",
     "faction": "isherwood_family",
     "death_eocs": [ "EOC_BARRY_ISHERWOOD_DIE" ]
@@ -94,7 +94,7 @@
         "condition": { "u_has_mission": "MISSION_ISHERWOOD_CHRIS_1" },
         "effect": [
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" }
         ],
         "topic": "TALK_DONE"
@@ -105,7 +105,7 @@
         "effect": [
           "follow_only",
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" },
           { "assign_mission": "MISSION_ISHERWOOD_BARRY_RETURN_TO_FARM" }
         ],
@@ -122,21 +122,21 @@
     "responses": [
       {
         "text": "Yeah, they did, I'll go get them.",
-        "condition": { "math": [ "isherwood_family_coming", "==", "1" ] },
+        "condition": { "math": [ "isherwood_family_coming == 1" ] },
         "effect": [
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" }
         ],
         "topic": "TALK_DONE"
       },
       {
         "text": "Yeah, Chris did, we're taking you home.",
-        "condition": { "math": [ "isherwood_family_coming", "!=", "1" ] },
+        "condition": { "math": [ "isherwood_family_coming != 1" ] },
         "effect": [
           "follow_only",
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" },
           { "assign_mission": "MISSION_ISHERWOOD_BARRY_RETURN_TO_FARM" }
         ],
@@ -153,11 +153,11 @@
     "responses": [
       {
         "text": "Okay, me too, let's go.",
-        "condition": { "math": [ "isherwood_family_coming", "!=", "1" ] },
+        "condition": { "math": [ "isherwood_family_coming != 1" ] },
         "effect": [
           "follow_only",
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" },
           { "assign_mission": "MISSION_ISHERWOOD_BARRY_RETURN_TO_FARM" }
         ],
@@ -165,11 +165,11 @@
       },
       {
         "text": "All right, we're leaving, but you better not test me again.",
-        "condition": { "math": [ "isherwood_family_coming", "!=", "1" ] },
+        "condition": { "math": [ "isherwood_family_coming != 1" ] },
         "effect": [
           "follow_only",
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" },
           { "assign_mission": "MISSION_ISHERWOOD_BARRY_RETURN_TO_FARM" }
         ],
@@ -177,20 +177,20 @@
       },
       {
         "text": "Okay, me too.  I'll go get your family.",
-        "condition": { "math": [ "isherwood_family_coming", "==", "1" ] },
+        "condition": { "math": [ "isherwood_family_coming == 1" ] },
         "effect": [
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" }
         ],
         "topic": "TALK_DONE"
       },
       {
         "text": "All right, we're leaving, but you better not test me again.  I'll be back with your family.",
-        "condition": { "math": [ "isherwood_family_coming", "==", "1" ] },
+        "condition": { "math": [ "isherwood_family_coming == 1" ] },
         "effect": [
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" }
         ],
         "topic": "TALK_DONE"
@@ -212,21 +212,21 @@
       {
         "text": "That shouldn't take long, your family's outside waiting.  I'll be back with them.",
         "topic": "TALK_DONE",
-        "condition": { "math": [ "isherwood_family_coming", "==", "1" ] },
+        "condition": { "math": [ "isherwood_family_coming == 1" ] },
         "effect": [
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" }
         ]
       },
       {
         "text": "That shouldn't take long, I brought some of your family with me.  Let's get you home.",
         "topic": "TALK_DONE",
-        "condition": { "and": [ { "math": [ "isherwood_family_coming", "!=", "1" ] }, { "u_has_mission": "MISSION_ISHERWOOD_CHRIS_1" } ] },
+        "condition": { "and": [ { "math": [ "isherwood_family_coming != 1" ] }, { "u_has_mission": "MISSION_ISHERWOOD_CHRIS_1" } ] },
         "effect": [
           "follow_only",
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" },
           { "assign_mission": "MISSION_ISHERWOOD_BARRY_RETURN_TO_FARM" }
         ]
@@ -244,7 +244,7 @@
         "effect": [
           "follow_only",
           { "u_add_var": "general_meeting_barry_following", "value": "yes" },
-          { "math": [ "u_timer_barry_rescue", "=", "time('now')" ] },
+          { "math": [ "u_timer_barry_rescue = time('now')" ] },
           { "npc_first_topic": "TALK_ISHERWOOD_BARRY" }
         ]
       }
@@ -276,7 +276,7 @@
         "topic": "TALK_ISHERWOOD_BARRY_TOWER_no",
         "condition": {
           "and": [
-            { "math": [ "u_timer_barry_rescue", "<", "time('5 d')" ] },
+            { "math": [ "u_timer_barry_rescue < time('5 d')" ] },
             {
               "and": [
                 { "not": { "npc_near_om_location": "barry_mi-go_scout_tower_1", "range": 3 } },
@@ -293,7 +293,7 @@
         "topic": "TALK_ISHERWOOD_BARRY_TOWER_fresh1",
         "condition": {
           "and": [
-            { "math": [ "u_timer_barry_rescue", ">", "time('5 d')" ] },
+            { "math": [ "u_timer_barry_rescue > time('5 d')" ] },
             {
               "and": [
                 { "not": { "npc_near_om_location": "barry_mi-go_scout_tower_1", "range": 3 } },
@@ -346,7 +346,7 @@
         "topic": "TALK_ISHERWOOD_BARRY_TOWER_family1",
         "condition": {
           "and": [
-            { "math": [ "barry_PTSD_freakouts", ">=", "1" ] },
+            { "math": [ "barry_PTSD_freakouts >= 1" ] },
             {
               "and": [
                 { "not": { "npc_near_om_location": "barry_mi-go_scout_tower_1", "range": 3 } },
@@ -390,19 +390,19 @@
     "dynamic_line": {
       "npc_near_om_location": "barry_mi-go_scout_tower_1",
       "range": 3,
-      "yes": "Come on, let's get out of here while we still can.  I don't want to spend any longer around here then we need too.",
+      "yes": "Come on, let's get out of here while we still can.  I don't want to spend any longer around here than we need to.",
       "no": {
         "npc_near_om_location": "barry_mi-go_scout_tower_2",
         "range": 3,
-        "yes": "Come on, let's get out of here while we still can.  I don't want to spend any longer around here then we need too.",
+        "yes": "Come on, let's get out of here while we still can.  I don't want to spend any longer around here than we need to.",
         "no": {
           "npc_near_om_location": "barry_mi-go_scout_tower_3",
           "range": 3,
-          "yes": "Come on, let's get out of here while we still can.  I don't want to spend any longer around here then we need too.",
+          "yes": "Come on, let's get out of here while we still can.  I don't want to spend any longer around here than we need to.",
           "no": {
             "npc_near_om_location": "barry_mi-go_scout_tower_4",
             "range": 3,
-            "yes": "Come on, let's get out of here while we still can.  I don't want to spend any longer around here then we need too.",
+            "yes": "Come on, let's get out of here while we still can.  I don't want to spend any longer around here than we need to.",
             "no": {
               "concatenate": [
                 "*lights up as you approach, but also looks wary.  \"",
@@ -456,7 +456,7 @@
     "type": "talk_topic",
     "id": "TALK_ISHERWOOD_BARRY_TOWER_fresh2",
     "dynamic_line": "*shivers, though the room is warm, and moves his mouth wordlessly for a few seconds.  \"It's hard to remember details.  The air in that place messes with your brain, makes it all feel like some kind of dream.  Makes it so you can't fight back.  Not that I could have anyway.\"  He stares into space for a moment, then swallows hard.  \"They cut into me, over and over.  I don't think they took anything out.  They just opened me up, poked around.  I was awake for all of it, as awake as for anything else.  Sometimes I felt pain, other times they did something to me so I could feel it but it didn't hurt.  There were big, pale ones that did the cutting.\"  His voice gets increasingly detached as he speaks, and his shaking grows worse.  You're not sure it would be wise for him to go further.",
-    "speaker_effect": { "sentinel": "barry_PTSD1", "effect": { "math": [ "barry_PTSD_freakouts", "+=", "1" ] } },
+    "speaker_effect": { "sentinel": "barry_PTSD1", "effect": { "math": [ "barry_PTSD_freakouts += 1" ] } },
     "responses": [
       { "text": "[Let him continue.]", "topic": "TALK_ISHERWOOD_BARRY_TOWER_fresh3" },
       { "text": "That's enough for now, Barry.", "topic": "TALK_ISHERWOOD_BARRY_TOWER_fresh_stop" },
@@ -570,17 +570,12 @@
     "value": 20000,
     "destination": "dairy_farm_isherwood_W",
     "start": {
-      "assign_mission_target": {
-        "om_terrain": "dairy_farm_isherwood_W",
-        "om_special": "Isherwood Farm Mutable",
-        "reveal_radius": 3,
-        "search_range": 240
-      }
+      "assign_mission_target": { "om_terrain": "dairy_farm_isherwood_W", "om_special": "Isherwood Farm Mutable", "reveal_radius": 3 }
     },
     "end": {
       "effect": [
         "stop_following",
-        { "math": [ "isherwood_barry_rescued", "=", "1" ] },
+        { "math": [ "isherwood_barry_rescued = 1" ] },
         { "u_add_var": "u_saved_barry_isherwood", "value": "yes" }
       ]
     },

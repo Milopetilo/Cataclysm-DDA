@@ -2,37 +2,45 @@
 
 #include <algorithm>
 #include <array>
+#include <functional>
+#include <iterator>
 #include <memory>
 #include <optional>
-#include <set>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 #include "activity_actor_definitions.h"
 #include "avatar.h"
+#include "bodypart.h"
 #include "character.h"
-#include "colony.h"
+#include "coordinates.h"
 #include "creature.h"
 #include "creature_tracker.h"
 #include "debug.h"
 #include "enums.h"
+#include "flexbuffer_json.h"
 #include "game.h" // TODO: This is a circular dependency
 #include "generic_factory.h"
 #include "iexamine.h"
 #include "item.h"
-#include "json.h"
+#include "itype.h"
 #include "map.h"
 #include "mapdata.h"
 #include "messages.h"
+#include "monster.h"
 #include "player_activity.h"
 #include "point.h"
+#include "rng.h"
+#include "sounds.h"
+#include "translation.h"
 #include "translations.h"
 #include "units.h"
 #include "vehicle.h"
 #include "viewer.h"
 #include "vpart_position.h"
 
-static const furn_str_id furn_f_crate_o( "f_crate_o" );
-static const furn_str_id furn_f_safe_o( "f_safe_o" );
+static const fault_id fault_broken_window( "fault_broken_window" );
 
 static const material_id material_glass( "glass" );
 
@@ -83,7 +91,7 @@ generic_factory<gate_data> gates_data( "gate type" );
 
 } // namespace
 
-void gate_data::load( const JsonObject &jo, const std::string_view )
+void gate_data::load( const JsonObject &jo, std::string_view )
 {
     mandatory( jo, was_loaded, "door", door );
     mandatory( jo, was_loaded, "floor", floor );
@@ -146,6 +154,11 @@ bool gate_data::is_suitable_wall( const tripoint_bub_ms &pos ) const
 void gates::load( const JsonObject &jo, const std::string &src )
 {
     gates_data.load( jo, src );
+}
+
+void gates::finalize()
+{
+    gates_data.finalize();
 }
 
 void gates::check()
@@ -232,7 +245,7 @@ void gates::open_gate( const tripoint_bub_ms &pos )
         }
     }
 
-    if( get_player_view().sees( pos ) ) {
+    if( get_player_view().sees( here, pos ) ) {
         if( open ) {
             add_msg( gate.open_message );
         } else if( close ) {
@@ -263,12 +276,9 @@ void gates::open_gate( const tripoint_bub_ms &pos, Character &p )
 // Doors namespace
 // TODO: move door functions from maps namespace here, or vice versa.
 
-void doors::close_door( map &m, Creature &who, const tripoint_bub_ms &closep )
+bool doors::check_mon_blocking_door( const Creature &who, const tripoint_abs_ms &p )
 {
-    bool didit = false;
-    const bool inside = !m.is_outside( who.pos_bub() );
-
-    const Creature *const mon = get_creature_tracker().creature_at( closep );
+    const Creature *const mon = get_creature_tracker().creature_at( p );
     if( mon ) {
         if( mon->is_avatar() ) {
             who.add_msg_if_player( m_info, _( "There's some buffoon in the way!" ) );
@@ -278,90 +288,9 @@ void doors::close_door( map &m, Creature &who, const tripoint_bub_ms &closep )
         } else {
             who.add_msg_if_player( m_info, _( "%s is in the way!" ), mon->disp_name() );
         }
-        return;
+        return true;
     }
-
-    if( optional_vpart_position vp = m.veh_at( closep ) ) {
-        // There is a vehicle part here; see if it has anything that can be closed
-        vehicle *const veh = &vp->vehicle();
-        const int vpart = vp->part_index();
-        const int closable = veh->next_part_to_close( vpart,
-                             veh_pointer_or_null( m.veh_at( who.pos_bub() ) ) != veh );
-        const int inside_closable = veh->next_part_to_close( vpart );
-        const int openable = veh->next_part_to_open( vpart );
-        if( closable >= 0 ) {
-            if( !veh->handle_potential_theft( get_avatar() ) ) {
-                return;
-            }
-            Character *ch = who.as_character();
-            if( ch && veh->can_close( closable, *ch ) ) {
-                veh->close( closable );
-                //~ %1$s - vehicle name, %2$s - part name
-                who.add_msg_if_player( _( "You close the %1$s's %2$s." ), veh->name, veh->part( closable ).name() );
-                didit = true;
-            }
-        } else if( inside_closable >= 0 ) {
-            who.add_msg_if_player( m_info, _( "That %s can only be closed from the inside." ),
-                                   veh->part( inside_closable ).name() );
-        } else if( openable >= 0 ) {
-            who.add_msg_if_player( m_info, _( "That %s is already closed." ),
-                                   veh->part( openable ).name() );
-        } else {
-            who.add_msg_if_player( m_info, _( "You cannot close the %s." ), veh->part( vpart ).name() );
-        }
-    } else if( m.furn( closep ) == furn_f_crate_o ) {
-        who.add_msg_if_player( m_info, _( "You'll need to construct a seal to close the crate!" ) );
-    } else if( !m.close_door( closep, inside, true ) ) {
-        if( m.close_door( closep, true, true ) ) {
-            who.add_msg_if_player( m_info,
-                                   _( "You cannot close the %s from outside.  You must be inside the building." ),
-                                   m.name( closep ) );
-        } else {
-            who.add_msg_if_player( m_info, _( "You cannot close the %s." ), m.name( closep ) );
-        }
-    } else {
-        map_stack items_in_way = m.i_at( closep );
-        // Scoot up to 25 liters of items out of the way
-        if( m.furn( closep ) != furn_f_safe_o && !items_in_way.empty() ) {
-            const units::volume max_nudge = 25_liter;
-
-            const auto toobig = std::find_if( items_in_way.begin(), items_in_way.end(),
-            [&max_nudge]( const item & it ) {
-                return it.volume() > max_nudge;
-            } );
-            if( toobig != items_in_way.end() ) {
-                who.add_msg_if_player( m_info, _( "The %s is too big to just nudge out of the way." ),
-                                       toobig->tname() );
-            } else if( items_in_way.stored_volume() > max_nudge ) {
-                who.add_msg_if_player( m_info, _( "There is too much stuff in the way." ) );
-            } else {
-                m.close_door( closep, inside, false );
-                didit = true;
-                who.add_msg_if_player( m_info, _( "You push the %s out of the way." ),
-                                       items_in_way.size() == 1 ? items_in_way.only_item().tname() : _( "stuff" ) );
-                who.mod_moves( -std::min( items_in_way.stored_volume() / ( max_nudge / 50 ), 100 ) );
-
-                if( m.has_flag( ter_furn_flag::TFLAG_NOITEM, closep ) ) {
-                    // Just plopping items back on their origin square will displace them to adjacent squares
-                    // since the door is closed now.
-                    for( item &elem : items_in_way ) {
-                        m.add_item_or_charges( closep, elem );
-                    }
-                    m.i_clear( closep );
-                }
-            }
-        } else {
-            const std::string door_name = m.obstacle_name( closep );
-            m.close_door( closep, inside, false );
-            who.add_msg_if_player( _( "You close the %s." ), door_name );
-            didit = true;
-        }
-    }
-
-    if( didit ) {
-        // TODO: Vary this? Based on strength, broken legs, and so on.
-        who.mod_moves( -90 );
-    }
+    return false;
 }
 
 bool doors::forced_door_closing( const tripoint_bub_ms &p,
@@ -385,7 +314,7 @@ bool doors::forced_door_closing( const tripoint_bub_ms &p,
     const tripoint_bub_ms displace = pos.value();
     //knockback trajectory requires the line be flipped
     const tripoint_bub_ms kbp( -displace.x() + x * 2, -displace.y() + y * 2, displace.z() );
-    const bool can_see = u.sees( kbp );
+    const bool can_see = u.sees( m, kbp );
     creature_tracker &creatures = get_creature_tracker();
     Character *npc_or_player = creatures.creature_at<Character>( p, false );
     if( npc_or_player != nullptr ) {
@@ -402,7 +331,7 @@ bool doors::forced_door_closing( const tripoint_bub_ms &p,
         }
         // TODO: make the npc angry?
         npc_or_player->hitall( bash_dmg, 0, nullptr );
-        g->knockback( kbp.raw(), p.raw(), std::max( 1, bash_dmg / 10 ), -1, 1 );
+        g->knockback( kbp, p, std::max( 1, bash_dmg / 10 ), -1, 1 );
         // TODO: perhaps damage/destroy the gate
         // if the npc was really big?
         if( creatures.creature_at<Character>( p, false ) != nullptr ) {
@@ -421,7 +350,7 @@ bool doors::forced_door_closing( const tripoint_bub_ms &p,
             critter.die_in_explosion( nullptr );
         } else {
             critter.apply_damage( nullptr, bodypart_id( "torso" ), bash_dmg );
-            critter.check_dead_state();
+            critter.check_dead_state( &m );
         }
         if( !critter.is_dead() && critter.get_size() >= creature_size::huge ) {
             // big critters simply prevent the gate from closing
@@ -431,7 +360,7 @@ bool doors::forced_door_closing( const tripoint_bub_ms &p,
         }
         if( !critter.is_dead() ) {
             // Still alive? Move the critter away so the door can close
-            g->knockback( kbp.raw(), p.raw(), std::max( 1, bash_dmg / 10 ), -1, 1 );
+            g->knockback( kbp, p, std::max( 1, bash_dmg / 10 ), -1, 1 );
             if( creatures.creature_at( p ) ) {
                 return false;
             }
@@ -467,8 +396,8 @@ bool doors::forced_door_closing( const tripoint_bub_ms &p,
         }
     }
 
-    m.ter_set( point( x, y ), door_type );
-    if( m.has_flag( ter_furn_flag::TFLAG_NOITEM, point( x, y ) ) ) {
+    m.ter_set( point_bub_ms( x, y ), door_type );
+    if( m.has_flag( ter_furn_flag::TFLAG_NOITEM, point_bub_ms( x, y ) ) ) {
         map_stack items = m.i_at( point_bub_ms( x, y ) );
         for( map_stack::iterator it = items.begin(); it != items.end(); ) {
             if( it->made_of( phase_id::LIQUID ) ) {
@@ -564,15 +493,36 @@ bool doors::unlock_door( map &m, Creature &who, const tripoint_bub_ms &lockp )
         const int unlockable = veh->next_part_to_unlock( vpart, !inside_vehicle );
 
         if( unlockable >= 0 ) {
-            if( const Character *const ch = who.as_character() ) {
-                if( !veh->handle_potential_theft( *ch ) ) {
-                    return false;
-                }
-                veh->unlock( unlockable );
-                who.add_msg_if_player( _( "You unlock the %1$s's %2$s." ), veh->name,
-                                       veh->part( unlockable ).name() );
-                didit = true;
+            if( who.as_character() && !veh->handle_potential_theft( *who.as_character() ) ) {
+                return false;
             }
+            // For various... reasons, we are forced to manually check if a broken window was responsible for letting us unlock the door.
+            // TODO: Separate this out into a function or something not awful.
+            // It's a lambda right now so we don't have to check it unless we need it.
+            auto has_broken_window = [&]() {
+                std::vector<vehicle_part *> parts_at_target = veh->get_parts_at( &m, lockp, "LOCKABLE_DOOR",
+                        part_status_flag::available );
+                return !parts_at_target.empty() && parts_at_target.front()->has_fault( fault_broken_window );
+            };
+            const bool reaches_in = !inside_vehicle && has_broken_window();
+            veh->unlock( unlockable );
+            if( reaches_in ) {
+                if( who.as_avatar() ) {
+                    add_msg( _( "You reach in through the broken glass and unlock the %1$s's %2$s." ), veh->name,
+                             veh->part( unlockable ).name() );
+                } else {
+                    add_msg( _( "%1$s reaches in through the broken glass and unlocks the %2$s's %3$s." ),
+                             who.disp_name(), veh->name, veh->part( unlockable ).name() );
+                }
+            } else {
+                if( who.as_avatar() ) {
+                    add_msg( _( "You unlock the %1$s's %2$s." ), veh->name, veh->part( unlockable ).name() );
+                } else {
+                    add_msg( _( "%1$s unlocks the %2$s's %3$s." ), who.disp_name(), veh->name,
+                             veh->part( unlockable ).name() );
+                }
+            }
+            didit = true;
         } else if( inside_unlockable >= 0 ) {
             who.add_msg_if_player( m_info, _( "That %s can only be unlocked from the inside." ),
                                    veh->part( inside_unlockable ).name() );

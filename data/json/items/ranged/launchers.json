@@ -1,7 +1,8 @@
 [
   {
     "id": "LAW",
-    "type": "GUN",
+    "type": "ITEM",
+    "subtypes": [ "GUN" ],
     "looks_like": "m79",
     "symbol": "(",
     "color": "green",
@@ -21,7 +22,7 @@
     "flags": [ "NO_UNLOAD", "NO_RELOAD", "BACKBLAST", "NEVER_JAMS", "TRADER_AVOID" ],
     "skill": "launcher",
     "ammo": [ "66mm" ],
-    "weight": "700 g",
+    "weight": "900 g",
     "volume": "2500 ml",
     "longest_side": "88 cm",
     "price_postapoc": "35 USD",
@@ -37,7 +38,8 @@
   {
     "id": "surv_rocket_launcher",
     "looks_like": "m79",
-    "type": "GUN",
+    "type": "ITEM",
+    "subtypes": [ "GUN" ],
     "reload_noise_volume": 10,
     "symbol": "/",
     "color": "light_gray",
@@ -65,7 +67,8 @@
   {
     "id": "watercannon",
     "looks_like": "m79",
-    "type": "GUN",
+    "type": "ITEM",
+    "subtypes": [ "GUN" ],
     "symbol": "&",
     "color": "dark_gray",
     "name": { "str": "water cannon" },
@@ -73,7 +76,7 @@
     "price": "500 USD",
     "material": [ "steel" ],
     "flags": [ "NEVER_JAMS", "MOUNTED_GUN", "NO_RELOAD", "NON_FOULING", "WONT_TRAIN_MARKSMANSHIP" ],
-    "ammo_effects": [ "JET", "BEANBAG", "NEVER_MISFIRES" ],
+    "ammo_effects": [ "JET", "BEANBAG" ],
     "skill": "launcher",
     "ammo": [ "water" ],
     "weight": "24500 g",
